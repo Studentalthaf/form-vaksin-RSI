@@ -26,14 +26,22 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy existing application directory
-COPY . /var/www/html
-
-# Copy Nginx configuration
+# Copy Nginx configuration first
 COPY docker/nginx/default.conf /etc/nginx/sites-available/default
+RUN ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default \
+    && rm -f /etc/nginx/sites-enabled/default.bak
 
 # Copy supervisor configuration
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy composer files
+COPY composer.json composer.lock /var/www/html/
+
+# Install PHP dependencies (akan di-override oleh volume, tapi perlu untuk build)
+RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction || true
+
+# Copy existing application directory
+COPY . /var/www/html
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \

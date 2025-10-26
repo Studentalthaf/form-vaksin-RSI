@@ -76,12 +76,23 @@ jobs:
             docker network prune -f
             
             echo "=== Memulai Docker Compose dengan build ulang ==="
-            if ! docker compose --env-file .env.deploy up -d --build --remove-orphans; then
+            echo "Building images..."
+            if ! docker compose --env-file .env.deploy build --no-cache 2>&1 | tee build.log; then
+              echo "❌ ERROR: Docker build failed!"
+              echo "=== Build Log ==="
+              cat build.log
+              exit 1
+            fi
+            
+            echo "Starting containers..."
+            if ! docker compose --env-file .env.deploy up -d --remove-orphans; then
               echo "❌ ERROR: Docker compose failed to start!"
               echo "=== Docker Compose Logs ==="
               docker compose logs
               echo "=== Checking .env.deploy ==="
               cat .env.deploy
+              echo "=== Container Status ==="
+              docker ps -a
               exit 1
             fi
             
