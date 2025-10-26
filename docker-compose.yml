@@ -46,28 +46,13 @@ services:
       - dbdata:/var/lib/mysql
       - ./docker/mysql.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${DB_PORT:-3307}:3306"  # Ganti ke 3307 untuk avoid conflict
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD:-rootpassword}"]
-      interval: 5s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
       timeout: 5s
-      retries: 20
-    networks:
-      - formvaksin_network
-
-  # PHPMyAdmin (optional, bisa dihapus di production)
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: formvaksin_phpmyadmin
-    restart: always
-    environment:
-      PMA_HOST: db
-      PMA_USER: root
-      PMA_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
-    ports:
-      - "${PMA_PORT:-8080}:80"
-    depends_on:
-      - db
+      retries: 10
+      start_period: 30s
     networks:
       - formvaksin_network
 
@@ -78,3 +63,20 @@ networks:
 volumes:
   dbdata:
     driver: local
+
+  # PHPMyAdmin (DISABLED di production untuk security)
+  # Uncomment jika perlu akses database via web UI
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   container_name: formvaksin_phpmyadmin
+  #   restart: always
+  #   environment:
+  #     PMA_HOST: db
+  #     PMA_USER: root
+  #     PMA_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
+  #   ports:
+  #     - "${PMA_PORT:-8081}:80"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - formvaksin_network
