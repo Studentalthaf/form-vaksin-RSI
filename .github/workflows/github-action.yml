@@ -58,27 +58,57 @@ jobs:
             echo "${{ secrets.LARAVEL_ENV }}" > $DIR/.env
             
             echo "Menyiapkan environment variables untuk Docker Compose"
-            echo "APP_PORT=${{ secrets.APP_PORT }}" >> "$DIR/.env.deploy"
-            echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> "$DIR/.env.deploy"
-            echo "DB_HOST=${{ secrets.DB_HOST }}" >> "$DIR/.env.deploy"
-            echo "DB_NAME=${{ secrets.DB_NAME }}" >> "$DIR/.env.deploy"
-            echo "DB_USERNAME=${{ secrets.DB_USERNAME }}" >> "$DIR/.env.deploy"
-            echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> "$DIR/.env.deploy"
-            echo "Masuk direktori $DIR";
             cd $DIR
-            echo "Restart Docker Compose"
-            docker compose down
-            docker compose --env-file .env.deploy up -d --build
-            echo "Menunggu Laravel siap..."
-            until docker exec $CONTAINER php artisan --version > /dev/null 2>&1; do
-              echo "Menunggu Laravel container..."
-              docker container start $CONTAINER
+            cat > .env.deploy << EOF
+            APP_PORT=${{ secrets.APP_PORT }}
+            DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            EOF
+            
+            echo "Menghentikan container lama (jika ada)"
+            docker compose down || true
+            
+            echo "Membersihkan container dan network lama"
+            docker container prune -f
+            docker network prune -f
+            
+            echo "Memulai Docker Compose dengan build ulang"
+            docker compose --env-file .env.deploy up -d --build --remove-orphans
+            
+            echo "Menunggu database siap..."
+            sleep 10
+            
+            echo "Menunggu container laravel_app siap..."
+            for i in {1..30}; do
+              if docker ps | grep -q laravel_app; then
+                echo "Container laravel_app sudah running!"
+                break
+              fi
+              echo "Waiting for container to start... ($i/30)"
               sleep 2
             done
-            echo "Laravel siap!"
-            echo "composer install"
-            docker exec $CONTAINER composer install --optimize-autoloader --no-dev
-            echo "buat key"
-            docker exec $CONTAINER php artisan key:generate
-            echo "artisan migrate"
+            
+            echo "Verifikasi container"
+            docker ps
+            
+            echo "Menunggu PHP-FPM siap..."
+            sleep 5
+            
+            echo "Install composer dependencies"
+            docker exec $CONTAINER composer install --optimize-autoloader --no-dev || true
+            
+            echo "Generate application key"
+            docker exec $CONTAINER php artisan key:generate --force
+            
+            echo "Run database migrations"
             docker exec $CONTAINER php artisan migrate --force
+            
+            echo "Clear cache"
+            docker exec $CONTAINER php artisan config:clear
+            docker exec $CONTAINER php artisan cache:clear
+            
+            echo "Deployment selesai!"
+            docker ps
