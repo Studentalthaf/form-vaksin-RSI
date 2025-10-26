@@ -60,14 +60,6 @@
                                 placeholder="Masukkan nama lengkap sesuai KTP/Paspor" required>
                         </div>
 
-                        <!-- Nomor Paspor -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Paspor</label>
-                            <input type="text" name="nomor_paspor" value="{{ old('nomor_paspor') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                placeholder="Contoh: A1234567">
-                        </div>
-
                         <!-- Nomor Telepon -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon *</label>
@@ -120,11 +112,58 @@
                     </div>
                 </div>
 
-                <!-- Section: Data Perjalanan & Vaksinasi -->
+                <!-- Section: Jenis Vaksin (SELALU MUNCUL) -->
                 <div class="mb-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-green-500">Data Perjalanan & Vaksinasi</h3>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-teal-500">Jenis Vaksin yang Diminta *</h3>
+                    
+                    <div class="grid md:grid-cols-1 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Vaksin *</label>
+                            <input type="text" name="jenis_vaksin" value="{{ old('jenis_vaksin') }}" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
+                                placeholder="Contoh: Meningitis, Yellow Fever, Hepatitis B, dll" required>
+                            <p class="text-xs text-gray-500 mt-1">💡 Wajib diisi untuk semua jenis vaksinasi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Jenis Permohonan Vaksin -->
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-purple-500">Jenis Permohonan Vaksin</h3>
+                    
+                    <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
+                        <label class="flex items-start cursor-pointer group">
+                            <input type="checkbox" name="is_perjalanan" id="is_perjalanan" value="1" 
+                                {{ old('is_perjalanan') ? 'checked' : '' }}
+                                class="mt-1 w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500">
+                            <div class="ml-3">
+                                <span class="text-base font-bold text-purple-900 group-hover:text-purple-700">
+                                    ✈️ Vaksin untuk Perjalanan ke Luar Negeri
+                                </span>
+                                <p class="text-sm text-purple-700 mt-1">
+                                    Centang jika Anda memerlukan vaksin untuk keperluan perjalanan internasional (umroh, haji, wisata, dll)
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section: Data Perjalanan & Vaksinasi (Conditional) -->
+                <div class="mb-8" id="section-perjalanan" style="display: none;">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-green-500">Data Perjalanan Luar Negeri</h3>
                     
                     <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Nomor Paspor (Wajib untuk Perjalanan) -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Nomor Paspor *
+                                <span class="text-xs text-red-600 font-normal">(Wajib untuk perjalanan luar negeri)</span>
+                            </label>
+                            <input type="text" name="nomor_paspor" id="nomor_paspor" value="{{ old('nomor_paspor') }}" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                placeholder="Contoh: A1234567">
+                        </div>
+
                         <!-- Negara Tujuan -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Negara Tujuan</label>
@@ -138,14 +177,6 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Berangkat</label>
                             <input type="date" name="tanggal_berangkat" value="{{ old('tanggal_berangkat') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
-                        </div>
-
-                        <!-- Jenis Vaksin -->
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Vaksin yang Diminta</label>
-                            <input type="text" name="jenis_vaksin" value="{{ old('jenis_vaksin') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                                placeholder="Contoh: Meningitis, Yellow Fever, dll">
                         </div>
 
                         <!-- Nama Travel -->
@@ -199,5 +230,53 @@
             <p>Untuk informasi lebih lanjut, silakan hubungi kami di <strong>0821-xxxx-xxxx</strong></p>
         </div>
     </div>
+
+    <script>
+        // Toggle section perjalanan based on checkbox
+        document.getElementById('is_perjalanan').addEventListener('change', function() {
+            const sectionPerjalanan = document.getElementById('section-perjalanan');
+            const inputs = sectionPerjalanan.querySelectorAll('input, textarea, select');
+            const nomorPaspor = document.getElementById('nomor_paspor');
+            
+            if (this.checked) {
+                sectionPerjalanan.style.display = 'block';
+                // Set nomor paspor menjadi required
+                if (nomorPaspor) {
+                    nomorPaspor.required = true;
+                }
+                // Smooth scroll to section
+                setTimeout(() => {
+                    sectionPerjalanan.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            } else {
+                sectionPerjalanan.style.display = 'none';
+                // Remove required dari nomor paspor
+                if (nomorPaspor) {
+                    nomorPaspor.required = false;
+                }
+                // Clear all inputs when hidden
+                inputs.forEach(input => {
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        input.checked = false;
+                    } else {
+                        input.value = '';
+                    }
+                });
+            }
+        });
+
+        // Check on page load if old value exists
+        window.addEventListener('DOMContentLoaded', function() {
+            const checkbox = document.getElementById('is_perjalanan');
+            const nomorPaspor = document.getElementById('nomor_paspor');
+            
+            if (checkbox.checked) {
+                document.getElementById('section-perjalanan').style.display = 'block';
+                if (nomorPaspor) {
+                    nomorPaspor.required = true;
+                }
+            }
+        });
+    </script>
 </body>
 </html>

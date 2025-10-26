@@ -20,15 +20,18 @@
                 <div><label class="block text-sm font-medium mb-2">Pertanyaan *</label>
                     <textarea name="pertanyaan" rows="3" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500" required>{{ old('pertanyaan') }}</textarea>
                 </div>
-                <div><label class="block text-sm font-medium mb-2">Tipe Jawaban *</label>
-                    <select name="tipe_jawaban" id="tipe_jawaban" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-red-500" required>
-                        <option value="ya_tidak" {{ old('tipe_jawaban') == 'ya_tidak' ? 'selected' : '' }}>Ya/Tidak</option>
-                        <option value="pilihan_ganda" {{ old('tipe_jawaban') == 'pilihan_ganda' ? 'selected' : '' }}>Pilihan Ganda</option>
-                        <option value="text" {{ old('tipe_jawaban') == 'text' ? 'selected' : '' }}>Text</option>
-                    </select>
-                </div>
-                <div id="pilihan_container" class="hidden"><label class="block text-sm font-medium mb-2">Pilihan Jawaban (satu per baris)</label>
-                    <textarea name="pilihan_jawaban[]" rows="4" class="w-full px-4 py-3 border rounded-lg" placeholder="Pilihan 1&#10;Pilihan 2&#10;Pilihan 3"></textarea>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Tipe Jawaban</label>
+                    <div class="w-full px-4 py-3 bg-gray-100 border rounded-lg text-gray-700">
+                        <strong>Ya / Tidak</strong> dengan Keterangan Tambahan (Opsional)
+                    </div>
+                    <input type="hidden" name="tipe_jawaban" value="ya_tidak">
+                    <p class="text-xs text-gray-500 mt-2">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Setiap pertanyaan akan memiliki pilihan Ya/Tidak dan field keterangan tambahan yang bersifat opsional.
+                    </p>
                 </div>
                 <div class="grid grid-cols-3 gap-4">
                     <div><label class="block text-sm font-medium mb-2">Urutan</label><input type="number" name="urutan" value="{{ old('urutan', 0) }}" min="0" class="w-full px-4 py-3 border rounded-lg"></div>
@@ -43,18 +46,4 @@
         </div>
     </main>
 </div>
-<script>
-document.getElementById('tipe_jawaban').addEventListener('change', function() {
-    const pilihanContainer = document.getElementById('pilihan_container');
-    if (this.value === 'pilihan_ganda') {
-        pilihanContainer.classList.remove('hidden');
-    } else {
-        pilihanContainer.classList.add('hidden');
-    }
-});
-// Check on page load
-if (document.getElementById('tipe_jawaban').value === 'pilihan_ganda') {
-    document.getElementById('pilihan_container').classList.remove('hidden');
-}
-</script>
 @endsection

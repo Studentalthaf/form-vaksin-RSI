@@ -73,18 +73,9 @@ class ScreeningQuestionSeeder extends Seeder
 
         ScreeningQuestion::create([
             'category_id' => $kategori2->id,
-            'pertanyaan' => 'Jika ya, obat apa yang menyebabkan alergi?',
-            'tipe_jawaban' => 'text',
-            'urutan' => 2,
-            'wajib' => false,
-            'aktif' => true,
-        ]);
-
-        ScreeningQuestion::create([
-            'category_id' => $kategori2->id,
             'pertanyaan' => 'Apakah Anda pernah mengalami reaksi alergi setelah vaksinasi sebelumnya?',
             'tipe_jawaban' => 'ya_tidak',
-            'urutan' => 3,
+            'urutan' => 2,
             'wajib' => true,
             'aktif' => true,
         ]);
@@ -100,8 +91,7 @@ class ScreeningQuestionSeeder extends Seeder
         ScreeningQuestion::create([
             'category_id' => $kategori3->id,
             'pertanyaan' => 'Apakah Anda sedang hamil atau menyusui?',
-            'tipe_jawaban' => 'pilihan_ganda',
-            'pilihan_jawaban' => ['Tidak', 'Hamil', 'Menyusui'],
+            'tipe_jawaban' => 'ya_tidak',
             'urutan' => 1,
             'wajib' => true,
             'aktif' => true,
@@ -118,18 +108,9 @@ class ScreeningQuestionSeeder extends Seeder
 
         ScreeningQuestion::create([
             'category_id' => $kategori3->id,
-            'pertanyaan' => 'Jika ya, sebutkan obat yang dikonsumsi:',
-            'tipe_jawaban' => 'text',
-            'urutan' => 3,
-            'wajib' => false,
-            'aktif' => true,
-        ]);
-
-        ScreeningQuestion::create([
-            'category_id' => $kategori3->id,
             'pertanyaan' => 'Apakah Anda sedang mengalami batuk, pilek, atau sesak napas?',
             'tipe_jawaban' => 'ya_tidak',
-            'urutan' => 4,
+            'urutan' => 3,
             'wajib' => true,
             'aktif' => true,
         ]);
@@ -148,15 +129,6 @@ class ScreeningQuestionSeeder extends Seeder
             'tipe_jawaban' => 'ya_tidak',
             'urutan' => 1,
             'wajib' => true,
-            'aktif' => true,
-        ]);
-
-        ScreeningQuestion::create([
-            'category_id' => $kategori4->id,
-            'pertanyaan' => 'Kapan terakhir kali Anda mendapatkan vaksinasi?',
-            'tipe_jawaban' => 'text',
-            'urutan' => 2,
-            'wajib' => false,
             'aktif' => true,
         ]);
 

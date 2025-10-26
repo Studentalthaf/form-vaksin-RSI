@@ -1,0 +1,408 @@
+@extends('layouts.app')
+@section('title', 'Daftar Permohonan Vaksinasi')
+@section('content')
+<div class="min-h-screen bg-gray-50">
+    <!-- Navbar -->
+    <nav class="bg-gradient-to-r from-red-600 to-pink-600 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                <span class="text-xl font-bold text-white">Daftar Permohonan Vaksinasi</span>
+                <div class="flex items-center space-x-3">
+                    <span class="text-white text-sm sm:text-base">{{ Auth::user()->nama }}</span>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="px-4 py-2 bg-white text-red-600 hover:bg-red-50 rounded-lg font-semibold text-sm transition">
+                            Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <!-- Back Button -->
+        <div class="mb-6">
+            <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center text-red-600 hover:text-red-700 font-semibold transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Kembali ke Dashboard
+            </a>
+        </div>
+
+        <!-- Success Message -->
+        @if(session('success'))
+        <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-green-700 font-medium">{{ session('success') }}</p>
+            </div>
+        </div>
+        @endif
+
+        <!-- Stats Cards - Data Hari Ini -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border-l-4 border-blue-500 hover:shadow-lg transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm font-medium">Total Semua</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $totalPermohonan }}</p>
+                        <p class="text-xs text-gray-400 mt-1">Keseluruhan</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border-l-4 border-purple-500 hover:shadow-lg transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm font-medium">Hari Ini</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $hariIni }}</p>
+                        <p class="text-xs text-gray-400 mt-1">{{ \Carbon\Carbon::now()->format('d M Y') }}</p>
+                    </div>
+                    <div class="p-3 bg-purple-100 rounded-full">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border-l-4 border-green-500 hover:shadow-lg transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm font-medium">Disetujui Hari Ini</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $hariIniDisetujui }}</p>
+                        <p class="text-xs text-gray-400 mt-1">Approved</p>
+                    </div>
+                    <div class="p-3 bg-green-100 rounded-full">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 border-l-4 border-yellow-500 hover:shadow-lg transition">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-xs sm:text-sm font-medium">Pending Hari Ini</p>
+                        <p class="text-2xl sm:text-3xl font-bold text-gray-800 mt-1">{{ $hariIniPending }}</p>
+                        <p class="text-xs text-gray-400 mt-1">Menunggu</p>
+                    </div>
+                    <div class="p-3 bg-yellow-100 rounded-full">
+                        <svg class="w-6 h-6 sm:w-8 sm:h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search -->
+        <div class="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+            <form method="GET" action="{{ route('admin.permohonan.index') }}" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Search -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Cari Nama Pemohon</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="searchInput"
+                                   name="search" 
+                                   value="{{ request('search') }}"
+                                   placeholder="Ketik nama pemohon..." 
+                                   class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Tanggal Dari -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Dari Tanggal</label>
+                        <input type="date" 
+                               name="tanggal_dari" 
+                               value="{{ request('tanggal_dari') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Tanggal Sampai -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sampai Tanggal</label>
+                        <input type="date" 
+                               name="tanggal_sampai" 
+                               value="{{ request('tanggal_sampai') }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent">
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="disetujui" {{ request('status') === 'disetujui' ? 'selected' : '' }}>Disetujui</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button type="submit" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filter
+                    </button>
+                    <a href="{{ route('admin.permohonan.index') }}" class="px-6 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg font-semibold transition flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <!-- Desktop Table View -->
+            <div class="hidden lg:block overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-red-600 text-white">
+                        <tr>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">No</th>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">Tanggal</th>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">Nama Pasien</th>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">NIK</th>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">No. Telepon</th>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">Negara Tujuan</th>
+                            <th class="px-4 py-4 text-left text-sm font-semibold">Status</th>
+                            <th class="px-4 py-4 text-center text-sm font-semibold">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @forelse($permohonan as $index => $item)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-4 py-4 text-sm">{{ $permohonan->firstItem() + $index }}</td>
+                            <td class="px-4 py-4 text-sm whitespace-nowrap">
+                                <div class="font-medium text-gray-900">{{ $item->created_at->format('d/m/Y') }}</div>
+                                <div class="text-xs text-gray-500">{{ $item->created_at->format('H:i') }}</div>
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="font-semibold text-gray-900">{{ $item->pasien->nama }}</div>
+                                @if($item->is_perjalanan)
+                                <span class="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                                    ✈️ Perjalanan
+                                </span>
+                                @else
+                                <span class="inline-block mt-1 px-2 py-0.5 bg-gray-100 text-gray-700 rounded text-xs font-bold">
+                                    💉 Vaksin Biasa
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4 text-sm text-gray-600">{{ $item->pasien->nik }}</td>
+                            <td class="px-4 py-4 text-sm text-gray-600">{{ $item->pasien->no_telp }}</td>
+                            <td class="px-4 py-4 text-sm">
+                                <div class="font-medium">{{ $item->negara_tujuan ?? '-' }}</div>
+                                @if($item->tanggal_berangkat)
+                                <div class="text-xs text-gray-500">{{ $item->tanggal_berangkat->format('d/m/Y') }}</div>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4">
+                                @if($item->disetujui)
+                                <span class="inline-flex items-center px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Disetujui
+                                </span>
+                                @else
+                                <span class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Pending
+                                </span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-4">
+                                <div class="flex items-center justify-center space-x-2">
+                                    <a href="{{ route('admin.permohonan.show', $item) }}" 
+                                       class="px-3 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-xs font-medium transition"
+                                       title="Detail">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+                                    @if(!$item->disetujui)
+                                    <form method="POST" action="{{ route('admin.permohonan.approve', $item) }}" class="inline">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" 
+                                                class="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-medium transition"
+                                                title="Setujui">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @endif
+                                    <form method="POST" action="{{ route('admin.permohonan.destroy', $item) }}" class="inline" onsubmit="return confirm('Yakin hapus permohonan ini?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" 
+                                                class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-medium transition"
+                                                title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-12 text-center">
+                                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-gray-500 font-semibold">Tidak ada data permohonan</p>
+                                <p class="text-gray-400 text-sm mt-1">Belum ada permohonan yang sesuai dengan filter</p>
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Mobile Card View -->
+            <div class="lg:hidden divide-y divide-gray-200">
+                @forelse($permohonan as $index => $item)
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <div class="font-bold text-gray-900 text-lg">{{ $item->pasien->nama }}</div>
+                            <div class="text-sm text-gray-500 mt-1">NIK: {{ $item->pasien->nik }}</div>
+                            @if($item->is_perjalanan)
+                            <span class="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                                ✈️ Vaksin Perjalanan
+                            </span>
+                            @else
+                            <span class="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-bold">
+                                💉 Vaksin Biasa
+                            </span>
+                            @endif
+                        </div>
+                        @if($item->disetujui)
+                        <span class="inline-flex items-center px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Disetujui
+                        </span>
+                        @else
+                        <span class="inline-flex items-center px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Pending
+                        </span>
+                        @endif
+                    </div>
+
+                    <div class="space-y-2 mb-3">
+                        <div class="flex items-center text-sm">
+                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="text-gray-600">{{ $item->created_at->format('d M Y, H:i') }}</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            <span class="text-gray-600">{{ $item->pasien->no_telp }}</span>
+                        </div>
+                        @if($item->negara_tujuan)
+                        <div class="flex items-center text-sm">
+                            <svg class="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-gray-600">{{ $item->negara_tujuan }} 
+                                @if($item->tanggal_berangkat)
+                                <span class="text-gray-400">({{ $item->tanggal_berangkat->format('d/m/Y') }})</span>
+                                @endif
+                            </span>
+                        </div>
+                        @endif
+                    </div>
+
+                    <div class="flex gap-2">
+                        <a href="{{ route('admin.permohonan.show', $item) }}" 
+                           class="flex-1 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg text-sm font-medium text-center transition">
+                            Detail
+                        </a>
+                        @if(!$item->disetujui)
+                        <form method="POST" action="{{ route('admin.permohonan.approve', $item) }}" class="flex-1">
+                            @csrf @method('PATCH')
+                            <button type="submit" 
+                                    class="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition">
+                                Setujui
+                            </button>
+                        </form>
+                        @endif
+                        <form method="POST" action="{{ route('admin.permohonan.destroy', $item) }}" onsubmit="return confirm('Yakin hapus?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" 
+                                    class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                @empty
+                <div class="p-12 text-center">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-gray-500 font-semibold">Tidak ada data permohonan</p>
+                    <p class="text-gray-400 text-sm mt-1">Belum ada permohonan yang sesuai dengan filter</p>
+                </div>
+                @endforelse
+            </div>
+
+            <!-- Pagination -->
+            @if($permohonan->hasPages())
+            <div class="px-4 sm:px-6 py-4 border-t bg-gray-50">
+                {{ $permohonan->links() }}
+            </div>
+            @endif
+        </div>
+    </main>
+</div>
+
+<script>
+// Auto-submit form saat mengetik di search (dengan debounce 500ms)
+let searchTimeout;
+const searchInput = document.getElementById('searchInput');
+const searchForm = searchInput.closest('form');
+
+searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(function() {
+        searchForm.submit();
+    }, 500); // Submit setelah 500ms berhenti mengetik
+});
+</script>
+@endsection

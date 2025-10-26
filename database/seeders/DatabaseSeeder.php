@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             ScreeningQuestionSeeder::class,
+            PasienSeeder::class,
+            VaccineRequestSeeder::class,
+            ScreeningSeeder::class, // Harus setelah VaccineRequestSeeder
         ]);
     }
 }

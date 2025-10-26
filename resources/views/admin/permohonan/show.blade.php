@@ -2,7 +2,7 @@
 @section('title', 'Detail Permohonan')
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <nav class="bg-gradient-to-r from-red-600 to-pink-600 shadow-lg">
+    <nav class="bg-gradient from-red-600 to-pink-600 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <span class="text-xl font-bold text-white">Detail Permohonan Vaksinasi</span>
             <div class="flex items-center space-x-4">
@@ -132,6 +132,7 @@
                 @php
                     $screening = \App\Models\Screening::where('pasien_id', $permohonan->pasien_id)
                         ->where('vaccine_request_id', $permohonan->id)
+                        ->with('dokter')
                         ->first();
                 @endphp
 
@@ -145,6 +146,33 @@
                         <p class="text-green-700 font-bold">SUDAH DI-SCREENING</p>
                         <p class="text-sm text-green-600 mt-1">{{ $screening->tanggal_screening->format('d/m/Y H:i') }}</p>
                     </div>
+
+                    @if($screening->dokter_id)
+                    <div class="bg-blue-50 border-2 border-blue-500 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-center mb-2">
+                            <svg class="w-8 h-8 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            <div class="text-left">
+                                <p class="text-xs text-blue-600 font-medium">Ditangani oleh:</p>
+                                <p class="text-blue-900 font-bold">Dr. {{ $screening->dokter->nama }}</p>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            @if($screening->status_vaksinasi === 'proses_vaksinasi')
+                            <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-bold">PROSES VAKSINASI</span>
+                            @elseif($screening->status_vaksinasi === 'sudah_divaksin')
+                            <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold">SUDAH DIVAKSIN</span>
+                            @if($screening->tanggal_vaksinasi)
+                            <p class="text-xs text-green-600 mt-1">{{ $screening->tanggal_vaksinasi->format('d/m/Y H:i') }}</p>
+                            @endif
+                            @else
+                            <span class="px-3 py-1 bg-gray-500 text-white rounded-full text-xs font-bold">BELUM DIVAKSIN</span>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
                     <a href="{{ route('admin.screening.pasien.show', $permohonan) }}" 
                         class="block w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-center">
                         Lihat Hasil Screening

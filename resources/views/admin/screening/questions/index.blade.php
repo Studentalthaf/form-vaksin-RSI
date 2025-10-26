@@ -47,7 +47,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pertanyaan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kategori</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe Jawaban</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Urutan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
@@ -63,15 +62,6 @@
                             <span class="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">{{ $question->category->nama_kategori }}</span>
                             @else
                             <span class="px-3 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Tanpa Kategori</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-sm">
-                            @if($question->tipe_jawaban === 'ya_tidak')
-                            <span class="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-800">Ya/Tidak</span>
-                            @elseif($question->tipe_jawaban === 'pilihan_ganda')
-                            <span class="px-3 py-1 text-xs rounded-full bg-green-100 text-green-800">Pilihan Ganda</span>
-                            @else
-                            <span class="px-3 py-1 text-xs rounded-full bg-yellow-100 text-yellow-800">Text</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-900">{{ $question->urutan }}</td>

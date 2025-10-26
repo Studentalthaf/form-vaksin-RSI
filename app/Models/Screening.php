@@ -14,12 +14,16 @@ class Screening extends Model
         'vaccine_request_id',
         'tanggal_screening',
         'petugas_id',
+        'dokter_id',
         'hasil_screening',
+        'status_vaksinasi',
+        'tanggal_vaksinasi',
         'catatan',
     ];
 
     protected $casts = [
         'tanggal_screening' => 'datetime',
+        'tanggal_vaksinasi' => 'datetime',
     ];
 
     public function pasien()
@@ -37,8 +41,18 @@ class Screening extends Model
         return $this->belongsTo(User::class, 'petugas_id');
     }
 
+    public function dokter()
+    {
+        return $this->belongsTo(User::class, 'dokter_id');
+    }
+
     public function answers()
     {
         return $this->hasMany(ScreeningAnswer::class, 'screening_id');
+    }
+
+    public function penilaian()
+    {
+        return $this->hasOne(PenilaianDokter::class, 'screening_id');
     }
 }

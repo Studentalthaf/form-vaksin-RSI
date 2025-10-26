@@ -9,6 +9,7 @@ use App\Models\Screening;
 use App\Models\ScreeningAnswer;
 use App\Models\ScreeningQuestion;
 use App\Models\ScreeningQuestionCategory;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -116,9 +117,53 @@ class ScreeningPasienController extends Controller
         
         $screening = Screening::where('pasien_id', $permohonan->pasien_id)
             ->where('vaccine_request_id', $permohonan->id)
-            ->with(['answers.question.category', 'petugas'])
+            ->with(['answers.question.category', 'petugas', 'dokter'])
             ->firstOrFail();
 
-        return view('admin.screening.pasien.show', compact('permohonan', 'screening'));
+        // Ambil daftar dokter untuk assign
+        $dokterList = User::where('role', 'dokter')
+            ->orderBy('nama')
+            ->get();
+
+        return view('admin.screening.pasien.show', compact('permohonan', 'screening', 'dokterList'));
+    }
+
+    /**
+     * Assign screening ke dokter
+     */
+    public function assignDokter(Request $request, VaccineRequest $permohonan)
+    {
+        $request->validate([
+            'dokter_id' => 'required|exists:users,id',
+            'tanggal_vaksinasi' => 'required|date|after_or_equal:today',
+        ], [
+            'dokter_id.required' => 'Pilih dokter terlebih dahulu',
+            'dokter_id.exists' => 'Dokter tidak ditemukan',
+            'tanggal_vaksinasi.required' => 'Tanggal vaksinasi harus diisi',
+            'tanggal_vaksinasi.date' => 'Format tanggal tidak valid',
+            'tanggal_vaksinasi.after_or_equal' => 'Tanggal vaksinasi tidak boleh sebelum hari ini',
+        ]);
+
+        // Cek apakah dokter yang dipilih benar-benar role dokter
+        $dokter = User::where('id', $request->dokter_id)
+            ->where('role', 'dokter')
+            ->first();
+
+        if (!$dokter) {
+            return back()->withErrors(['dokter_id' => 'User yang dipilih bukan dokter']);
+        }
+
+        $screening = Screening::where('pasien_id', $permohonan->pasien_id)
+            ->where('vaccine_request_id', $permohonan->id)
+            ->firstOrFail();
+
+        $screening->update([
+            'dokter_id' => $request->dokter_id,
+            'tanggal_vaksinasi' => $request->tanggal_vaksinasi,
+            'status_vaksinasi' => 'proses_vaksinasi',
+        ]);
+
+        return redirect()->route('admin.screening.pasien.show', $permohonan)
+            ->with('success', 'Pasien berhasil diserahkan ke Dr. ' . $dokter->nama . ' untuk vaksinasi tanggal ' . \Carbon\Carbon::parse($request->tanggal_vaksinasi)->format('d/m/Y'));
     }
 }

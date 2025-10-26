@@ -5,10 +5,13 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermohonanController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermohonanPasienController;
 use App\Http\Controllers\Admin\ScreeningQuestionCategoryController;
 use App\Http\Controllers\Admin\ScreeningQuestionController;
 use App\Http\Controllers\Admin\ScreeningPasienController;
+use App\Http\Controllers\Dokter\DokterDashboardController;
+use App\Http\Controllers\Dokter\DokterPasienController;
 
 // Redirect root ke form permohonan
 Route::get('/', function () {
@@ -39,9 +42,7 @@ Route::middleware('auth')->group(function () {
     
     // Admin routes - hanya untuk admin_rumah_sakit
     Route::middleware('role:admin_rumah_sakit')->group(function () {
-        Route::get('/admin/dashboard', function () {
-            return view('admin.dashboard');
-        })->name('admin.dashboard');
+        Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
         
         // User Management Routes
         Route::resource('admin/users', UserController::class, [
@@ -59,6 +60,7 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/screening/pasien/{permohonan}/create', [ScreeningPasienController::class, 'create'])->name('admin.screening.pasien.create');
         Route::post('admin/screening/pasien/{permohonan}', [ScreeningPasienController::class, 'store'])->name('admin.screening.pasien.store');
         Route::get('admin/screening/pasien/{permohonan}/show', [ScreeningPasienController::class, 'show'])->name('admin.screening.pasien.show');
+        Route::post('admin/screening/pasien/{permohonan}/assign-dokter', [ScreeningPasienController::class, 'assignDokter'])->name('admin.screening.pasien.assign-dokter');
         
         // Screening Question Category Routes
         Route::resource('admin/screening/categories', ScreeningQuestionCategoryController::class, [
@@ -73,11 +75,20 @@ Route::middleware('auth')->group(function () {
     
     // Dokter routes - hanya untuk dokter
     Route::middleware('role:dokter')->group(function () {
-        Route::get('/dokter/dashboard', function () {
-            return view('dokter.dashboard');
-        })->name('dokter.dashboard');
+        Route::get('/dokter/dashboard', [DokterDashboardController::class, 'index'])->name('dokter.dashboard');
         
-        // Tambahkan route dokter lainnya di sini
+        // Halaman Pasien Hari Ini
+        Route::get('/dokter/pasien-hari-ini', [DokterDashboardController::class, 'pasienHariIni'])->name('dokter.pasien-hari-ini');
+        
+        // Halaman Pasien Selesai
+        Route::get('/dokter/pasien-selesai', [DokterDashboardController::class, 'pasienSelesai'])->name('dokter.pasien-selesai');
+        
+        // Detail Pasien & Penilaian
+        Route::get('/dokter/pasien/{screening}', [DokterPasienController::class, 'show'])->name('dokter.pasien.show');
+        Route::post('/dokter/pasien/{screening}/penilaian', [DokterPasienController::class, 'storePenilaian'])->name('dokter.pasien.store-penilaian');
+        
+        // Cetak PDF
+        Route::get('/dokter/pasien/{screening}/cetak-pdf', [DokterPasienController::class, 'cetakPdf'])->name('dokter.pasien.cetak-pdf');
     });
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

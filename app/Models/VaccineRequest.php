@@ -13,6 +13,7 @@ class VaccineRequest extends Model
 
     protected $fillable = [
         'pasien_id',
+        'is_perjalanan',
         'negara_tujuan',
         'tanggal_berangkat',
         'jenis_vaksin',
@@ -23,6 +24,7 @@ class VaccineRequest extends Model
 
     protected $casts = [
         'tanggal_berangkat' => 'date',
+        'is_perjalanan' => 'boolean',
         'disetujui' => 'boolean',
     ];
 

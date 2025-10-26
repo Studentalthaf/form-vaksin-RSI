@@ -89,7 +89,7 @@
 
                 <div class="space-y-6">
                     @foreach($category->questions as $question)
-                    <div class="border-l-4 border-blue-500 pl-4">
+                    <div class="border-l-4 border-blue-500 pl-4 bg-blue-50 p-4 rounded-r-lg">
                         <label class="block font-semibold text-gray-800 mb-3">
                             {{ $question->pertanyaan }}
                             @if($question->wajib)
@@ -97,52 +97,36 @@
                             @endif
                         </label>
 
-                        @if($question->tipe_jawaban === 'ya_tidak')
                         <!-- Radio Ya/Tidak -->
                         <div class="flex items-center space-x-6 mb-3">
-                            <label class="inline-flex items-center">
+                            <label class="inline-flex items-center cursor-pointer">
                                 <input type="radio" name="jawaban[{{ $question->id }}]" value="ya" 
-                                    class="w-4 h-4 text-blue-600" {{ old('jawaban.'.$question->id) === 'ya' ? 'checked' : '' }}
+                                    class="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500" 
+                                    {{ old('jawaban.'.$question->id) === 'ya' ? 'checked' : '' }}
                                     {{ $question->wajib ? 'required' : '' }}>
-                                <span class="ml-2">Ya</span>
+                                <span class="ml-2 text-gray-700 font-medium">Ya</span>
                             </label>
-                            <label class="inline-flex items-center">
+                            <label class="inline-flex items-center cursor-pointer">
                                 <input type="radio" name="jawaban[{{ $question->id }}]" value="tidak" 
-                                    class="w-4 h-4 text-blue-600" {{ old('jawaban.'.$question->id) === 'tidak' ? 'checked' : '' }}
+                                    class="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500" 
+                                    {{ old('jawaban.'.$question->id) === 'tidak' ? 'checked' : '' }}
                                     {{ $question->wajib ? 'required' : '' }}>
-                                <span class="ml-2">Tidak</span>
+                                <span class="ml-2 text-gray-700 font-medium">Tidak</span>
                             </label>
                         </div>
 
-                        @elseif($question->tipe_jawaban === 'pilihan_ganda')
-                        <!-- Select Pilihan Ganda -->
-                        <select name="jawaban[{{ $question->id }}]" 
-                            class="w-full px-4 py-2 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-500"
-                            {{ $question->wajib ? 'required' : '' }}>
-                            <option value="">-- Pilih Jawaban --</option>
-                            @if(is_array($question->pilihan_jawaban))
-                                @foreach($question->pilihan_jawaban as $pilihan)
-                                <option value="{{ $pilihan }}" {{ old('jawaban.'.$question->id) === $pilihan ? 'selected' : '' }}>
-                                    {{ $pilihan }}
-                                </option>
-                                @endforeach
-                            @endif
-                        </select>
-
-                        @elseif($question->tipe_jawaban === 'text')
-                        <!-- Textarea Text -->
-                        <textarea name="jawaban[{{ $question->id }}]" rows="3" 
-                            class="w-full px-4 py-2 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-500"
-                            placeholder="Masukkan jawaban..." {{ $question->wajib ? 'required' : '' }}>{{ old('jawaban.'.$question->id) }}</textarea>
-                        @endif
-
                         <!-- Keterangan Tambahan -->
-                        <div>
-                            <label class="block text-sm text-gray-600 mb-1">Keterangan Tambahan (opsional)</label>
+                        <div class="mt-3">
+                            <label class="block text-xs text-gray-600 mb-1.5 font-medium">
+                                <svg class="w-3.5 h-3.5 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                                Keterangan Tambahan (Opsional)
+                            </label>
                             <input type="text" name="keterangan[{{ $question->id }}]" 
                                 value="{{ old('keterangan.'.$question->id) }}"
-                                class="w-full px-4 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                                placeholder="Tambahkan catatan jika diperlukan...">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Catatan atau penjelasan tambahan...">
                         </div>
                     </div>
                     @endforeach

@@ -29,7 +29,7 @@ class PermohonanController extends Controller
         $validated = $request->validate([
             // Data Pasien
             'nama' => 'required|string|max:100',
-            'nomor_paspor' => 'nullable|string|max:50',
+            'nomor_paspor' => $request->has('is_perjalanan') ? 'required|string|max:50' : 'nullable|string|max:50',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -37,15 +37,22 @@ class PermohonanController extends Controller
             'alamat' => 'nullable|string|max:255',
             'no_telp' => 'required|string|max:20',
             
-            // Data Permohonan Vaksin
+            // Jenis Vaksin (WAJIB untuk semua)
+            'jenis_vaksin' => 'required|string|max:100',
+            
+            // Jenis Permohonan
+            'is_perjalanan' => 'nullable|boolean',
+            
+            // Data Permohonan Vaksin Perjalanan (conditional)
             'negara_tujuan' => 'nullable|string|max:100',
             'tanggal_berangkat' => 'nullable|date|after:today',
-            'jenis_vaksin' => 'nullable|string|max:100',
             'nama_travel' => 'nullable|string|max:100',
             'alamat_travel' => 'nullable|string|max:255',
         ], [
             'nama.required' => 'Nama lengkap wajib diisi',
             'no_telp.required' => 'Nomor telepon wajib diisi',
+            'jenis_vaksin.required' => 'Jenis vaksin wajib diisi',
+            'nomor_paspor.required' => 'Nomor paspor wajib diisi untuk perjalanan luar negeri',
             'tanggal_lahir.date' => 'Format tanggal lahir tidak valid',
             'tanggal_berangkat.date' => 'Format tanggal berangkat tidak valid',
             'tanggal_berangkat.after' => 'Tanggal berangkat harus setelah hari ini',
@@ -68,9 +75,10 @@ class PermohonanController extends Controller
             // Simpan data permohonan vaksin
             VaccineRequest::create([
                 'pasien_id' => $pasien->id,
+                'is_perjalanan' => $request->has('is_perjalanan') ? true : false,
+                'jenis_vaksin' => $validated['jenis_vaksin'], // Wajib untuk semua
                 'negara_tujuan' => $validated['negara_tujuan'] ?? null,
                 'tanggal_berangkat' => $validated['tanggal_berangkat'] ?? null,
-                'jenis_vaksin' => $validated['jenis_vaksin'] ?? null,
                 'nama_travel' => $validated['nama_travel'] ?? null,
                 'alamat_travel' => $validated['alamat_travel'] ?? null,
                 'disetujui' => false,

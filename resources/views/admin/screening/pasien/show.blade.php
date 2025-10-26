@@ -2,7 +2,7 @@
 @section('title', 'Hasil Screening Pasien')
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <nav class="bg-gradient-to-r from-red-600 to-pink-600 shadow-lg">
+    <nav class="bg-gradient from-red-600 to-pink-600 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
             <span class="text-xl font-bold text-white">Hasil Screening Pasien</span>
             <div class="flex items-center space-x-4">
@@ -52,8 +52,81 @@
                     <span class="ml-2 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">PENDING</span>
                     @endif
                 </div>
+                @if($screening->dokter_id)
+                <div class="md:col-span-2 bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <span class="text-gray-600">Dokter yang Menangani:</span>
+                    <span class="ml-2 font-bold text-blue-900">Dr. {{ $screening->dokter->nama }}</span>
+                    <span class="ml-2 px-2 py-1 bg-blue-600 text-white rounded-full text-xs font-semibold">
+                        {{ strtoupper(str_replace('_', ' ', $screening->status_vaksinasi)) }}
+                    </span>
+                </div>
+                @endif
             </div>
         </div>
+
+        <!-- Assign Dokter Section -->
+        @if(!$screening->dokter_id)
+        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-lg p-6 mb-6 border-2 border-purple-300">
+            <div class="flex items-start mb-4">
+                <div class="p-3 bg-purple-600 rounded-full mr-4">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold text-purple-900 mb-2">Serahkan ke Dokter</h3>
+                    <p class="text-purple-700 text-sm mb-4">Pilih dokter yang akan melakukan vaksinasi untuk pasien ini</p>
+                    
+                    @if(session('success'))
+                    <div class="mb-4 bg-green-100 border-l-4 border-green-500 p-3 rounded">
+                        <p class="text-green-700 text-sm font-medium">{{ session('success') }}</p>
+                    </div>
+                    @endif
+
+                    @if($errors->any())
+                    <div class="mb-4 bg-red-100 border-l-4 border-red-500 p-3 rounded">
+                        <p class="text-red-700 text-sm font-medium">{{ $errors->first() }}</p>
+                    </div>
+                    @endif
+
+                    <form method="POST" action="{{ route('admin.screening.pasien.assign-dokter', $permohonan) }}" class="space-y-4">
+                        @csrf
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Dokter</label>
+                            <select name="dokter_id" required class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800 font-medium">
+                                <option value="">-- Pilih Dokter --</option>
+                                @foreach($dokterList as $dokter)
+                                <option value="{{ $dokter->id }}">Dr. {{ $dokter->nama }} - {{ $dokter->email }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Vaksinasi</label>
+                            <input type="date" name="tanggal_vaksinasi" required 
+                                min="{{ date('Y-m-d') }}"
+                                value="{{ old('tanggal_vaksinasi', date('Y-m-d')) }}"
+                                class="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-800 font-medium">
+                            <p class="text-xs text-gray-500 mt-1">Pilih tanggal dilakukannya vaksinasi</p>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs text-purple-600">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Pasien akan diserahkan ke dokter untuk proses vaksinasi
+                            </p>
+                            <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-lg hover:shadow-xl transition transform hover:scale-105">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                                Serahkan ke Dokter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- Screening Answers by Category -->
         @php
