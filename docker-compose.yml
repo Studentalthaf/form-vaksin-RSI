@@ -21,9 +21,9 @@ services:
       - db
     environment:
       - DB_HOST=${DB_HOST:-db}
-      - DB_DATABASE=${DB_NAME:-laravel}
-      - DB_USERNAME=${DB_USERNAME:-root}
-      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - DB_DATABASE=${DB_NAME:-form_vaksin}
+      - DB_USERNAME=${DB_USERNAME:-laravelRSIuser}
+      - DB_PASSWORD=${DB_PASSWORD:-laravelRSIuser}
 
   # MySQL Database
   db:
@@ -32,12 +32,12 @@ services:
     restart: unless-stopped
     tty: true
     ports:
-      - "3306:3306"
+      - "3307:3306"  # Ganti ke port 3307 untuk avoid konflik dengan MySQL lain
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-secret}
-      MYSQL_DATABASE: ${DB_NAME:-laravel}
-      MYSQL_USER: ${DB_USERNAME:-laravel_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-secret}
+      MYSQL_DATABASE: ${DB_NAME:-form_vaksin}
+      MYSQL_USER: ${DB_USERNAME:-laravelRSIuser}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-laravelRSIuser}
     volumes:
       - mysql-data:/var/lib/mysql
       - ./docker/mysql/my.cnf:/etc/mysql/my.cnf
