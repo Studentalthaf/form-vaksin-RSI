@@ -21,6 +21,7 @@ Thumbs.db
 # Environment files
 .env
 .env.*
+!.env.example
 
 # Testing
 /coverage
@@ -48,15 +49,20 @@ Thumbs.db
 /storage/framework/views/*
 !/storage/framework/views/.gitkeep
 
-# Docker files (already in container)
-/docker
-Dockerfile
+# Docker files (JANGAN exclude docker/ folder, hanya file berikut)
 docker-compose.yml
 .dockerignore
+.env.test
+.env.deploy
+test-docker.ps1
 
 # Documentation
 README.md
 /docs
+DEPLOYMENT.md
+GITHUB_SECRETS_GUIDE.md
+DASHBOARD_DOKTER_IMPROVEMENTS.md
+SEEDER_README.md
 
 # CI/CD
 /.github
