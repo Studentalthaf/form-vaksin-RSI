@@ -85,14 +85,22 @@ jobs:
             fi
             
             echo "Starting containers..."
-            if ! docker compose --env-file .env.deploy up -d --remove-orphans; then
+            if ! docker compose --env-file .env.deploy up -d --remove-orphans 2>&1 | tee start.log; then
               echo "❌ ERROR: Docker compose failed to start!"
+              echo "=== Start Log ==="
+              cat start.log
               echo "=== Docker Compose Logs ==="
-              docker compose logs
+              docker compose logs --tail=100
               echo "=== Checking .env.deploy ==="
               cat .env.deploy
-              echo "=== Container Status ==="
-              docker ps -a
+              echo "=== Container Status (all) ==="
+              docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+              echo "=== Checking for port conflicts ==="
+              sudo netstat -tulpn | grep -E ':(80|3307|8080)'
+              echo "=== App container logs (if exists) ==="
+              docker logs laravel_app --tail 50 2>&1 || echo "Container not created yet"
+              echo "=== DB container logs (if exists) ==="
+              docker logs laravel_mysql --tail 50 2>&1 || echo "Container not created yet"
               exit 1
             fi
             
