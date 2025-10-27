@@ -1,23 +1,13 @@
 # Git
 .git
 .gitignore
-.gitattributes
 
 # IDE
 .idea
 .vscode
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Node
 node_modules
-npm-debug.log
-yarn-error.log
 
 # Vendor (akan di-install di container)
 /vendor
@@ -30,7 +20,6 @@ yarn-error.log
 
 # Testing
 /.phpunit.cache
-phpunit.xml
 /coverage
 
 # Logs
@@ -41,35 +30,16 @@ phpunit.xml
 # Cache files
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
-/storage/framework/cache/*
-!/storage/framework/cache/.gitkeep
-/storage/framework/sessions/*
-!/storage/framework/sessions/.gitkeep
-/storage/framework/testing/*
-!/storage/framework/testing/.gitkeep
-/storage/framework/views/*
-!/storage/framework/views/.gitkeep
 
-# Build artifacts
-/public/hot
-/public/storage
+# Documentation
+*.md
+!README.md
 
-# Documentation (tapi keep DOCKER_DEPLOYMENT.md)
-README.md
-DASHBOARD_DOKTER_IMPROVEMENTS.md
-SEEDER_README.md
+# Scripts
+*.sh
 
-# Package locks
-composer.lock
-package-lock.json
-yarn.lock
-
-# Backups
-*.sql
-*.sql.gz
-backup-*.sql
-
-# Docker local test
-.env.test
-build.log
-start.log
+# Docker files lama
+docker-compose.yml
+supervisord.conf
+mysql.cnf
+php.ini

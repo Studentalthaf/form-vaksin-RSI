@@ -31,6 +31,21 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    # Resource limits untuk VPS kecil
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'      # Maksimal 50% CPU
+          memory: 512M     # Maksimal 512MB RAM
+          # memory-swap: 512M  # Disabled karena swap tidak tersedia
+        reservations:
+          cpus: '0.25'     # Minimal 25% CPU
+          memory: 256M     # Minimal 256MB RAM
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # Maksimal 10MB per log file
+        max-file: "3"      # Simpan maksimal 3 file log
 
   # MySQL Database
   db:
@@ -46,7 +61,7 @@ services:
       - dbdata:/var/lib/mysql
       - ./docker/mysql.cnf:/etc/mysql/conf.d/custom.cnf
     ports:
-      - "${DB_PORT:-3307}:3306"  # Ganti ke 3307 untuk avoid conflict
+      - "${DB_PORT:-33060}:3306"  # Default 33060, atau set sendiri di .env.docker
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -55,6 +70,20 @@ services:
       start_period: 30s
     networks:
       - formvaksin_network
+    # Resource limits untuk database
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'      # Maksimal 50% CPU
+          memory: 512M     # Maksimal 512MB RAM
+        reservations:
+          cpus: '0.25'     # Minimal 25% CPU
+          memory: 256M     # Minimal 256MB RAM
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"    # Maksimal 10MB per log file
+        max-file: "3"      # Simpan maksimal 3 file log
 
 networks:
   formvaksin_network:

@@ -1,53 +1,30 @@
-FROM php:8.2-fpm
+FROM php:8.2-fpm-alpine
 
-# Set working directory
-WORKDIR /var/www
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
+# Install dependencies minimal (Alpine lebih kecil dari Debian)
+RUN apk add --no-cache \
     libpng-dev \
-    libonig-dev \
-    libxml2-dev \
     libzip-dev \
-    zip \
-    unzip \
-    nginx \
-    supervisor \
-    default-mysql-client
-
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    mysql-client \
+    oniguruma-dev \
+    && docker-php-ext-install pdo_mysql mbstring zip gd
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy project files
+# Set working directory
+WORKDIR /var/www
+
+# Copy application
 COPY . /var/www
 
-# Copy Nginx configuration
-COPY docker/nginx.conf /etc/nginx/sites-available/default
+# Install dependencies tanpa dev packages dan tanpa scripts (cepat!)
+RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
 
-# Copy Supervisor configuration
-COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Copy PHP configuration
-COPY docker/php.ini /usr/local/etc/php/conf.d/custom.ini
-
-# Set proper permissions
+# Set permissions
 RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage \
-    && chmod -R 755 /var/www/bootstrap/cache
+    && chmod -R 755 /var/www/storage /var/www/bootstrap/cache
 
-# Install composer dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Expose PHP-FPM port
+EXPOSE 9000
 
-# Expose port 80
-EXPOSE 80
-
-# Start supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+CMD ["php-fpm"]
