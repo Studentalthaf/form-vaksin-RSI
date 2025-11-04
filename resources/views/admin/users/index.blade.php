@@ -111,7 +111,7 @@
                     @forelse($users as $index => $user)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $index + 1 }}
+                            {{ ($users->currentPage() - 1) * $users->perPage() + $index + 1 }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
@@ -179,6 +179,13 @@
                     @endforelse
                 </tbody>
             </table>
+            
+            <!-- Pagination -->
+            @if($users->hasPages())
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                {{ $users->links() }}
+            </div>
+            @endif
         </div>
 
         <!-- Summary -->

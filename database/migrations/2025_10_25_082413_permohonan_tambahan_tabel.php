@@ -11,11 +11,12 @@ return new class extends Migration
         Schema::create('vaccine_requests', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
-            $table->string('negara_tujuan', 100)->nullable();
-            $table->date('tanggal_berangkat')->nullable();
-            $table->string('jenis_vaksin', 100)->nullable();
-            $table->string('nama_travel', 100)->nullable();
-            $table->string('alamat_travel', 255)->nullable();
+            $table->boolean('is_perjalanan')->default(false)->comment('Apakah untuk perjalanan luar negeri');
+            $table->string('jenis_vaksin', 100)->comment('Jenis vaksin yang diminta');
+            $table->string('negara_tujuan', 100)->nullable()->comment('Hanya untuk perjalanan');
+            $table->date('tanggal_berangkat')->nullable()->comment('Hanya untuk perjalanan');
+            $table->string('nama_travel', 100)->nullable()->comment('Hanya untuk perjalanan');
+            $table->string('alamat_travel', 255)->nullable()->comment('Hanya untuk perjalanan');
             $table->boolean('disetujui')->default(false);
             $table->timestamps();
         });

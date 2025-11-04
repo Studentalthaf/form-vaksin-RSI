@@ -53,7 +53,7 @@ class ScreeningSeeder extends Seeder
 
                 foreach ($questions as $question) {
                     // Randomize answers - most "Tidak", some "Ya"
-                    $isYa = $faker->boolean(20); // 20% kemungkinan jawab "Ya"
+                    $isYa = $faker->boolean(30); // 30% kemungkinan jawab "Ya"
                     
                     $keterangan = null;
                     if ($isYa) {
@@ -64,10 +64,11 @@ class ScreeningSeeder extends Seeder
                         $catatanArray[] = $question->pertanyaan . ': ' . $keterangan;
                     }
 
+                    // Ensure jawaban is always set - never null or empty
                     ScreeningAnswer::create([
                         'screening_id' => $screening->id,
-                        'screening_question_id' => $question->id,
-                        'jawaban' => $isYa ? 'Ya' : 'Tidak',
+                        'question_id' => $question->id,
+                        'jawaban' => $isYa ? 'Ya' : 'Tidak', // Always 'Ya' or 'Tidak', never null
                         'keterangan' => $keterangan,
                     ]);
                 }

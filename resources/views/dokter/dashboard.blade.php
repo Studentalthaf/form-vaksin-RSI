@@ -5,7 +5,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50">
     <!-- Navbar -->
-    <nav class="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
+    <nav class="bg-gradient from-blue-600 to-indigo-600 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">

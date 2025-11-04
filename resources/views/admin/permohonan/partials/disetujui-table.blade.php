@@ -5,7 +5,7 @@
             <th class="px-4 py-4 text-left text-sm font-semibold">No</th>
             <th class="px-4 py-4 text-left text-sm font-semibold">Tanggal Pengajuan</th>
             <th class="px-4 py-4 text-left text-sm font-semibold">Nama Pasien</th>
-            <th class="px-4 py-4 text-left text-sm font-semibold">NIK</th>
+            <th class="px-4 py-4 text-left text-sm font-semibold">SIM-RS</th>
             <th class="px-4 py-4 text-left text-sm font-semibold">No. Telepon</th>
             <th class="px-4 py-4 text-left text-sm font-semibold">Negara Tujuan</th>
             <th class="px-4 py-4 text-left text-sm font-semibold">Status</th>
@@ -32,7 +32,7 @@
                 </span>
                 @endif
             </td>
-            <td class="px-4 py-4 text-sm text-gray-600">{{ $item->pasien->nik }}</td>
+            <td class="px-4 py-4 text-sm text-gray-600">{{ $item->pasien->sim_rs }}</td>
             <td class="px-4 py-4 text-sm text-gray-600">{{ $item->pasien->no_telp }}</td>
             <td class="px-4 py-4 text-sm">
                 <div class="font-medium">{{ $item->negara_tujuan ?? '-' }}</div>

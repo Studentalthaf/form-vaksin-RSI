@@ -45,7 +45,7 @@
                 <div class="flex-1">
                     <h1 class="text-3xl font-bold">{{ $screening->pasien->nama }}</h1>
                     <div class="mt-2 space-y-1">
-                        <p class="text-blue-100">NIK: <span class="font-semibold">{{ $screening->pasien->nik }}</span></p>
+                        <p class="text-blue-100">SIM RS: <span class="font-semibold">{{ $screening->pasien->sim_rs }}</span></p>
                         <p class="text-blue-100">No. Telp: <span class="font-semibold">{{ $screening->pasien->no_telp }}</span></p>
                         <p class="text-blue-100">Tanggal Vaksinasi: <span class="font-bold text-yellow-300">{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('d F Y') }}</span></p>
                         

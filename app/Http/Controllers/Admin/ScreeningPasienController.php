@@ -166,4 +166,79 @@ class ScreeningPasienController extends Controller
         return redirect()->route('admin.screening.pasien.show', $permohonan)
             ->with('success', 'Pasien berhasil diserahkan ke Dr. ' . $dokter->nama . ' untuk vaksinasi tanggal ' . \Carbon\Carbon::parse($request->tanggal_vaksinasi)->format('d/m/Y'));
     }
+
+    /**
+     * Tampilkan daftar screening yang sudah selesai
+     */
+    public function selesai(Request $request)
+    {
+        // Query screening yang sudah diserahkan ke dokter
+        $query = Screening::with([
+            'pasien',
+            'vaccineRequest',
+            'dokter',
+            'penilaian'
+        ])
+        ->whereNotNull('dokter_id') // Tampilkan semua yang sudah diserahkan ke dokter
+        ->orderBy('updated_at', 'desc');
+
+        // Filter search nama pasien
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('pasien', function($q) use ($search) {
+                $q->where('nama', 'like', '%' . $search . '%');
+            });
+        }
+
+        // Filter search SIM RS
+        if ($request->filled('sim_rs')) {
+            $simrs = $request->sim_rs;
+            $query->whereHas('pasien', function($q) use ($simrs) {
+                $q->where('sim_rs', 'like', '%' . $simrs . '%');
+            });
+        }
+
+        // Filter status
+        if ($request->filled('status')) {
+            if ($request->status == 'di_dokter') {
+                // Yang belum ada penilaian
+                $query->whereDoesntHave('penilaian');
+            } elseif ($request->status == 'sudah_dinilai') {
+                // Yang sudah ada penilaian
+                $query->whereHas('penilaian');
+            }
+        }
+
+        // Filter dokter
+        if ($request->filled('dokter_id')) {
+            $query->where('dokter_id', $request->dokter_id);
+        }
+
+        // Pagination
+        $screenings = $query->paginate(10);
+
+        // Daftar dokter untuk filter
+        $dokterList = User::where('role', 'dokter')->orderBy('nama')->get();
+
+        // Statistik
+        $totalSelesai = Screening::whereNotNull('dokter_id')->count();
+        $selesaiHariIni = Screening::whereNotNull('dokter_id')
+            ->whereDate('updated_at', today())
+            ->count();
+        $diDokter = Screening::whereNotNull('dokter_id')
+            ->whereDoesntHave('penilaian')
+            ->count();
+        $sudahDinilai = Screening::whereNotNull('dokter_id')
+            ->whereHas('penilaian')
+            ->count();
+
+        return view('admin.screening.selesai', compact(
+            'screenings',
+            'dokterList',
+            'totalSelesai',
+            'selesaiHariIni',
+            'diDokter',
+            'sudahDinilai'
+        ));
+    }
 }

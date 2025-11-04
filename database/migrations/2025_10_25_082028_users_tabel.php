@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('role', ['admin_rumah_sakit', 'dokter']); 
             $table->string('no_telp', 20)->nullable();
+            $table->rememberToken(); // Untuk fitur "Remember Me"
             $table->timestamps();
         });
     }

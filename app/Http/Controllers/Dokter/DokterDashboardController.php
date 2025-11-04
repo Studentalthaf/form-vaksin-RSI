@@ -64,7 +64,7 @@ class DokterDashboardController extends Controller
             ->where('status_vaksinasi', 'belum_divaksin')
             ->with(['pasien', 'vaccineRequest', 'petugas'])
             ->orderBy('created_at', 'desc') // Data terbaru di atas
-            ->get();
+            ->paginate(10);
         
         return view('dokter.pasien-hari-ini', compact('screenings'));
     }
@@ -78,7 +78,7 @@ class DokterDashboardController extends Controller
             ->where('status_vaksinasi', 'sudah_divaksin')
             ->with(['pasien', 'vaccineRequest', 'petugas', 'penilaian'])
             ->orderBy('updated_at', 'desc')
-            ->get();
+            ->paginate(10);
         
         return view('dokter.pasien-selesai', compact('screenings'));
     }

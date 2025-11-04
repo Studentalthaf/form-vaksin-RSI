@@ -94,7 +94,7 @@
                     <tbody class="divide-y divide-gray-200">
                         @foreach($screenings as $index => $screening)
                         <tr class="hover:bg-green-50 transition">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ ($screenings->currentPage() - 1) * $screenings->perPage() + $index + 1 }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
                                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
@@ -166,6 +166,13 @@
                         @endforeach
                     </tbody>
                 </table>
+                
+                <!-- Pagination -->
+                @if($screenings->hasPages())
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    {{ $screenings->links() }}
+                </div>
+                @endif
             </div>
         </div>
         @else

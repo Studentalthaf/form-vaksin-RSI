@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $totalDokter = User::where('role', 'dokter')->count();
         $totalPermohonan = VaccineRequest::count();
         $pendingPermohonan = VaccineRequest::where('disetujui', false)->count();
-        $screeningSelesai = Screening::count();
+        $screeningSelesai = Screening::whereNotNull('dokter_id')->count(); // Screening yang sudah diserahkan ke dokter
         
         // Rekap permohonan hari ini
         $permohonanHariIni = VaccineRequest::whereDate('created_at', Carbon::today())->count();

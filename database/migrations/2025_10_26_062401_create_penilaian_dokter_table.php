@@ -15,6 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('screening_id')->constrained('screenings')->onDelete('cascade');
             
+            // Data vaksinasi dari vaccine_request
+            $table->string('jenis_vaksin')->nullable()->comment('Jenis vaksin yang diminta');
+            $table->string('negara_tujuan')->nullable()->comment('Negara tujuan (jika perjalanan)');
+            
             // Field penilaian sesuai gambar
             $table->string('alergi_obat')->nullable(); // "Ada / tidak *"
             $table->string('alergi_vasin')->nullable(); // "Ada / tidak *"

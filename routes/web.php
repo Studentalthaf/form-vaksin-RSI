@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\PermohonanController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PermohonanPasienController;
+use App\Http\Controllers\Admin\PasienController;
 use App\Http\Controllers\Admin\ScreeningQuestionCategoryController;
 use App\Http\Controllers\Admin\ScreeningQuestionController;
 use App\Http\Controllers\Admin\ScreeningPasienController;
@@ -22,6 +23,7 @@ Route::get('/', function () {
 Route::get('/permohonan', [PermohonanController::class, 'create'])->name('permohonan.create');
 Route::post('/permohonan', [PermohonanController::class, 'store'])->name('permohonan.store');
 Route::get('/permohonan/sukses', [PermohonanController::class, 'success'])->name('permohonan.success');
+Route::get('/api/check-sim-rs/{sim_rs}', [PermohonanController::class, 'checkSimRS'])->name('api.check-sim-rs');
 
 // Auth routes (guest only)
 Route::middleware('guest')->group(function () {
@@ -61,6 +63,13 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/screening/pasien/{permohonan}', [ScreeningPasienController::class, 'store'])->name('admin.screening.pasien.store');
         Route::get('admin/screening/pasien/{permohonan}/show', [ScreeningPasienController::class, 'show'])->name('admin.screening.pasien.show');
         Route::post('admin/screening/pasien/{permohonan}/assign-dokter', [ScreeningPasienController::class, 'assignDokter'])->name('admin.screening.pasien.assign-dokter');
+        
+        // Screening Selesai Routes
+        Route::get('admin/screening/selesai', [ScreeningPasienController::class, 'selesai'])->name('admin.screening.selesai');
+        
+        // Data Pasien Routes
+        Route::get('admin/pasien', [PasienController::class, 'index'])->name('admin.pasien.index');
+        Route::get('admin/pasien/{pasien}', [PasienController::class, 'show'])->name('admin.pasien.show');
         
         // Screening Question Category Routes
         Route::resource('admin/screening/categories', ScreeningQuestionCategoryController::class, [

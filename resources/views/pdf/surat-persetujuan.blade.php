@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Surat Persetujuan Vaksinasi - {{ $screening->pasien->nama }}</title>
     <style>
         @page {
@@ -129,22 +129,20 @@
             margin-bottom: 20px;
         }
         .info-box {
-            border: 2px solid #2563eb;
-            padding: 10px;
-            margin: 10px 0;
-            background-color: #f0f9ff;
-            border-radius: 4px;
+            border: 1px solid #333;
+            padding: 12px;
+            margin: 12px 0;
+            background-color: #fff;
         }
         .info-title {
             font-weight: bold;
             margin-bottom: 8px;
             font-size: 11pt;
-            color: #1e40af;
-            border-bottom: 2px solid #3b82f6;
+            color: #000;
+            border-bottom: 1px solid #000;
             padding-bottom: 4px;
-            background-color: #dbeafe;
-            padding: 5px 10px;
-            margin: -10px -10px 8px -10px;
+            margin: -12px -12px 8px -12px;
+            padding: 6px 12px;
         }
         .info-item {
             margin: 5px 0;
@@ -179,6 +177,23 @@
             width: 40px;
             text-align: center;
         }
+        .checkbox-mark {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            position: relative;
+        }
+        .checkbox-mark.checked::before {
+            content: '';
+            position: absolute;
+            left: 1px;
+            top: -2px;
+            width: 8px;
+            height: 12px;
+            border: solid #000;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
         .screening-table .keterangan-col {
             width: 120px;
         }
@@ -199,68 +214,114 @@
             <h2>VAKSINASI</h2>
         </div>
 
-        <div class="info-box">
-            <div class="info-title">DATA PASIEN</div>
-            <div class="info-item">Nama: <strong>{{ $screening->pasien->nama }}</strong></div>
-            <div class="info-item">Tempat, Tanggal Lahir: {{ $screening->pasien->tempat_lahir ?? '-' }}, {{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->format('d-m-Y') }} ({{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->age }} tahun)</div>
-            <div class="info-item">Jenis Kelamin: {{ $screening->pasien->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</div>
-            <div class="info-item">Alamat: {{ $screening->pasien->alamat }}</div>
-            <div class="info-item">No. Telp: {{ $screening->pasien->no_telp }}</div>
+        <div class="form-section" style="margin-top: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">DATA PASIEN</div>
+            <div class="form-row">
+                <span class="form-label">Nama</span>
+                <span>: <span class="form-value"><strong>{{ $screening->pasien->nama }}</strong></span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Tempat, Tanggal Lahir</span>
+                <span>: <span class="form-value">{{ $screening->pasien->tempat_lahir ?? '-' }}, {{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->locale('id')->isoFormat('DD MMMM YYYY') }} ({{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->age }} tahun)</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Jenis Kelamin</span>
+                <span>: <span class="form-value">{{ $screening->pasien->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Alamat</span>
+                <span>: <span class="form-value">{{ $screening->pasien->alamat }}</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">No. Telp</span>
+                <span>: <span class="form-value">{{ $screening->pasien->no_telp }}</span></span>
+            </div>
             @if($screening->pasien->nomor_paspor)
-            <div class="info-item">No. Paspor: {{ $screening->pasien->nomor_paspor }}</div>
+            <div class="form-row">
+                <span class="form-label">No. Paspor</span>
+                <span>: <span class="form-value">{{ $screening->pasien->nomor_paspor }}</span></span>
+            </div>
             @endif
         </div>
 
-        <div class="info-box" style="border-color: {{ $screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan ? '#f59e0b' : '#10b981' }}; background-color: {{ $screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan ? '#fffbeb' : '#f0fdf4' }};">
-            <div class="info-title" style="color: {{ $screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan ? '#d97706' : '#059669' }}; border-bottom-color: {{ $screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan ? '#fbbf24' : '#34d399' }}; background-color: {{ $screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan ? '#fef3c7' : '#d1fae5' }};">
-                JENIS VAKSINASI
-                @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
-                <span style="float: right; font-size: 9pt; font-weight: normal;">✈️ Perjalanan</span>
-                @else
-                <span style="float: right; font-size: 9pt; font-weight: normal;">💉 Umum</span>
-                @endif
-            </div>
+        <div class="form-section" style="margin-top: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">JENIS VAKSINASI</div>
             @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
-            <div class="info-item">Jenis: <strong>{{ $screening->vaccineRequest->jenis_vaksin ?? '-' }}</strong></div>
-            <div class="info-item">Kategori: <strong>Vaksinasi Perjalanan Luar Negeri</strong></div>
-            <div class="info-item">Negara Tujuan: {{ $screening->vaccineRequest->negara_tujuan ?? '-' }}</div>
-            <div class="info-item">Tanggal Berangkat: {{ $screening->vaccineRequest->tanggal_berangkat ? \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->format('d-m-Y') : '-' }}</div>
+            <div class="form-row">
+                <span class="form-label">Jenis</span>
+                <span>: <span class="form-value"><strong>{{ $screening->vaccineRequest->jenis_vaksin ?? '-' }}</strong></span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Kategori</span>
+                <span>: <span class="form-value"><strong>Vaksinasi Perjalanan Luar Negeri</strong></span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Negara Tujuan</span>
+                <span>: <span class="form-value">{{ $screening->vaccineRequest->negara_tujuan ?? '-' }}</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Tanggal Berangkat</span>
+                <span>: <span class="form-value">{{ $screening->vaccineRequest->tanggal_berangkat ? \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->locale('id')->isoFormat('DD MMMM YYYY') : '-' }}</span></span>
+            </div>
             @if($screening->vaccineRequest->nama_travel)
-            <div class="info-item">Travel: {{ $screening->vaccineRequest->nama_travel }}</div>
+            <div class="form-row">
+                <span class="form-label">Travel</span>
+                <span>: <span class="form-value">{{ $screening->vaccineRequest->nama_travel }}</span></span>
+            </div>
             @endif
             @else
-            <div class="info-item">Jenis: <strong>{{ $screening->penilaian->jenis_vaksin ?? $screening->vaccineRequest->jenis_vaksin ?? '-' }}</strong></div>
-            <div class="info-item">Kategori: <strong>Vaksinasi Umum</strong></div>
+            <div class="form-row">
+                <span class="form-label">Jenis</span>
+                <span>: <span class="form-value"><strong>{{ $screening->penilaian->jenis_vaksin ?? $screening->vaccineRequest->jenis_vaksin ?? '-' }}</strong></span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Kategori</span>
+                <span>: <span class="form-value"><strong>Vaksinasi Umum</strong></span></span>
+            </div>
             @endif
         </div>
 
         @if($screening->penilaian)
-        <div class="info-box" style="border-color: #06b6d4; background-color: #ecfeff;">
-            <div class="info-title" style="color: #0891b2; border-bottom-color: #22d3ee; background-color: #cffafe;">HASIL PEMERIKSAAN FISIK</div>
-            <div class="info-item">📊 Tekanan Darah: <strong>{{ $screening->penilaian->td ?? '-' }}</strong> mmHg</div>
-            <div class="info-item">💓 Nadi: <strong>{{ $screening->penilaian->nadi ?? '-' }}</strong> x/menit</div>
-            <div class="info-item">🌡️ Suhu: <strong>{{ $screening->penilaian->suhu ?? '-' }}</strong> °C</div>
-            <div class="info-item">📅 Tanggal Vaksinasi: <strong>{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('d-m-Y') }}</strong></div>
-        </div>
-
-        @if($screening->penilaian->catatan)
-        <div class="info-box" style="border-color: #7c3aed; background-color: #faf5ff;">
-            <div class="info-title" style="color: #6b21a8; border-bottom-color: #a78bfa; background-color: #ede9fe;">CATATAN DOKTER</div>
-            <div style="padding: 5px 10px; text-align: justify;">{{ $screening->penilaian->catatan }}</div>
-        </div>
-        @endif
-
-        <div class="info-box" style="border-color: {{ $screening->hasil_screening === 'aman' ? '#16a34a' : '#dc2626' }}; background-color: {{ $screening->hasil_screening === 'aman' ? '#f0fdf4' : '#fef2f2' }};">
-            <div class="info-title" style="color: {{ $screening->hasil_screening === 'aman' ? '#15803d' : '#b91c1c' }}; border-bottom-color: {{ $screening->hasil_screening === 'aman' ? '#4ade80' : '#f87171' }}; background-color: {{ $screening->hasil_screening === 'aman' ? '#dcfce7' : '#fee2e2' }};">KESIMPULAN</div>
-            <div style="padding: 5px 10px; font-size: 11pt;">
-                Pasien <strong style="font-size: 12pt; color: {{ $screening->hasil_screening === 'aman' ? '#15803d' : '#b91c1c' }};">{{ strtoupper($screening->hasil_screening) }}</strong> untuk dilakukan vaksinasi.
+        <div class="form-section" style="margin-top: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">HASIL PEMERIKSAAN FISIK</div>
+            <div class="form-row">
+                <span class="form-label">Tekanan Darah</span>
+                <span>: <span class="form-value"><strong>{{ $screening->penilaian->td ?? '-' }}</strong> mmHg</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Nadi</span>
+                <span>: <span class="form-value"><strong>{{ $screening->penilaian->nadi ?? '-' }}</strong> x/menit</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Suhu</span>
+                <span>: <span class="form-value"><strong>{{ $screening->penilaian->suhu ?? '-' }}</strong> °C</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Tanggal Vaksinasi</span>
+                <span>: <span class="form-value"><strong>{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('DD MMMM YYYY') }}</strong></span></span>
             </div>
         </div>
 
-        <div style="margin-top: 15px; padding: 10px; background-color: #f1f5f9; border: 1px solid #64748b; border-radius: 4px;">
+        @if($screening->penilaian->catatan)
+        <div class="form-section" style="margin-top: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">CATATAN DOKTER</div>
+            <div style="padding: 5px 0; text-align: justify; line-height: 1.5;">{{ $screening->penilaian->catatan }}</div>
+        </div>
+        @endif
+
+        <div class="form-section" style="margin-top: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">KESIMPULAN</div>
+            <div style="padding: 5px 0; min-height: 80px; border-bottom: 1px solid #ccc; margin-top: 10px;">
+                <!-- Ruang kosong untuk menulis kesimpulan -->
+            </div>
+        </div>
+
+        <div style="margin-top: 30px;">
             <p style="margin: 2px 0; text-align: right; font-size: 10pt;">Dokter Pemeriksa,</p>
-            <div style="margin-top: 50px; border-top: 2px solid #334155; width: 200px; display: inline-block; padding-top: 5px; float: right;">
-                <p style="margin: 0; text-align: center;"><strong>{{ $screening->dokter->nama ?? 'Dr. [Nama Dokter]' }}</strong></p>
+            <div style="margin-top: 70px; float: right;">
+                <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px; text-align: center;">
+                    <p style="margin: 0;"><strong>{{ $screening->dokter->nama ?? 'Dr. [Nama Dokter]' }}</strong></p>
+                </div>
             </div>
             <div style="clear: both;"></div>
         </div>
@@ -299,53 +360,68 @@
                 <th>Pertanyaan</th>
                 <th class="checkbox-col">Ya</th>
                 <th class="checkbox-col">Tidak</th>
-                <th class="checkbox-col">Tahu</th>
                 <th class="keterangan-col">Keterangan</th>
             </tr>
         </thead>
         <tbody>
-            @if($screening->answers && $screening->answers->count() > 0)
-                @foreach($screening->answers as $index => $answer)
+            @php
+                // Get all active questions
+                $allQuestions = \App\Models\ScreeningQuestion::where('aktif', true)->orderBy('urutan')->get();
+                // Map answers by question_id for easy lookup
+                $answersMap = $screening->answers->keyBy('question_id');
+            @endphp
+            
+            @forelse($allQuestions as $index => $question)
+                @php
+                    // Get answer for this question if exists
+                    $answer = $answersMap->get($question->id);
+                    
+                    if ($answer && $answer->jawaban) {
+                        // Normalize jawaban - case insensitive
+                        $jawabanNormalized = strtolower(trim($answer->jawaban));
+                        $isYa = in_array($jawabanNormalized, ['ya', 'y', 'yes', '1']);
+                        $isTidak = in_array($jawabanNormalized, ['tidak', 'no', 'n', '0']);
+                    } else {
+                        $isYa = false;
+                        $isTidak = false;
+                    }
+                    
+                    $keterangan = $answer && $answer->keterangan ? trim($answer->keterangan) : '';
+                @endphp
                 <tr>
                     <td class="no-col">{{ $index + 1 }}</td>
-                    <td>{{ $answer->question->pertanyaan ?? '-' }}</td>
+                    <td>{{ $question->pertanyaan }}</td>
                     <td class="checkbox-col">
-                        @if(strtolower($answer->jawaban) === 'ya')
-                        ✓
+                        @if($isYa)
+                        <span class="checkbox-mark checked"></span>
                         @endif
                     </td>
                     <td class="checkbox-col">
-                        @if(strtolower($answer->jawaban) === 'tidak')
-                        ✓
+                        @if($isTidak)
+                        <span class="checkbox-mark checked"></span>
                         @endif
                     </td>
-                    <td class="checkbox-col"></td>
-                    <td>{{ $answer->keterangan ?? '-' }}</td>
+                    <td>{{ $keterangan }}</td>
                 </tr>
-                @endforeach
-            @else
+            @empty
                 <tr>
-                    <td colspan="6" style="text-align: center; padding: 20px; font-style: italic;">
-                        Tidak ada data screening
+                    <td colspan="5" style="text-align: center; padding: 20px; font-style: italic;">
+                        Tidak ada pertanyaan screening
                     </td>
                 </tr>
-            @endif
+            @endforelse
         </tbody>
     </table>
 
     <div style="margin-top: 15px; border: 1px solid #333; padding: 10px;">
-        <p style="margin: 3px 0;"><strong>Hasil Screening:</strong> {{ strtoupper($screening->hasil_screening) }}</p>
-        @if($screening->catatan_screening)
-        <p style="margin: 3px 0;"><strong>Catatan Screening:</strong> {{ $screening->catatan_screening }}</p>
-        @endif
+        <p style="margin: 3px 0;"><strong>Hasil Screening:</strong></p>
     </div>
 
     <div style="margin-top: 12px; padding: 8px; background-color: #f9f9f9; border: 1px dashed #666;">
-        <p style="margin: 2px 0; font-size: 9pt;"><strong>Diperiksa oleh Admin:</strong> {{ Auth::user()->nama ?? 'Admin Rumah Sakit' }}</p>
-        <p style="margin: 2px 0; font-size: 9pt;"><strong>Tanggal Pemeriksaan:</strong> {{ \Carbon\Carbon::parse($screening->created_at)->format('d-m-Y H:i') }} WIB</p>
+        <p style="margin: 2px 0; font-size: 9pt;"><strong>Tanggal Pemeriksaan:</strong> {{ \Carbon\Carbon::parse($screening->created_at)->locale('id')->isoFormat('DD MMMM YYYY HH:mm') }} WIB</p>
         @if($screening->dokter)
         <p style="margin: 2px 0; font-size: 9pt;"><strong>Diverifikasi oleh Dokter:</strong> {{ $screening->dokter->nama }}</p>
-        <p style="margin: 2px 0; font-size: 9pt;"><strong>Tanggal Verifikasi:</strong> {{ \Carbon\Carbon::parse($screening->updated_at)->format('d-m-Y H:i') }} WIB</p>
+        <p style="margin: 2px 0; font-size: 9pt;"><strong>Tanggal Verifikasi:</strong> {{ \Carbon\Carbon::parse($screening->updated_at)->locale('id')->isoFormat('DD MMMM YYYY HH:mm') }} WIB</p>
         @endif
     </div>
 
@@ -405,7 +481,7 @@
         </div>
         <div class="form-row">
             <span class="form-label">Tanggal Vaksinasi</span>
-            <span>: <span class="form-value"><strong>{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->isoFormat('dddd, D MMMM Y') }}</strong></span></span>
+            <span>: <span class="form-value"><strong>{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('dddd, D MMMM Y') }}</strong></span></span>
         </div>
     </div>
 
@@ -418,7 +494,7 @@
     </div>
 
     <div style="text-align: right; margin: 8px 30px 8px 0;">
-        <p style="margin: 3px 0;">..........................................................., {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->isoFormat('D MMMM Y') }}</p>
+        <p style="margin: 3px 0;">..........................................................., {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('D MMMM Y') }}</p>
         <p style="margin: 3px 0; font-size: 8pt; font-style: italic;">(Tempat, Tanggal)</p>
     </div>
 

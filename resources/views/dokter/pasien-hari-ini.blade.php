@@ -94,7 +94,7 @@
                     <tbody class="divide-y divide-gray-200">
                         @foreach($screenings as $index => $screening)
                         <tr class="hover:bg-purple-50 transition bg-gradient-to-r from-purple-50/30 to-transparent">
-                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
+                            <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ ($screenings->currentPage() - 1) * $screenings->perPage() + $index + 1 }}</td>
                             <td class="px-6 py-4">
                                 <div class="font-semibold text-gray-900">{{ $screening->pasien->nama }}</div>
                                 <div class="text-xs text-gray-500">{{ $screening->pasien->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}, {{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->age }} tahun</div>
@@ -143,6 +143,13 @@
                         @endforeach
                     </tbody>
                 </table>
+                
+                <!-- Pagination -->
+                @if($screenings->hasPages())
+                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
+                    {{ $screenings->links() }}
+                </div>
+                @endif
             </div>
         </div>
         @else

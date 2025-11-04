@@ -58,9 +58,13 @@ class PasienSeeder extends Seeder
             $jenisKelamin = $faker->randomElement(['L', 'P']);
             $tempatLahir = $faker->randomElement($kota);
             
+            // Generate SIM RS dengan format: SIM + timestamp unik
+            $simRS = 'SIM' . now()->subDays($i)->format('ymdHis');
+            
             Pasien::create([
+                'sim_rs' => $simRS,
                 'nama' => $jenisKelamin === 'L' ? $faker->name('male') : $faker->name('female'),
-                'nomor_paspor' => null, // Akan di-set nanti berdasarkan jenis vaksin
+                'nomor_paspor' => $faker->boolean(30) ? $faker->bothify('?#######') : null, // 30% punya paspor
                 'tempat_lahir' => $tempatLahir,
                 'tanggal_lahir' => $faker->date('Y-m-d', '-25 years'), // Umur minimal 25 tahun
                 'jenis_kelamin' => $jenisKelamin,

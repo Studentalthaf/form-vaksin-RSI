@@ -34,20 +34,20 @@ class PermohonanPasienController extends Controller
             });
         }
 
-        // Filter berdasarkan tanggal
-        if ($request->filled('tanggal_dari')) {
-            $queryPending->whereDate('created_at', '>=', $request->tanggal_dari);
-            $queryDisetujui->whereDate('created_at', '>=', $request->tanggal_dari);
-        }
-
-        if ($request->filled('tanggal_sampai')) {
-            $queryPending->whereDate('created_at', '<=', $request->tanggal_sampai);
-            $queryDisetujui->whereDate('created_at', '<=', $request->tanggal_sampai);
+        // Filter berdasarkan SIM RS
+        if ($request->filled('sim_rs')) {
+            $simrs = $request->sim_rs;
+            $queryPending->whereHas('pasien', function($q) use ($simrs) {
+                $q->where('sim_rs', 'like', '%' . $simrs . '%');
+            });
+            $queryDisetujui->whereHas('pasien', function($q) use ($simrs) {
+                $q->where('sim_rs', 'like', '%' . $simrs . '%');
+            });
         }
 
         // Ambil data berdasarkan tab aktif - DATA TERBARU DI ATAS
-        $permohonanPending = $queryPending->orderBy('created_at', 'desc')->paginate(15, ['*'], 'pending_page');
-        $permohonanDisetujui = $queryDisetujui->orderBy('created_at', 'desc')->paginate(15, ['*'], 'disetujui_page');
+        $permohonanPending = $queryPending->orderBy('created_at', 'desc')->paginate(10, ['*'], 'pending_page');
+        $permohonanDisetujui = $queryDisetujui->orderBy('created_at', 'desc')->paginate(10, ['*'], 'disetujui_page');
 
         // Statistik untuk card
         $hariIni = VaccineRequest::whereDate('created_at', today())->count();

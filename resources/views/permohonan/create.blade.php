@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Permohonan Vaksinasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-white to-green-50 min-h-screen">
     <div class="container mx-auto px-4 py-8">
@@ -44,18 +45,56 @@
             @endif
 
             <!-- Form -->
-            <form method="POST" action="{{ route('permohonan.store') }}" class="p-8">
+            <form method="POST" action="{{ route('permohonan.store') }}" class="p-8" id="formPermohonan">
                 @csrf
 
-                <!-- Section: Data Pribadi -->
+                <!-- Section: SIM RS Check -->
                 <div class="mb-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">Data Pribadi</h3>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-blue-500">Data Pasien</h3>
+                    
+                    <!-- Pertanyaan SIM RS -->
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
+                        <label class="block text-sm font-semibold text-gray-800 mb-3">
+                            Apakah Anda sudah memiliki Nomor SIM RS (Sistem Informasi Manajemen Rumah Sakit)? *
+                        </label>
+                        <div class="flex gap-4">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="has_sim_rs" value="1" class="w-4 h-4 text-blue-600" onclick="toggleSimRSInput(true)">
+                                <span class="ml-2 text-gray-700 font-medium">Ya, saya punya</span>
+                            </label>
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="radio" name="has_sim_rs" value="0" class="w-4 h-4 text-blue-600" onclick="toggleSimRSInput(false)" checked>
+                                <span class="ml-2 text-gray-700 font-medium">Belum punya</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Input SIM RS (Hidden by default) -->
+                    <div id="simRSContainer" class="hidden mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor SIM RS *</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="simRSInput" name="sim_rs" 
+                                class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                placeholder="Contoh: SIM12345678">
+                            <button type="button" onclick="checkSimRS()" 
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                                Cek Data
+                            </button>
+                        </div>
+                        <p class="text-sm text-gray-500 mt-1">Masukkan nomor SIM RS untuk mengisi data otomatis</p>
+                        <div id="simRSStatus" class="mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Section: Data Pribadi (Manual Input) -->
+                <div id="manualDataContainer" class="mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-green-500">Data Pribadi</h3>
                     
                     <div class="grid md:grid-cols-2 gap-6">
                         <!-- Nama Lengkap -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Lengkap *</label>
-                            <input type="text" name="nama" value="{{ old('nama') }}" 
+                            <input type="text" name="nama" id="nama" value="{{ old('nama') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                                 placeholder="Masukkan nama lengkap sesuai KTP/Paspor" required>
                         </div>
@@ -63,7 +102,7 @@
                         <!-- Nomor Telepon -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Telepon *</label>
-                            <input type="tel" name="no_telp" value="{{ old('no_telp') }}" 
+                            <input type="tel" name="no_telp" id="no_telp" value="{{ old('no_telp') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                                 placeholder="Contoh: 08123456789" required>
                         </div>
@@ -71,7 +110,7 @@
                         <!-- Tempat Lahir -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Tempat Lahir</label>
-                            <input type="text" name="tempat_lahir" value="{{ old('tempat_lahir') }}" 
+                            <input type="text" name="tempat_lahir" id="tempat_lahir" value="{{ old('tempat_lahir') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                                 placeholder="Kota kelahiran">
                         </div>
@@ -79,14 +118,14 @@
                         <!-- Tanggal Lahir -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Lahir</label>
-                            <input type="date" name="tanggal_lahir" value="{{ old('tanggal_lahir') }}" 
+                            <input type="date" name="tanggal_lahir" id="tanggal_lahir" value="{{ old('tanggal_lahir') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
 
                         <!-- Jenis Kelamin -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Kelamin</label>
-                            <select name="jenis_kelamin" 
+                            <select name="jenis_kelamin" id="jenis_kelamin" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">-- Pilih --</option>
                                 <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki</option>
@@ -97,185 +136,264 @@
                         <!-- Pekerjaan -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Pekerjaan</label>
-                            <input type="text" name="pekerjaan" value="{{ old('pekerjaan') }}" 
+                            <input type="text" name="pekerjaan" id="pekerjaan" value="{{ old('pekerjaan') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                placeholder="Contoh: Karyawan Swasta">
+                                placeholder="Contoh: Pegawai Swasta">
                         </div>
 
-                        <!-- Alamat -->
+                        <!-- Alamat Lengkap -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Lengkap</label>
-                            <textarea name="alamat" rows="3" 
+                            <textarea name="alamat" id="alamat" rows="3" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
                                 placeholder="Masukkan alamat lengkap">{{ old('alamat') }}</textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- Section: Jenis Vaksin (SELALU MUNCUL) -->
+                <!-- Section: Jenis Vaksin -->
                 <div class="mb-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-teal-500">Jenis Vaksin yang Diminta *</h3>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-purple-500">Jenis Vaksinasi</h3>
                     
-                    <div class="grid md:grid-cols-1 gap-6">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Vaksin *</label>
-                            <input type="text" name="jenis_vaksin" value="{{ old('jenis_vaksin') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent" 
-                                placeholder="Contoh: Meningitis, Yellow Fever, Hepatitis B, dll" required>
-                            <p class="text-xs text-gray-500 mt-1">💡 Wajib diisi untuk semua jenis vaksinasi</p>
-                        </div>
+                    <!-- Jenis Vaksin -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Jenis Vaksin yang Dibutuhkan *</label>
+                        <select name="jenis_vaksin" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">-- Pilih Jenis Vaksin --</option>
+                            <option value="Yellow Fever">Yellow Fever (Demam Kuning)</option>
+                            <option value="Meningitis">Meningitis (Meningokokus)</option>
+                            <option value="Hepatitis A">Hepatitis A</option>
+                            <option value="Hepatitis B">Hepatitis B</option>
+                            <option value="Typhoid">Typhoid (Tifus)</option>
+                            <option value="Rabies">Rabies</option>
+                            <option value="Japanese Encephalitis">Japanese Encephalitis</option>
+                            <option value="Influenza">Influenza</option>
+                            <option value="MMR">MMR (Campak, Gondongan, Rubella)</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
                     </div>
-                </div>
 
-                <!-- Section: Jenis Permohonan Vaksin -->
-                <div class="mb-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-purple-500">Jenis Permohonan Vaksin</h3>
-                    
-                    <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-6">
-                        <label class="flex items-start cursor-pointer group">
-                            <input type="checkbox" name="is_perjalanan" id="is_perjalanan" value="1" 
-                                {{ old('is_perjalanan') ? 'checked' : '' }}
-                                class="mt-1 w-5 h-5 text-purple-600 border-gray-300 rounded focus:ring-2 focus:ring-purple-500">
-                            <div class="ml-3">
-                                <span class="text-base font-bold text-purple-900 group-hover:text-purple-700">
-                                    ✈️ Vaksin untuk Perjalanan ke Luar Negeri
-                                </span>
-                                <p class="text-sm text-purple-700 mt-1">
-                                    Centang jika Anda memerlukan vaksin untuk keperluan perjalanan internasional (umroh, haji, wisata, dll)
-                                </p>
-                            </div>
+                    <!-- Checkbox Perjalanan -->
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" name="is_perjalanan" id="isPerjalanan" value="1"
+                                class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500" 
+                                onchange="togglePerjalananFields()">
+                            <span class="ml-2 text-gray-700 font-medium">Vaksin untuk Perjalanan Luar Negeri</span>
                         </label>
+                        <p class="text-sm text-gray-600 ml-7 mt-1">Centang jika vaksin diperlukan untuk keperluan perjalanan internasional</p>
                     </div>
                 </div>
 
-                <!-- Section: Data Perjalanan & Vaksinasi (Conditional) -->
-                <div class="mb-8" id="section-perjalanan" style="display: none;">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-green-500">Data Perjalanan Luar Negeri</h3>
+                <!-- Section: Data Perjalanan (Hidden by default) -->
+                <div id="perjalananContainer" class="mb-8 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-yellow-500">Data Perjalanan</h3>
                     
                     <div class="grid md:grid-cols-2 gap-6">
-                        <!-- Nomor Paspor (Wajib untuk Perjalanan) -->
+                        <!-- Nomor Paspor -->
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                                Nomor Paspor *
-                                <span class="text-xs text-red-600 font-normal">(Wajib untuk perjalanan luar negeri)</span>
-                            </label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Paspor *</label>
                             <input type="text" name="nomor_paspor" id="nomor_paspor" value="{{ old('nomor_paspor') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
                                 placeholder="Contoh: A1234567">
                         </div>
 
                         <!-- Negara Tujuan -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Negara Tujuan</label>
-                            <input type="text" name="negara_tujuan" value="{{ old('negara_tujuan') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Negara Tujuan *</label>
+                            <input type="text" name="negara_tujuan" id="negara_tujuan" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
                                 placeholder="Contoh: Arab Saudi">
                         </div>
 
                         <!-- Tanggal Berangkat -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Berangkat</label>
-                            <input type="date" name="tanggal_berangkat" value="{{ old('tanggal_berangkat') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Keberangkatan *</label>
+                            <input type="date" name="tanggal_berangkat" id="tanggal_berangkat" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
                         </div>
 
                         <!-- Nama Travel -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Travel/Agen (jika ada)</label>
-                            <input type="text" name="nama_travel" value="{{ old('nama_travel') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                                placeholder="Nama travel penyelenggara">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Biro Perjalanan</label>
+                            <input type="text" name="nama_travel" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
+                                placeholder="Contoh: PT. Travel Sejahtera">
                         </div>
 
                         <!-- Alamat Travel -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Travel (jika ada)</label>
-                            <input type="text" name="alamat_travel" value="{{ old('alamat_travel') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" 
-                                placeholder="Alamat kantor travel">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Info Box -->
-                <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                    <div class="flex">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
-                            </svg>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm text-blue-700">
-                                Setelah mengirim permohonan, kami akan menghubungi Anda melalui nomor telepon yang didaftarkan untuk konfirmasi jadwal vaksinasi.
-                            </p>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Biro Perjalanan</label>
+                            <input type="text" name="alamat_travel" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
+                                placeholder="Alamat lengkap travel">
                         </div>
                     </div>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-end space-x-4">
-                    <a href="{{ url('/') }}" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition">
-                        Batal
-                    </a>
-                    <button type="submit" class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg transition">
+                <div class="flex justify-end gap-4 pt-6 border-t">
+                    <button type="submit" 
+                        class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-green-700 transition duration-200 shadow-lg">
                         Kirim Permohonan
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Footer Info -->
-        <div class="text-center mt-8 text-gray-600 text-sm">
-            <p>Untuk informasi lebih lanjut, silakan hubungi kami di <strong>0821-xxxx-xxxx</strong></p>
+        <!-- Info Footer -->
+        <div class="max-w-4xl mx-auto mt-6 text-center text-gray-600 text-sm">
+            <p>Data Anda akan dijaga kerahasiaannya dan hanya digunakan untuk keperluan vaksinasi</p>
         </div>
     </div>
 
     <script>
-        // Toggle section perjalanan based on checkbox
-        document.getElementById('is_perjalanan').addEventListener('change', function() {
-            const sectionPerjalanan = document.getElementById('section-perjalanan');
-            const inputs = sectionPerjalanan.querySelectorAll('input, textarea, select');
-            const nomorPaspor = document.getElementById('nomor_paspor');
+        // Toggle SIM RS input visibility
+        function toggleSimRSInput(show) {
+            const container = document.getElementById('simRSContainer');
+            const manualContainer = document.getElementById('manualDataContainer');
             
-            if (this.checked) {
-                sectionPerjalanan.style.display = 'block';
-                // Set nomor paspor menjadi required
-                if (nomorPaspor) {
-                    nomorPaspor.required = true;
-                }
-                // Smooth scroll to section
-                setTimeout(() => {
-                    sectionPerjalanan.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 100);
+            if (show) {
+                container.classList.remove('hidden');
+                // Hide manual data karena akan auto-fill via AJAX
+                manualContainer.classList.add('hidden');
+                clearForm();
             } else {
-                sectionPerjalanan.style.display = 'none';
-                // Remove required dari nomor paspor
-                if (nomorPaspor) {
-                    nomorPaspor.required = false;
-                }
-                // Clear all inputs when hidden
-                inputs.forEach(input => {
-                    if (input.type === 'checkbox' || input.type === 'radio') {
-                        input.checked = false;
-                    } else {
-                        input.value = '';
-                    }
-                });
+                container.classList.add('hidden');
+                // Show manual data untuk input manual
+                manualContainer.classList.remove('hidden');
+                clearForm();
+                // Enable semua field untuk pasien baru
+                disablePersonalFields(false);
+                // Set required ke true untuk pasien baru
+                toggleRequiredFields(true);
             }
-        });
+        }
 
-        // Check on page load if old value exists
-        window.addEventListener('DOMContentLoaded', function() {
-            const checkbox = document.getElementById('is_perjalanan');
-            const nomorPaspor = document.getElementById('nomor_paspor');
+        // Check SIM RS via AJAX
+        function checkSimRS() {
+            const simRS = document.getElementById('simRSInput').value.trim();
+            const statusDiv = document.getElementById('simRSStatus');
+            const manualContainer = document.getElementById('manualDataContainer');
+            
+            if (!simRS) {
+                statusDiv.innerHTML = '<p class="text-sm text-red-600">⚠️ Masukkan nomor SIM RS terlebih dahulu</p>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<p class="text-sm text-blue-600">🔍 Mencari data...</p>';
+
+            fetch(`/api/check-sim-rs/${simRS}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.found) {
+                        // Show container untuk display data
+                        manualContainer.classList.remove('hidden');
+                        
+                        // Fill form with existing data
+                        document.getElementById('nama').value = data.data.nama || '';
+                        document.getElementById('no_telp').value = data.data.no_telp || '';
+                        document.getElementById('tempat_lahir').value = data.data.tempat_lahir || '';
+                        document.getElementById('tanggal_lahir').value = data.data.tanggal_lahir || '';
+                        document.getElementById('jenis_kelamin').value = data.data.jenis_kelamin || '';
+                        document.getElementById('pekerjaan').value = data.data.pekerjaan || '';
+                        document.getElementById('alamat').value = data.data.alamat || '';
+                        document.getElementById('nomor_paspor').value = data.data.nomor_paspor || '';
+
+                        // Disable all personal data fields (tidak bisa edit)
+                        disablePersonalFields(true);
+                        
+                        // Remove required karena data sudah ada
+                        toggleRequiredFields(false);
+                        
+                        statusDiv.innerHTML = '<p class="text-sm text-green-600 font-medium">✅ Data pasien ditemukan! Anda hanya perlu mengisi jenis vaksin yang dibutuhkan.</p>';
+                    } else {
+                        statusDiv.innerHTML = '<p class="text-sm text-red-600">❌ Nomor SIM RS tidak ditemukan dalam database. Silakan pilih "Belum punya" dan isi data manual.</p>';
+                        manualContainer.classList.add('hidden');
+                    }
+                })
+                .catch(error => {
+                    statusDiv.innerHTML = '<p class="text-sm text-red-600">⚠️ Terjadi kesalahan koneksi. Silakan coba lagi.</p>';
+                    console.error('Error:', error);
+                });
+        }
+
+        // Disable/enable personal data fields
+        function disablePersonalFields(disable) {
+            const fields = ['nama', 'no_telp', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'pekerjaan', 'alamat'];
+            fields.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.disabled = disable;
+                    if (disable) {
+                        field.classList.add('bg-gray-100', 'cursor-not-allowed');
+                    } else {
+                        field.classList.remove('bg-gray-100', 'cursor-not-allowed');
+                    }
+                }
+            });
+        }
+
+        // Toggle required attribute untuk personal data fields
+        function toggleRequiredFields(required) {
+            const requiredFields = ['nama', 'no_telp'];
+            requiredFields.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.required = required;
+                }
+            });
+        }
+
+        // Clear form
+        function clearForm() {
+            const simRSInput = document.getElementById('simRSInput');
+            if (simRSInput) simRSInput.value = '';
+            
+            document.getElementById('simRSStatus').innerHTML = '';
+            
+            // Clear all personal data fields
+            const fields = ['nama', 'no_telp', 'tempat_lahir', 'tanggal_lahir', 'jenis_kelamin', 'pekerjaan', 'alamat', 'nomor_paspor'];
+            fields.forEach(id => {
+                const field = document.getElementById(id);
+                if (field) {
+                    field.value = '';
+                }
+            });
+            
+            disablePersonalFields(false);
+        }
+
+        // Toggle perjalanan fields
+        function togglePerjalananFields() {
+            const checkbox = document.getElementById('isPerjalanan');
+            const container = document.getElementById('perjalananContainer');
+            const requiredFields = ['negara_tujuan', 'tanggal_berangkat'];
             
             if (checkbox.checked) {
-                document.getElementById('section-perjalanan').style.display = 'block';
-                if (nomorPaspor) {
-                    nomorPaspor.required = true;
-                }
+                container.classList.remove('hidden');
+                // Set required untuk field perjalanan dan paspor
+                requiredFields.forEach(id => {
+                    const field = document.getElementById(id);
+                    if (field) field.required = true;
+                });
+                document.getElementById('nomor_paspor').required = true;
+            } else {
+                container.classList.add('hidden');
+                // Remove required dari field perjalanan dan paspor
+                requiredFields.forEach(id => {
+                    const field = document.getElementById(id);
+                    if (field) field.required = false;
+                });
+                document.getElementById('nomor_paspor').required = false;
             }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set default: belum punya SIM RS
+            toggleSimRSInput(false);
         });
     </script>
 </body>

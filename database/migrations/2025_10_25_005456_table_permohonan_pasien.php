@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('pasiens', function (Blueprint $table) {
             $table->id();
+            $table->string('sim_rs', 20)->unique()->nullable()->comment('Nomor SIM RS Pasien');
             $table->string('nama', 100);
             $table->string('nomor_paspor', 50)->nullable();
             $table->string('tempat_lahir', 100)->nullable();

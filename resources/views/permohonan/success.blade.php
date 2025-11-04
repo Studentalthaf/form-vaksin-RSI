@@ -30,6 +30,21 @@
                     </div>
                     @endif
 
+                    @if(session('sim_rs'))
+                    <div class="mb-6 bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+                        <h3 class="font-bold text-blue-900 text-lg mb-2">🎉 Nomor SIM RS Anda:</h3>
+                        <div class="bg-white p-4 rounded border-2 border-blue-300 text-center">
+                            <p class="text-3xl font-bold text-blue-600 tracking-wide">{{ session('sim_rs') }}</p>
+                        </div>
+                        <p class="text-sm text-blue-700 mt-3">
+                            <strong>PENTING:</strong> {{ session('message') }}
+                        </p>
+                        <p class="text-xs text-blue-600 mt-2">
+                            💡 Dengan nomor SIM RS ini, Anda tidak perlu mengisi data pribadi lagi untuk permohonan vaksin berikutnya.
+                        </p>
+                    </div>
+                    @endif
+
                     <div class="space-y-4 text-gray-700">
                         <div class="flex items-start">
                             <svg class="w-6 h-6 text-blue-500 mt-1 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

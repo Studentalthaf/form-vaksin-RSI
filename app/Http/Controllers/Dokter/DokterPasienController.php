@@ -121,12 +121,21 @@ class DokterPasienController extends Controller
         // Generate PDF
         $pdf = Pdf::loadView('pdf.surat-persetujuan', compact('screening'));
         
-        // Set paper size dan orientation
+        // Set paper size dan orientation  
         $pdf->setPaper('a4', 'portrait');
         
-        // Download PDF dengan nama file
-        $filename = 'Surat_Vaksinasi_' . str_replace(' ', '_', $screening->pasien->nama) . '_' . date('Ymd') . '.pdf';
+        // Download PDF dengan nama file + timestamp untuk avoid cache
+        $timestamp = date('YmdHis');
+        $filename = 'Surat_Vaksinasi_' . str_replace(' ', '_', $screening->pasien->nama) . '_' . $timestamp . '.pdf';
         
-        return $pdf->download($filename);
+        // Return with no-cache headers
+        return response()->streamDownload(function() use ($pdf) {
+            echo $pdf->output();
+        }, $filename, [
+            'Content-Type' => 'application/pdf',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ]);
     }
 }
