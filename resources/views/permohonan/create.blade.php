@@ -55,16 +55,16 @@
                     <!-- Pertanyaan SIM RS -->
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
                         <label class="block text-sm font-semibold text-gray-800 mb-3">
-                            Apakah Anda sudah memiliki Nomor SIM RS (Sistem Informasi Manajemen Rumah Sakit)? *
+                            Apakah anda sudah pernah menjadi pasien RSI Surabaya - A. Yani ?, jika sudah masukkan nomer rekam medis nya *
                         </label>
                         <div class="flex gap-4">
                             <label class="inline-flex items-center cursor-pointer">
                                 <input type="radio" name="has_sim_rs" value="1" class="w-4 h-4 text-blue-600" onclick="toggleSimRSInput(true)">
-                                <span class="ml-2 text-gray-700 font-medium">Ya, saya punya</span>
+                                <span class="ml-2 text-gray-700 font-medium">Ya, saya pernah</span>
                             </label>
                             <label class="inline-flex items-center cursor-pointer">
                                 <input type="radio" name="has_sim_rs" value="0" class="w-4 h-4 text-blue-600" onclick="toggleSimRSInput(false)" checked>
-                                <span class="ml-2 text-gray-700 font-medium">Belum punya</span>
+                                <span class="ml-2 text-gray-700 font-medium">Belum pernah</span>
                             </label>
                         </div>
                     </div>
