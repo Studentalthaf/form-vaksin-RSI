@@ -18,6 +18,9 @@ services:
         limits:
           cpus: '0.25'
           memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
     logging:
       driver: "json-file"
       options:
@@ -50,7 +53,10 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 384M
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     logging:
       driver: "json-file"
       options:
@@ -62,6 +68,7 @@ services:
     image: mysql:8.0
     container_name: formvaksin_db
     restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password --max-connections=50 --innodb-buffer-pool-size=128M
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-form_vaksin}
       MYSQL_USER: ${DB_USERNAME:-formvaksin_user}
@@ -82,7 +89,10 @@ services:
       resources:
         limits:
           cpus: '0.5'
-          memory: 384M
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     logging:
       driver: "json-file"
       options:
