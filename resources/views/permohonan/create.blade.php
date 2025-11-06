@@ -55,7 +55,7 @@
                     <!-- Pertanyaan SIM RS -->
                     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6">
                         <label class="block text-sm font-semibold text-gray-800 mb-3">
-                            Apakah anda sudah pernah menjadi pasien RSI Surabaya - A. Yani ?, jika sudah masukkan nomer rekam medis nya *
+                            Apakah anda sudah pernah menjadi pasien RSI Surabaya - A. Yani ?, jika sudah masukkan nomer rekam medis anda*
                         </label>
                         <div class="flex gap-4">
                             <label class="inline-flex items-center cursor-pointer">
@@ -71,7 +71,7 @@
 
                     <!-- Input SIM RS (Hidden by default) -->
                     <div id="simRSContainer" class="hidden mb-6">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor SIM RS *</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Rekam Medis *</label>
                         <div class="flex gap-2">
                             <input type="text" id="simRSInput" name="sim_rs" 
                                 class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
@@ -81,7 +81,7 @@
                                 Cek Data
                             </button>
                         </div>
-                        <p class="text-sm text-gray-500 mt-1">Masukkan nomor SIM RS untuk mengisi data otomatis</p>
+                        <p class="text-sm text-gray-500 mt-1">Masukkan nomor Rekam Medis untuk mengisi data otomatis</p>
                         <div id="simRSStatus" class="mt-2"></div>
                     </div>
                 </div>
