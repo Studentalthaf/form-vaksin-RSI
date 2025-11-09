@@ -58,12 +58,13 @@ class PasienSeeder extends Seeder
             $jenisKelamin = $faker->randomElement(['L', 'P']);
             $tempatLahir = $faker->randomElement($kota);
             
-            // Generate SIM RS dengan format: SIM + timestamp unik
-            $simRS = 'SIM' . now()->subDays($i)->format('ymdHis');
+            // Generate NIK 16 digit (simulasi)
+            $nik = $faker->numerify('################');
             
             Pasien::create([
-                'sim_rs' => $simRS,
+                'nik' => $nik,
                 'nama' => $jenisKelamin === 'L' ? $faker->name('male') : $faker->name('female'),
+                'nomor_rm' => $faker->boolean(50) ? 'RM' . $faker->numerify('######') : null, // 50% punya RM (pasien lama)
                 'nomor_paspor' => $faker->boolean(30) ? $faker->bothify('?#######') : null, // 30% punya paspor
                 'tempat_lahir' => $tempatLahir,
                 'tanggal_lahir' => $faker->date('Y-m-d', '-25 years'), // Umur minimal 25 tahun
@@ -71,6 +72,9 @@ class PasienSeeder extends Seeder
                 'pekerjaan' => $faker->randomElement($pekerjaan),
                 'alamat' => $faker->address(),
                 'no_telp' => $faker->numerify('08##########'),
+                'status_pasien' => $faker->randomElement(['baru', 'lama']),
+                'foto_ktp' => null, // Akan diisi saat upload
+                'foto_paspor' => null, // Akan diisi saat upload
             ]);
         }
 

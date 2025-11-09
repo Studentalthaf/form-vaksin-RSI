@@ -1,582 +1,630 @@
-@extends('layouts.app')
-@section('title', 'Detail Pasien - ' . $screening->pasien->nama)
+﻿@extends('layouts.dokter')
+
+@section('page-title', 'Detail Pasien & Hasil Screening')
+@section('page-subtitle', 'Informasi lengkap pasien dan hasil screening admin')
+
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <!-- Navbar -->
-    <nav class="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <span class="text-xl font-bold text-white">Detail Pasien & Penilaian</span>
+<div class="space-y-6">
+    <div>
+        <a href="{{ route('dokter.pasien.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            Kembali ke Daftar Pasien
+        </a>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-                <span class="text-white text-sm">Dr. {{ Auth::user()->nama }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-white text-blue-600 hover:bg-gray-100 rounded-lg font-semibold text-sm transition">Logout</button>
-                </form>
+                <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold text-2xl">
+                    {{ strtoupper(substr($screening->pasien->nama ?? 'N', 0, 2)) }}
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">{{ $screening->pasien->nama ?? '-' }}</h1>
+                    <div class="flex items-center gap-3 mt-1">
+                        <p class="text-sm text-gray-600">NIK: {{ $screening->pasien->nik ?? '-' }}</p>
+                        <span class="text-gray-400">•</span>
+                        <p class="text-sm font-semibold text-green-600">RM: {{ $screening->pasien->nomor_rm ?? '-' }}</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                @if($screening->status_vaksinasi == 'belum_divaksin')
+                    <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Belum Divaksin
+                    </span>
+                @elseif($screening->status_vaksinasi == 'sudah_divaksin')
+                    <span class="px-4 py-2 inline-flex text-sm font-semibold rounded-full bg-green-100 text-green-800">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Sudah Divaksin
+                    </span>
+                @endif
             </div>
         </div>
-    </nav>
+    </div>
 
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Back Button -->
-        <div class="mb-6">
-            <a href="{{ route('dokter.dashboard') }}" class="inline-flex items-center text-blue-600 hover:text-blue-700 font-semibold">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Kembali ke Dashboard
-            </a>
-        </div>
-
-        @if(session('success'))
-        <div class="mb-6 bg-green-100 border-l-4 border-green-500 p-4 rounded">
-            <p class="text-green-700 font-medium">{{ session('success') }}</p>
-        </div>
-        @endif
-
-        @if($errors->any())
-        <div class="mb-6 bg-red-100 border-l-4 border-red-500 p-4 rounded">
-            <p class="text-red-700 font-medium">{{ $errors->first() }}</p>
-        </div>
-        @endif
-
-        <!-- Header Pasien -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg shadow-lg p-6 mb-6 text-white">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <h1 class="text-3xl font-bold">{{ $screening->pasien->nama }}</h1>
-                    <div class="mt-2 space-y-1">
-                        <p class="text-blue-100">SIM RS: <span class="font-semibold">{{ $screening->pasien->sim_rs }}</span></p>
-                        <p class="text-blue-100">No. Telp: <span class="font-semibold">{{ $screening->pasien->no_telp }}</span></p>
-                        <p class="text-blue-100">Tanggal Vaksinasi: <span class="font-bold text-yellow-300">{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('d F Y') }}</span></p>
-                        
-                        @if($screening->vaccineRequest)
-                        <div class="mt-3 pt-3 border-t border-blue-400">
-                            <div class="flex items-center mb-2">
-                                @if($screening->vaccineRequest->is_perjalanan)
-                                <span class="px-3 py-1 bg-yellow-400 text-yellow-900 rounded-full text-xs font-bold mr-2">
-                                    ✈️ VAKSIN PERJALANAN
-                                </span>
-                                @else
-                                <span class="px-3 py-1 bg-green-400 text-green-900 rounded-full text-xs font-bold mr-2">
-                                    💉 VAKSIN BIASA
-                                </span>
-                                @endif
-                                <p class="text-blue-100 font-semibold">Data Permohonan Vaksin</p>
-                            </div>
-                            
-                            @if($screening->vaccineRequest->is_perjalanan)
-                            <div class="grid grid-cols-2 gap-2 text-sm">
-                                <div>
-                                    <span class="text-blue-200">Negara Tujuan:</span>
-                                    <span class="font-bold text-white ml-1">{{ $screening->vaccineRequest->negara_tujuan ?? '-' }}</span>
-                                </div>
-                                @if($screening->vaccineRequest->jenis_vaksin)
-                                <div>
-                                    <span class="text-blue-200">Jenis Vaksin:</span>
-                                    <span class="font-bold text-yellow-300 ml-1">{{ $screening->vaccineRequest->jenis_vaksin }}</span>
-                                </div>
-                                @endif
-                                @if($screening->vaccineRequest->tanggal_berangkat)
-                                <div>
-                                    <span class="text-blue-200">Tanggal Berangkat:</span>
-                                    <span class="font-bold text-white ml-1">{{ \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->format('d M Y') }}</span>
-                                </div>
-                                @endif
-                            </div>
-                            @else
-                            <div class="text-sm">
-                                @if($screening->vaccineRequest->jenis_vaksin)
-                                <div>
-                                    <span class="text-blue-200">Jenis Vaksin:</span>
-                                    <span class="font-bold text-yellow-300 ml-1">{{ $screening->vaccineRequest->jenis_vaksin }}</span>
-                                </div>
-                                @else
-                                <p class="text-blue-200 italic">Vaksinasi umum (non-perjalanan)</p>
-                                @endif
-                            </div>
-                            @endif
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                        Informasi Pribadi
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">Nama Lengkap</p>
+                            <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->nama ?? '-' }}</p>
                         </div>
-                        @endif
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">Nomor RM</p>
+                            <p class="text-base font-semibold text-gray-900">
+                                <span class="inline-flex items-center px-3 py-1 rounded-lg bg-green-100 text-green-800 font-bold">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    {{ $screening->pasien->nomor_rm ?? '-' }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">NIK</p>
+                            <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->nik ?? '-' }}</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">Tempat, Tanggal Lahir</p>
+                            <p class="text-base font-semibold text-gray-900">
+                                {{ $screening->pasien->tempat_lahir ?? '-' }}, 
+                                {{ $screening->pasien->tanggal_lahir ? \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->format('d M Y') : '-' }}
+                            </p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">Usia</p>
+                            <p class="text-base font-semibold text-gray-900">
+                                {{ $screening->pasien->tanggal_lahir ? \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->age . ' tahun' : '-' }}
+                            </p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">Jenis Kelamin</p>
+                            <p class="text-base font-semibold text-gray-900">{{ ucfirst($screening->pasien->jenis_kelamin ?? '-') }}</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">No. Telepon</p>
+                            <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->no_telp ?? '-' }}</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2">
+                            <p class="text-sm text-gray-500 font-medium">Pekerjaan</p>
+                            <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->pekerjaan ?? '-' }}</p>
+                        </div>
+                        <div class="border-l-4 border-green-500 pl-4 py-2 md:col-span-2">
+                            <p class="text-sm text-gray-500 font-medium">Alamat</p>
+                            <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->alamat ?? '-' }}</p>
+                        </div>
                     </div>
-                </div>
-                <div class="text-right">
-                    @if($screening->status_vaksinasi === 'sudah_divaksin')
-                    <span class="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-bold">SUDAH DIVAKSIN</span>
-                    @else
-                    <span class="px-4 py-2 bg-orange-500 text-white rounded-full text-sm font-bold">PROSES VAKSINASI</span>
-                    @endif
                 </div>
             </div>
-        </div>
 
-        <div class="grid lg:grid-cols-3 gap-6">
-            <!-- Left Column: Screening Results -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Hasil Screening -->
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <div class="flex items-center justify-between border-b pb-4 mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Hasil Screening</h2>
-                        @if($screening->hasil_screening === 'aman')
-                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">AMAN</span>
-                        @else
-                        <span class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">PERLU PERHATIAN</span>
-                        @endif
-                    </div>
-
-                    <div class="text-sm space-y-2 mb-4">
-                        <p><span class="text-gray-600">Tanggal Screening:</span> <span class="font-semibold">{{ $screening->tanggal_screening->format('d/m/Y H:i') }}</span></p>
-                        <p><span class="text-gray-600">Petugas:</span> <span class="font-semibold">{{ $screening->petugas->nama }}</span></p>
-                    </div>
-
-                    <!-- Screening Answers by Category -->
-                    @php
-                        $groupedAnswers = $screening->answers->groupBy(fn($answer) => $answer->question->category_id);
-                    @endphp
-
-                    @foreach($groupedAnswers as $categoryId => $answers)
-                        @php
-                            $category = $answers->first()->question->category;
-                        @endphp
-                        <div class="mb-6">
-                            <h3 class="font-bold text-gray-800 mb-3 border-b pb-2">{{ $category->nama_kategori ?? 'Tanpa Kategori' }}</h3>
-                            <div class="space-y-3">
-                                @foreach($answers as $answer)
-                                <div class="border-l-4 {{ strtolower($answer->jawaban) === 'ya' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50' }} p-3 rounded">
-                                    <p class="text-sm font-semibold text-gray-800 mb-1">{{ $answer->question->pertanyaan }}</p>
-                                    <div class="flex items-center space-x-2">
-                                        @if(strtolower($answer->jawaban) === 'ya')
-                                        <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-semibold">YA</span>
-                                        @elseif(strtolower($answer->jawaban) === 'tidak')
-                                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">TIDAK</span>
-                                        @else
-                                        <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">{{ $answer->jawaban }}</span>
-                                        @endif
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        Hasil Screening Admin
+                    </h2>
+                </div>
+                <div class="p-6">
+                    @if($screening->screeningAnswers && $screening->screeningAnswers->count() > 0)
+                        <div class="space-y-4">
+                            @foreach($screening->screeningAnswers as $index => $answer)
+                            <div class="border-l-4 {{ $answer->jawaban == 'ya' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50' }} p-4 rounded-r-lg">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <p class="font-semibold text-gray-800 mb-2">
+                                            {{ $index + 1 }}. {{ $answer->question->pertanyaan ?? 'Pertanyaan tidak ditemukan' }}
+                                        </p>
+                                        <div class="flex items-center space-x-2">
+                                            @if($answer->jawaban == 'ya')
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                    </svg>
+                                                    Ya
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                    </svg>
+                                                    Tidak
+                                                </span>
+                                            @endif
+                                        </div>
                                     </div>
-                                    @if($answer->keterangan)
-                                    <p class="text-xs text-gray-600 mt-1 italic">"{{ $answer->keterangan }}"</p>
-                                    @endif
                                 </div>
-                                @endforeach
+                                @if($answer->keterangan)
+                                <div class="mt-3 pl-4 border-l-2 border-gray-300">
+                                    <p class="text-sm text-gray-600"><strong>Keterangan:</strong> {{ $answer->keterangan }}</p>
+                                </div>
+                                @endif
                             </div>
+                            @endforeach
                         </div>
-                    @endforeach
-
-                    @if($screening->catatan)
-                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mt-4">
-                        <p class="text-sm font-semibold text-blue-900 mb-1">Catatan Umum:</p>
-                        <p class="text-sm text-blue-800">{{ $screening->catatan }}</p>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Right Column: Form Penilaian Dokter -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden sticky top-6">
-                    <!-- Header -->
-                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-4">
-                        <h2 class="text-lg font-bold text-white flex items-center">
-                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    @else
+                        <div class="text-center py-8">
+                            <svg class="mx-auto w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                             </svg>
-                            Form Penilaian Dokter
-                        </h2>
-                        <p class="text-blue-100 text-xs mt-1">Lengkapi data penilaian medis pasien</p>
-                    </div>
-
-                    <form method="POST" action="{{ route('dokter.pasien.store-penilaian', $screening) }}" class="p-6 space-y-5">
-                        @csrf
-
-                        <!-- SECTION: Data Alergi -->
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <h3 class="font-bold text-red-900 mb-3 flex items-center text-sm">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                                Data Alergi Pasien
-                            </h3>
-                            
-                            <!-- Alergi Obat -->
-                            <div class="mb-3">
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    Alergi Obat: <span class="text-red-600">*</span>
-                                </label>
-                                <div class="flex space-x-4">
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="alergi_obat" value="Ada" 
-                                            {{ old('alergi_obat', $screening->penilaian->alergi_obat ?? '') === 'Ada' ? 'checked' : '' }}
-                                            class="form-radio text-red-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">Ada</span>
-                                    </label>
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="alergi_obat" value="Tidak" 
-                                            {{ old('alergi_obat', $screening->penilaian->alergi_obat ?? '') === 'Tidak' ? 'checked' : '' }}
-                                            class="form-radio text-green-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">Tidak</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Alergi Vasin -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    Alergi Vaksin: <span class="text-red-600">*</span>
-                                </label>
-                                <div class="flex space-x-4">
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="alergi_vasin" value="Ada" 
-                                            {{ old('alergi_vasin', $screening->penilaian->alergi_vasin ?? '') === 'Ada' ? 'checked' : '' }}
-                                            class="form-radio text-red-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">Ada</span>
-                                    </label>
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="alergi_vasin" value="Tidak" 
-                                            {{ old('alergi_vasin', $screening->penilaian->alergi_vasin ?? '') === 'Tidak' ? 'checked' : '' }}
-                                            class="form-radio text-green-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">Tidak</span>
-                                    </label>
-                                </div>
-                            </div>
+                            <p class="text-gray-500">Belum ada hasil screening</p>
                         </div>
-
-                        <!-- SECTION: Riwayat Vaksinasi COVID-19 -->
-                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                            <h3 class="font-bold text-purple-900 mb-3 flex items-center text-sm">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                </svg>
-                                Riwayat Vaksinasi COVID-19
-                            </h3>
-                            
-                            <!-- Sudah Vaksin COVID-19 -->
-                            <div class="mb-3">
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    Sudah vaksin covid 19 ke:
-                                </label>
-                                <div class="flex flex-col space-y-2">
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="sudah_vaksin_covid" value="1" 
-                                            {{ old('sudah_vaksin_covid', $screening->penilaian->sudah_vaksin_covid ?? '') === '1' ? 'checked' : '' }}
-                                            class="form-radio text-purple-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">1 (Dosis Pertama)</span>
-                                    </label>
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="sudah_vaksin_covid" value="2" 
-                                            {{ old('sudah_vaksin_covid', $screening->penilaian->sudah_vaksin_covid ?? '') === '2' ? 'checked' : '' }}
-                                            class="form-radio text-purple-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">2 (Dosis Lengkap)</span>
-                                    </label>
-                                    <label class="inline-flex items-center cursor-pointer">
-                                        <input type="radio" name="sudah_vaksin_covid" value="booster" 
-                                            {{ old('sudah_vaksin_covid', $screening->penilaian->sudah_vaksin_covid ?? '') === 'booster' ? 'checked' : '' }}
-                                            class="form-radio text-purple-600 h-4 w-4">
-                                        <span class="ml-2 text-sm font-medium">Booster (Penguat)</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Nama Vaksin COVID-19 -->
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    Nama vaksin covid 19:
-                                </label>
-                                <input type="text" name="nama_vaksin_covid" 
-                                    value="{{ old('nama_vaksin_covid', $screening->penilaian->nama_vaksin_covid ?? '') }}"
-                                    class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm"
-                                    placeholder="Contoh: Sinovac, Moderna, Pfizer">
-                            </div>
-
-                            <!-- Dimana & Kapan (Grid 2 kolom) -->
-                            <div class="grid grid-cols-2 gap-3 mt-3">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                        Dimana:
-                                    </label>
-                                    <input type="text" name="dimana" 
-                                        value="{{ old('dimana', $screening->penilaian->dimana ?? '') }}"
-                                        class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
-                                        placeholder="Tempat">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                        Kapan:
-                                    </label>
-                                    <input type="text" name="kapan" 
-                                        value="{{ old('kapan', $screening->penilaian->kapan ?? '') }}"
-                                        class="w-full px-3 py-2 border border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-500 text-sm"
-                                        placeholder="Waktu">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SECTION: Data Permohonan Vaksin -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <h3 class="font-bold text-blue-900 mb-3 flex items-center text-sm">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                                Data Permohonan Vaksin
-                                <span class="ml-auto text-xs font-normal text-blue-600">(Otomatis dari sistem)</span>
-                            </h3>
-                            
-                            <!-- Jenis Vaksin (Read-only) -->
-                            <div class="mb-3">
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    Jenis Vaksin yang Dimohonkan:
-                                </label>
-                                <div class="relative">
-                                    <input type="text" name="jenis_vaksin" 
-                                        value="{{ old('jenis_vaksin', $screening->penilaian->jenis_vaksin ?? $screening->vaccineRequest->jenis_vaksin ?? '') }}"
-                                        readonly
-                                        class="w-full px-3 py-2 pr-10 border-2 border-blue-300 bg-blue-50 rounded-lg text-sm font-semibold text-blue-900 cursor-not-allowed"
-                                        placeholder="Tidak ada data jenis vaksin">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Negara Tujuan (Conditional) -->
-                            @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
-                            <div class="mb-3">
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    <span class="flex items-center">
-                                        <svg class="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Negara Tujuan (Vaksin Perjalanan):
-                                    </span>
-                                </label>
-                                <div class="relative">
-                                    <input type="text" name="negara_tujuan" 
-                                        value="{{ old('negara_tujuan', $screening->penilaian->negara_tujuan ?? $screening->vaccineRequest->negara_tujuan ?? '') }}"
-                                        readonly
-                                        class="w-full px-3 py-2 pr-10 border-2 border-blue-300 bg-blue-50 rounded-lg text-sm font-semibold text-blue-900 cursor-not-allowed"
-                                        placeholder="Negara tujuan perjalanan">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                            </div>
-                            @else
-                            <!-- Jika BUKAN Perjalanan - Field Disabled -->
-                            <div class="mb-3 bg-gray-100 border border-gray-200 rounded-lg p-3">
-                                <label class="block text-sm font-semibold text-gray-500 mb-2">
-                                    <span class="flex items-center">
-                                        <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        Negara Tujuan:
-                                    </span>
-                                </label>
-                                <input type="hidden" name="negara_tujuan" value="">
-                                <div class="relative">
-                                    <input type="text" 
-                                        value="Tidak ada (Vaksin Umum)"
-                                        disabled
-                                        class="w-full px-3 py-2 pr-10 border border-gray-300 bg-gray-100 rounded-lg text-sm text-gray-500 cursor-not-allowed italic">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    ℹ️ Field ini hanya diisi untuk vaksinasi perjalanan luar negeri
-                                </p>
-                            </div>
-                            @endif
-
-                            <!-- Tanggal Berangkat (Conditional) -->
-                            @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-800 mb-2">
-                                    <span class="flex items-center">
-                                        <svg class="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        Tanggal Berangkat (Dari Permohonan):
-                                    </span>
-                                </label>
-                                <div class="relative">
-                                    <input type="date" name="tanggal_berangkat_umroh" 
-                                        value="{{ old('tanggal_berangkat_umroh', $screening->penilaian->tanggal_berangkat_umroh ?? $screening->vaccineRequest->tanggal_berangkat ?? '') }}"
-                                        readonly
-                                        class="w-full px-3 py-2 pr-10 border-2 border-blue-300 bg-blue-50 rounded-lg text-sm font-semibold text-blue-900 cursor-not-allowed">
-                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <p class="text-xs text-blue-600 mt-1">
-                                    🔒 Data ini otomatis diambil dari permohonan pasien dan tidak dapat diubah
-                                </p>
-                            </div>
-                            @else
-                            <div class="bg-gray-100 border border-gray-200 rounded-lg p-3">
-                                <label class="block text-sm font-semibold text-gray-500 mb-2">
-                                    <span class="flex items-center">
-                                        <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        Tanggal Berangkat:
-                                    </span>
-                                </label>
-                                <input type="hidden" name="tanggal_berangkat_umroh" value="">
-                                <input type="text" 
-                                    value="Tidak diperlukan (Vaksin Umum)"
-                                    disabled
-                                    class="w-full px-3 py-2 border border-gray-300 bg-gray-100 rounded-lg text-sm text-gray-500 cursor-not-allowed italic">
-                                <p class="text-xs text-gray-500 mt-1">
-                                    ℹ️ Field ini hanya diisi untuk vaksinasi perjalanan luar negeri
-                                </p>
-                            </div>
-                            @endif
-                        </div>
-
-                        <!-- SECTION: Tanda Vital -->
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <h3 class="font-bold text-green-900 mb-3 flex items-center text-sm">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                                </svg>
-                                Tanda Vital & Pemeriksaan Fisik
-                            </h3>
-                            
-                            <!-- TD & Nadi -->
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-800 mb-1">
-                                        <span class="flex items-center">
-                                            <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                            Tekanan Darah (TD):
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" name="td" 
-                                            value="{{ old('td', $screening->penilaian->td ?? '') }}"
-                                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                            placeholder="120/80">
-                                        <span class="absolute right-3 top-2 text-xs text-gray-500">mmHg</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-800 mb-1">
-                                        <span class="flex items-center">
-                                            <span class="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
-                                            Nadi:
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" name="nadi" 
-                                            value="{{ old('nadi', $screening->penilaian->nadi ?? '') }}"
-                                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                            placeholder="80">
-                                        <span class="absolute right-3 top-2 text-xs text-gray-500">x/mnt</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Suhu & TB -->
-                            <div class="grid grid-cols-2 gap-3 mb-3">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-800 mb-1">
-                                        <span class="flex items-center">
-                                            <span class="w-2 h-2 bg-orange-500 rounded-full mr-2"></span>
-                                            Suhu Tubuh:
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" name="suhu" 
-                                            value="{{ old('suhu', $screening->penilaian->suhu ?? '') }}"
-                                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                            placeholder="36.5">
-                                        <span class="absolute right-3 top-2 text-xs text-gray-500">°C</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-800 mb-1">
-                                        <span class="flex items-center">
-                                            <span class="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                            Tinggi Badan (TB):
-                                        </span>
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" name="tb" 
-                                            value="{{ old('tb', $screening->penilaian->tb ?? '') }}"
-                                            class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                            placeholder="170">
-                                        <span class="absolute right-3 top-2 text-xs text-gray-500">cm</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- BB -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-800 mb-1">
-                                    <span class="flex items-center">
-                                        <span class="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                                        Berat Badan (BB):
-                                    </span>
-                                </label>
-                                <div class="relative">
-                                    <input type="text" name="bb" 
-                                        value="{{ old('bb', $screening->penilaian->bb ?? '') }}"
-                                        class="w-full px-3 py-2 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
-                                        placeholder="65">
-                                    <span class="absolute right-3 top-2 text-xs text-gray-500">kg</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SECTION: Catatan -->
-                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                            <h3 class="font-bold text-gray-900 mb-3 flex items-center text-sm">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                                Catatan Tambahan Dokter
-                            </h3>
-                            <textarea name="catatan" rows="4" 
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 text-sm"
-                                placeholder="Tulis catatan tambahan, rekomendasi, atau observasi khusus untuk pasien ini...">{{ old('catatan', $screening->penilaian->catatan ?? '') }}</textarea>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <div class="pt-2">
-                            <button type="submit" class="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg font-bold transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                </svg>
-                                Simpan Penilaian Dokter
-                            </button>
-                        </div>
-                    </form>
-
-                    <!-- PDF Button (jika sudah ada penilaian) -->
-                    @if($screening->penilaian)
-                    <div class="px-6 pb-6">
-                        <a href="{{ route('dokter.pasien.cetak-pdf', $screening) }}" 
-                           target="_blank"
-                           class="block w-full px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white rounded-lg font-bold text-center transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                            </svg>
-                            📄 Cetak PDF Lengkap
-                        </a>
-                        <p class="text-xs text-center text-gray-500 mt-2">
-                            📋 Termasuk: Penilaian, Screening & Surat Persetujuan
-                        </p>
-                    </div>
                     @endif
                 </div>
             </div>
         </div>
-    </main>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Info Vaksinasi
+                    </h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Tanggal Vaksinasi</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('d F Y') }}
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('H:i') }} WIB
+                        </p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Petugas Screening</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            {{ $screening->petugas->nama ?? '-' }}
+                        </p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Dokter Pemeriksa</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            Dr. {{ Auth::user()->nama }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pemeriksaan Fisik Admin -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-red-600 to-orange-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                        </svg>
+                        Pemeriksaan Fisik Admin
+                    </h2>
+                </div>
+                <div class="p-6">
+                    @if($screening->nilaiScreening && ($screening->nilaiScreening->td || $screening->nilaiScreening->nadi || $screening->nilaiScreening->suhu || $screening->nilaiScreening->bb))
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Tekanan Darah -->
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-red-700">Tekanan Darah</p>
+                                </div>
+                                <p class="text-lg font-bold text-red-900">
+                                    {{ $screening->nilaiScreening->td ?? '-' }}
+                                    <span class="text-xs font-normal text-red-600">mmHg</span>
+                                </p>
+                            </div>
+
+                            <!-- Nadi -->
+                            <div class="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-pink-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-pink-700">Denyut Nadi</p>
+                                </div>
+                                <p class="text-lg font-bold text-pink-900">
+                                    {{ $screening->nilaiScreening->nadi ?? '-' }}
+                                    <span class="text-xs font-normal text-pink-600">bpm</span>
+                                </p>
+                            </div>
+
+                            <!-- Suhu -->
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-orange-700">Suhu Tubuh</p>
+                                </div>
+                                <p class="text-lg font-bold text-orange-900">
+                                    {{ $screening->nilaiScreening->suhu ?? '-' }}
+                                    <span class="text-xs font-normal text-orange-600">°C</span>
+                                </p>
+                            </div>
+
+                            <!-- Berat Badan -->
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-green-700">Berat Badan</p>
+                                </div>
+                                <p class="text-lg font-bold text-green-900">
+                                    {{ $screening->nilaiScreening->bb ?? '-' }}
+                                    <span class="text-xs font-normal text-green-600">kg</span>
+                                </p>
+                            </div>
+
+                            <!-- Tinggi Badan -->
+                            <div class="bg-teal-50 border border-teal-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-teal-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-teal-700">Tinggi Badan</p>
+                                </div>
+                                <p class="text-lg font-bold text-teal-900">
+                                    {{ $screening->nilaiScreening->tb ?? '-' }}
+                                    <span class="text-xs font-normal text-teal-600">cm</span>
+                                </p>
+                            </div>
+
+                            <!-- Alergi Obat -->
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-yellow-700">Alergi Obat</p>
+                                </div>
+                                <p class="text-lg font-bold text-yellow-900">
+                                    {{ $screening->nilaiScreening->alergi_obat ?? '-' }}
+                                </p>
+                            </div>
+
+                            <!-- Alergi Vaksin -->
+                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-purple-700">Alergi Vaksin</p>
+                                </div>
+                                <p class="text-lg font-bold text-purple-900">
+                                    {{ $screening->nilaiScreening->alergi_vaksin ?? '-' }}
+                                </p>
+                            </div>
+
+                            <!-- Vaksin COVID -->
+                            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3 col-span-2">
+                                <div class="flex items-center mb-1">
+                                    <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                    </svg>
+                                    <p class="text-xs font-medium text-indigo-700">Vaksin COVID-19</p>
+                                </div>
+                                <p class="text-base font-semibold text-indigo-900">
+                                    Dosis: <span class="text-lg">{{ $screening->nilaiScreening->sudah_vaksin_covid ?? '-' }}</span>
+                                    @if($screening->nilaiScreening && $screening->nilaiScreening->nama_vaksin_covid)
+                                        <span class="ml-2 text-sm">| {{ $screening->nilaiScreening->nama_vaksin_covid }}</span>
+                                    @endif
+                                </p>
+                            </div>
+                        </div>
+
+                        @if($screening->nilaiScreening && $screening->nilaiScreening->catatan)
+                        <div class="mt-4 bg-gray-50 border-l-4 border-gray-400 p-4 rounded-r-lg">
+                            <p class="text-xs font-semibold text-gray-700 mb-1">Catatan Pemeriksaan Admin:</p>
+                            <p class="text-sm text-gray-600">{{ $screening->nilaiScreening->catatan }}</p>
+                        </div>
+                        @endif
+
+                        @if($screening->nilaiScreening && $screening->nilaiScreening->admin)
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <p class="text-xs text-gray-500">Diperiksa oleh: <span class="font-semibold">{{ $screening->nilaiScreening->admin->nama }}</span></p>
+                            <p class="text-xs text-gray-500">Waktu: {{ $screening->nilaiScreening->created_at->format('d M Y, H:i') }} WIB</p>
+                        </div>
+                        @endif
+                    @else
+                        <div class="text-center py-6">
+                            <svg class="mx-auto w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                            </svg>
+                            <p class="text-sm text-gray-500">Belum ada data pemeriksaan fisik</p>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Kesimpulan
+                    </h2>
+                </div>
+                <div class="p-6">
+                    @php
+                        $jawabanYa = $screening->screeningAnswers->where('jawaban', 'ya')->count();
+                        $totalPertanyaan = $screening->screeningAnswers->count();
+                    @endphp
+                    
+                    @if($jawabanYa > 0)
+                        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <div>
+                                    <h3 class="font-bold text-yellow-900 mb-1">Perhatian Khusus</h3>
+                                    <p class="text-sm text-yellow-800">
+                                        Pasien memiliki <strong>{{ $jawabanYa }}</strong> dari <strong>{{ $totalPertanyaan }}</strong> kondisi yang memerlukan perhatian khusus.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-green-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <h3 class="font-bold text-green-900 mb-1">Kondisi Baik</h3>
+                                    <p class="text-sm text-green-800">
+                                        Tidak ada kondisi khusus yang perlu diperhatikan dari hasil screening.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Form Tanda Tangan & Catatan -->
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-orange-600 to-red-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        </svg>
+                        Tanda Tangan & Catatan
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <form id="formKonfirmasi" method="POST" action="{{ route('dokter.pasien.konfirmasi', $screening->id) }}">
+                        @csrf
+
+                        <!-- Tanda Tangan Pasien -->
+                        <div class="mb-6 pb-6 border-b-2 border-gray-200">
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-blue-900">Persetujuan Pasien</h3>
+                                        <p class="text-xs text-blue-800 mt-1">Dokter harus menandatangani untuk sertifikasi kesehatan pasien</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <!-- Signature Pad Dokter -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">
+                                Tanda Tangan Dokter <span class="text-red-500">*</span>
+                            </label>
+                            <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
+                                <canvas id="signaturePad" width="600" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
+                            </div>
+                            <div class="flex items-center justify-between mt-2">
+                                <p class="text-xs text-gray-500">Silakan tanda tangan di kotak di atas</p>
+                                <button type="button" onclick="clearSignature()" class="text-xs text-red-600 hover:text-red-700 font-semibold flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                    Hapus Tanda Tangan
+                                </button>
+                            </div>
+                            <input type="hidden" name="tanda_tangan" id="tandaTanganInput" required>
+                        </div>
+
+                        <!-- Catatan Dokter -->
+                        <div class="mb-6">
+                            <label for="catatan_dokter" class="block text-sm font-bold text-gray-700 mb-2">
+                                Catatan Dokter <span class="text-red-500">*</span>
+                            </label>
+                            <textarea 
+                                id="catatan_dokter" 
+                                name="catatan_dokter" 
+                                rows="5" 
+                                required
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+                                placeholder="Tuliskan catatan, rekomendasi, atau instruksi terkait kondisi pasien..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Minimal 10 karakter</p>
+                        </div>
+
+                        <!-- Button Submit -->
+                        <button 
+                            type="submit" 
+                            class="w-full px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-lg transition shadow-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Konfirmasi & Simpan
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <h3 class="font-bold text-gray-800 mb-4">Aksi Lainnya</h3>
+                <div class="space-y-3">
+                    <a href="{{ route('dokter.pasien.index') }}" class="block w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition text-center">
+                        Kembali ke Daftar Pasien
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+@push('scripts')
+<script>
+    console.log('✅ Signature pad script loaded!');
+    
+    // ========== SIGNATURE PAD DOKTER ==========
+    const canvas = document.getElementById('signaturePad');
+    console.log('Canvas element:', canvas);
+    
+    if (!canvas) {
+        console.error('Canvas element not found!');
+    }
+    
+    const ctx = canvas.getContext('2d');
+    console.log('Canvas context:', ctx);
+    
+    let isDrawing = false;
+
+    // Setup canvas context
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    console.log('Canvas setup complete');
+
+    // Get mouse/touch position relative to canvas
+    function getPosition(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        if (e.touches && e.touches[0]) {
+            return {
+                x: (e.touches[0].clientX - rect.left) * scaleX,
+                y: (e.touches[0].clientY - rect.top) * scaleY
+            };
+        }
+        
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
+    }
+
+    // Start drawing
+    function startDrawing(e) {
+        console.log('Start drawing at:', getPosition(e));
+        isDrawing = true;
+        const pos = getPosition(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    }
+
+    // Draw
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        
+        const pos = getPosition(e);
+        console.log('Drawing to:', pos);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    }
+
+    // Stop drawing
+    function stopDrawing() {
+        console.log('Stop drawing');
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
+    // Mouse events
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    console.log('Mouse events attached');
+
+    // Touch events
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startDrawing(e);
+    });
+    canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        stopDrawing();
+    });
+
+    // Clear signature
+    function clearSignature() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById('tandaTanganInput').value = '';
+    }
+
+    // Check if canvas is blank
+    function isCanvasBlank() {
+        const blank = document.createElement('canvas');
+        blank.width = canvas.width;
+        blank.height = canvas.height;
+        return canvas.toDataURL() === blank.toDataURL();
+    }
+
+    // Form submission
+    document.getElementById('formKonfirmasi').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate signature dokter
+        if (isCanvasBlank()) {
+            alert('Silakan buat tanda tangan dokter terlebih dahulu!');
+            return false;
+        }
+
+        // Validate catatan
+        const catatan = document.getElementById('catatan_dokter').value.trim();
+        if (catatan.length < 10) {
+            alert('Catatan dokter minimal 10 karakter!');
+            return false;
+        }
+
+        // Save signature dokter as base64
+        const signatureData = canvas.toDataURL('image/png');
+        document.getElementById('tandaTanganInput').value = signatureData;
+
+        // Show confirmation
+        if (confirm('Apakah Anda yakin ingin menyimpan konfirmasi ini?\n\nPastikan:\n✓ Dokter sudah menandatangani\n✓ Catatan sudah lengkap\n\nData tidak dapat diubah setelah disimpan.')) {
+            this.submit();
+        }
+    });
+</script>
+@endpush
+
 @endsection

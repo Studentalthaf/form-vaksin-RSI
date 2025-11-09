@@ -3,103 +3,99 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pasien;
 use App\Models\VaccineRequest;
 use App\Models\Screening;
-use App\Models\ScreeningAnswer;
-use App\Models\ScreeningQuestion;
-use App\Models\ScreeningQuestionCategory;
+use App\Models\NilaiScreening;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ScreeningPasienController extends Controller
 {
     /**
-     * Tampilkan form screening untuk pasien tertentu
+     * Tampilkan detail screening pasien untuk dinilai
      */
-    public function create(VaccineRequest $permohonan)
+    public function show(VaccineRequest $permohonan)
     {
         $permohonan->load('pasien');
         
-        // Ambil semua kategori dengan pertanyaan yang aktif
-        $categories = ScreeningQuestionCategory::where('aktif', true)
-            ->with(['questions' => function($query) {
-                $query->where('aktif', true)->orderBy('urutan');
-            }])
-            ->orderBy('urutan')
-            ->get();
-
-        // Cek apakah sudah pernah di-screening
-        $existingScreening = Screening::where('pasien_id', $permohonan->pasien_id)
+        // Ambil screening beserta jawaban-jawabannya
+        $screening = Screening::where('pasien_id', $permohonan->pasien_id)
             ->where('vaccine_request_id', $permohonan->id)
-            ->first();
+            ->with([
+                'answers.question.category',
+                'nilaiScreening.admin'
+            ])
+            ->firstOrFail();
 
-        return view('admin.screening.pasien.create', compact('permohonan', 'categories', 'existingScreening'));
+        return view('admin.screening.show', compact('permohonan', 'screening'));
     }
 
     /**
-     * Simpan hasil screening pasien
+     * Simpan nilai screening dari admin
      */
-    public function store(Request $request, VaccineRequest $permohonan)
+    public function storeNilai(Request $request, VaccineRequest $permohonan)
     {
         $request->validate([
-            'jawaban' => 'required|array',
-            'jawaban.*' => 'required|string',
-            'keterangan' => 'nullable|array',
-            'keterangan.*' => 'nullable|string|max:500',
-        ], [
-            'jawaban.required' => 'Mohon jawab semua pertanyaan wajib',
-            'jawaban.*.required' => 'Jawaban tidak boleh kosong',
+            'alergi_obat' => 'required|in:ada,tidak',
+            'alergi_vaksin' => 'required|in:ada,tidak',
+            'sudah_vaksin_covid' => 'nullable|in:1,2,booster',
+            'nama_vaksin_covid' => 'nullable|string|max:255',
+            'dimana' => 'nullable|string',
+            'kapan' => 'nullable|string',
+            // tanggal_berangkat_umroh tidak perlu validasi, diambil dari permohonan
+            'td' => 'nullable|string|max:50',
+            'nadi' => 'nullable|string|max:50',
+            'suhu' => 'nullable|string|max:50',
+            'tb' => 'nullable|string|max:50',
+            'bb' => 'nullable|string|max:50',
+            'hasil_screening' => 'required|in:aman,perlu_perhatian,tidak_layak',
+            'catatan' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
         try {
-            // Buat atau update screening record
-            $screening = Screening::updateOrCreate(
-                [
-                    'pasien_id' => $permohonan->pasien_id,
-                    'vaccine_request_id' => $permohonan->id,
-                ],
-                [
-                    'tanggal_screening' => now(),
-                    'petugas_id' => Auth::id(),
-                    'hasil_screening' => 'pending', // akan diupdate berdasarkan jawaban
-                    'catatan' => $request->catatan_umum,
-                ]
-            );
+            $screening = Screening::where('pasien_id', $permohonan->pasien_id)
+                ->where('vaccine_request_id', $permohonan->id)
+                ->firstOrFail();
 
-            // Hapus jawaban lama jika ada
-            ScreeningAnswer::where('screening_id', $screening->id)->delete();
+            // Simpan nilai screening
+            NilaiScreening::create([
+                'screening_id' => $screening->id,
+                'admin_id' => Auth::id(),
+                'jenis_vaksin' => is_array($permohonan->jenis_vaksin) 
+                    ? implode(', ', $permohonan->jenis_vaksin) 
+                    : $permohonan->jenis_vaksin,
+                'negara_tujuan' => $permohonan->negara_tujuan,
+                'alergi_obat' => $request->alergi_obat,
+                'alergi_vaksin' => $request->alergi_vaksin,
+                'sudah_vaksin_covid' => $request->sudah_vaksin_covid,
+                'nama_vaksin_covid' => $request->nama_vaksin_covid,
+                'dimana' => $request->dimana,
+                'kapan' => $request->kapan,
+                // Ambil tanggal keberangkatan dari permohonan, bukan dari input
+                'tanggal_berangkat_umroh' => $permohonan->tanggal_berangkat,
+                'td' => $request->td,
+                'nadi' => $request->nadi,
+                'suhu' => $request->suhu,
+                'tb' => $request->tb,
+                'bb' => $request->bb,
+                'hasil_screening' => $request->hasil_screening,
+                'catatan' => $request->catatan,
+            ]);
 
-            // Simpan semua jawaban
-            $hasRisiko = false;
-            foreach ($request->jawaban as $questionId => $jawaban) {
-                $question = ScreeningQuestion::find($questionId);
-                
-                // Cek apakah ada risiko (misal jawaban "ya" pada pertanyaan tertentu)
-                if ($jawaban === 'ya' && $question->pertanyaan) {
-                    $hasRisiko = true;
-                }
-
-                ScreeningAnswer::create([
-                    'screening_id' => $screening->id,
-                    'question_id' => $questionId,
-                    'jawaban' => $jawaban,
-                    'keterangan' => $request->keterangan[$questionId] ?? null,
-                ]);
-            }
-
-            // Update hasil screening berdasarkan jawaban
+            // Update screening status
             $screening->update([
-                'hasil_screening' => $hasRisiko ? 'perlu_perhatian' : 'aman'
+                'admin_id' => Auth::id(),
+                'hasil_screening' => $request->hasil_screening,
+                'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
             ]);
 
             DB::commit();
 
             return redirect()->route('admin.permohonan.show', $permohonan)
-                ->with('success', 'Screening berhasil disimpan!');
+                ->with('success', 'Nilai screening berhasil disimpan!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -109,136 +105,144 @@ class ScreeningPasienController extends Controller
     }
 
     /**
-     * Tampilkan hasil screening pasien
+     * Form edit nilai screening
      */
-    public function show(VaccineRequest $permohonan)
+    public function editNilai(VaccineRequest $permohonan)
     {
         $permohonan->load('pasien');
         
         $screening = Screening::where('pasien_id', $permohonan->pasien_id)
             ->where('vaccine_request_id', $permohonan->id)
-            ->with(['answers.question.category', 'petugas', 'dokter'])
+            ->with(['answers.question.category', 'nilaiScreening'])
             ->firstOrFail();
 
-        // Ambil daftar dokter untuk assign
-        $dokterList = User::where('role', 'dokter')
-            ->orderBy('nama')
-            ->get();
+        if (!$screening->nilaiScreening) {
+            return redirect()->route('admin.screening.show', $permohonan)
+                ->withErrors(['error' => 'Nilai screening belum ada']);
+        }
 
-        return view('admin.screening.pasien.show', compact('permohonan', 'screening', 'dokterList'));
+        return view('admin.screening.edit', compact('permohonan', 'screening'));
     }
 
     /**
-     * Assign screening ke dokter
+     * Update nilai screening
+     */
+    public function updateNilai(Request $request, VaccineRequest $permohonan)
+    {
+        $request->validate([
+            'alergi_obat' => 'required|in:ada,tidak',
+            'alergi_vaksin' => 'required|in:ada,tidak',
+            'sudah_vaksin_covid' => 'nullable|in:1,2,booster',
+            'nama_vaksin_covid' => 'nullable|string|max:255',
+            'dimana' => 'nullable|string',
+            'kapan' => 'nullable|string',
+            // tanggal_berangkat_umroh tidak perlu validasi, diambil dari permohonan
+            'td' => 'nullable|string|max:50',
+            'nadi' => 'nullable|string|max:50',
+            'suhu' => 'nullable|string|max:50',
+            'tb' => 'nullable|string|max:50',
+            'bb' => 'nullable|string|max:50',
+            'hasil_screening' => 'required|in:aman,perlu_perhatian,tidak_layak',
+            'catatan' => 'nullable|string',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $screening = Screening::where('pasien_id', $permohonan->pasien_id)
+                ->where('vaccine_request_id', $permohonan->id)
+                ->with('nilaiScreening')
+                ->firstOrFail();
+
+            if (!$screening->nilaiScreening) {
+                return back()->withErrors(['error' => 'Nilai screening tidak ditemukan']);
+            }
+
+            // Update nilai screening
+            $screening->nilaiScreening->update([
+                'admin_id' => Auth::id(),
+                'alergi_obat' => $request->alergi_obat,
+                'alergi_vaksin' => $request->alergi_vaksin,
+                'sudah_vaksin_covid' => $request->sudah_vaksin_covid,
+                'nama_vaksin_covid' => $request->nama_vaksin_covid,
+                'dimana' => $request->dimana,
+                'kapan' => $request->kapan,
+                // Tetap gunakan tanggal dari permohonan
+                'tanggal_berangkat_umroh' => $permohonan->tanggal_berangkat,
+                'td' => $request->td,
+                'nadi' => $request->nadi,
+                'suhu' => $request->suhu,
+                'tb' => $request->tb,
+                'bb' => $request->bb,
+                'hasil_screening' => $request->hasil_screening,
+                'catatan' => $request->catatan,
+            ]);
+
+            // Update screening status
+            $screening->update([
+                'hasil_screening' => $request->hasil_screening,
+                'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('admin.permohonan.show', $permohonan)
+                ->with('success', 'Nilai screening berhasil diupdate!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withInput()
+                ->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Assign screening ke dokter untuk proses vaksinasi
      */
     public function assignDokter(Request $request, VaccineRequest $permohonan)
     {
         $request->validate([
             'dokter_id' => 'required|exists:users,id',
-            'tanggal_vaksinasi' => 'required|date|after_or_equal:today',
+            'tanggal_vaksinasi' => 'required|date|after_or_equal:today'
         ], [
-            'dokter_id.required' => 'Pilih dokter terlebih dahulu',
-            'dokter_id.exists' => 'Dokter tidak ditemukan',
+            'dokter_id.required' => 'Dokter harus dipilih',
+            'dokter_id.exists' => 'Dokter tidak valid',
             'tanggal_vaksinasi.required' => 'Tanggal vaksinasi harus diisi',
-            'tanggal_vaksinasi.date' => 'Format tanggal tidak valid',
-            'tanggal_vaksinasi.after_or_equal' => 'Tanggal vaksinasi tidak boleh sebelum hari ini',
+            'tanggal_vaksinasi.after_or_equal' => 'Tanggal vaksinasi tidak boleh kurang dari hari ini'
         ]);
 
-        // Cek apakah dokter yang dipilih benar-benar role dokter
+        // Validasi: pastikan dokter yang dipilih memang role dokter
         $dokter = User::where('id', $request->dokter_id)
             ->where('role', 'dokter')
-            ->first();
-
-        if (!$dokter) {
-            return back()->withErrors(['dokter_id' => 'User yang dipilih bukan dokter']);
-        }
-
-        $screening = Screening::where('pasien_id', $permohonan->pasien_id)
-            ->where('vaccine_request_id', $permohonan->id)
             ->firstOrFail();
 
-        $screening->update([
-            'dokter_id' => $request->dokter_id,
-            'tanggal_vaksinasi' => $request->tanggal_vaksinasi,
-            'status_vaksinasi' => 'proses_vaksinasi',
-        ]);
+        try {
+            $screening = Screening::where('pasien_id', $permohonan->pasien_id)
+                ->where('vaccine_request_id', $permohonan->id)
+                ->with('nilaiScreening')
+                ->firstOrFail();
 
-        return redirect()->route('admin.screening.pasien.show', $permohonan)
-            ->with('success', 'Pasien berhasil diserahkan ke Dr. ' . $dokter->nama . ' untuk vaksinasi tanggal ' . \Carbon\Carbon::parse($request->tanggal_vaksinasi)->format('d/m/Y'));
-    }
-
-    /**
-     * Tampilkan daftar screening yang sudah selesai
-     */
-    public function selesai(Request $request)
-    {
-        // Query screening yang sudah diserahkan ke dokter
-        $query = Screening::with([
-            'pasien',
-            'vaccineRequest',
-            'dokter',
-            'penilaian'
-        ])
-        ->whereNotNull('dokter_id') // Tampilkan semua yang sudah diserahkan ke dokter
-        ->orderBy('updated_at', 'desc');
-
-        // Filter search nama pasien
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('pasien', function($q) use ($search) {
-                $q->where('nama', 'like', '%' . $search . '%');
-            });
-        }
-
-        // Filter search SIM RS
-        if ($request->filled('sim_rs')) {
-            $simrs = $request->sim_rs;
-            $query->whereHas('pasien', function($q) use ($simrs) {
-                $q->where('sim_rs', 'like', '%' . $simrs . '%');
-            });
-        }
-
-        // Filter status
-        if ($request->filled('status')) {
-            if ($request->status == 'di_dokter') {
-                // Yang belum ada penilaian
-                $query->whereDoesntHave('penilaian');
-            } elseif ($request->status == 'sudah_dinilai') {
-                // Yang sudah ada penilaian
-                $query->whereHas('penilaian');
+            // Validasi: pastikan sudah ada nilai screening
+            if (!$screening->nilaiScreening) {
+                return back()->withErrors(['error' => 'Belum ada penilaian screening. Silakan beri nilai terlebih dahulu.']);
             }
+
+            // Validasi: pastikan hasil screening adalah aman
+            if ($screening->nilaiScreening->hasil_screening !== 'aman') {
+                return back()->withErrors(['error' => 'Hanya screening dengan hasil AMAN yang dapat diserahkan ke dokter.']);
+            }
+
+            // Update screening
+            $screening->update([
+                'dokter_id' => $request->dokter_id,
+                'tanggal_vaksinasi' => $request->tanggal_vaksinasi,
+                'status_vaksinasi' => 'dijadwalkan'
+            ]);
+
+            return redirect()->route('admin.permohonan.show', $permohonan)
+                ->with('success', 'Berhasil diserahkan ke Dr. ' . $dokter->nama);
+
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
         }
-
-        // Filter dokter
-        if ($request->filled('dokter_id')) {
-            $query->where('dokter_id', $request->dokter_id);
-        }
-
-        // Pagination
-        $screenings = $query->paginate(10);
-
-        // Daftar dokter untuk filter
-        $dokterList = User::where('role', 'dokter')->orderBy('nama')->get();
-
-        // Statistik
-        $totalSelesai = Screening::whereNotNull('dokter_id')->count();
-        $selesaiHariIni = Screening::whereNotNull('dokter_id')
-            ->whereDate('updated_at', today())
-            ->count();
-        $diDokter = Screening::whereNotNull('dokter_id')
-            ->whereDoesntHave('penilaian')
-            ->count();
-        $sudahDinilai = Screening::whereNotNull('dokter_id')
-            ->whereHas('penilaian')
-            ->count();
-
-        return view('admin.screening.selesai', compact(
-            'screenings',
-            'dokterList',
-            'totalSelesai',
-            'selesaiHariIni',
-            'diDokter',
-            'sudahDinilai'
-        ));
     }
 }

@@ -1,34 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('page-title', 'Data Pasien')
+@section('page-subtitle', 'Kelola data master pasien rumah sakit')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-    <!-- Navbar -->
-    <nav class="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <!-- Icon Database -->
-                    <svg class="w-8 h-8 text-white mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">Data Pasien</h1>
-                        <p class="text-sm text-blue-100">Master Data Pasien Rumah Sakit</p>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-all duration-200">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Kembali
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -104,7 +79,7 @@
 
         <!-- Filter Section -->
         <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-            <form method="GET" action="{{ route('admin.pasien.index') }}" id="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form method="GET" action="{{ route('admin.pasien.index') }}" id="filterForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Filter Nama -->
                 <div>
                     <label for="search" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -119,24 +94,6 @@
                         id="search"
                         value="{{ request('search') }}" 
                         placeholder="Masukkan nama pasien..."
-                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                    >
-                </div>
-
-                <!-- Filter SIM RS -->
-                <div>
-                    <label for="sim_rs" class="block text-sm font-semibold text-gray-700 mb-2">
-                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                        </svg>
-                        Cari SIM RS
-                    </label>
-                    <input 
-                        type="text" 
-                        name="sim_rs" 
-                        id="sim_rs"
-                        value="{{ request('sim_rs') }}" 
-                        placeholder="Masukkan SIM RS..."
                         class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     >
                 </div>
@@ -170,7 +127,7 @@
                     <thead class="bg-gradient-to-r from-blue-500 to-indigo-500">
                         <tr>
                             <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">No</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">SIM RS</th>
+                            <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">NIK</th>
                             <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Nama Lengkap</th>
                             <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Jenis Kelamin</th>
                             <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Tanggal Lahir</th>
@@ -192,7 +149,7 @@
                                     <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                                     </svg>
-                                    <span class="font-mono text-sm font-semibold text-gray-900">{{ $pasien->sim_rs }}</span>
+                                    <span class="font-mono text-sm font-semibold text-gray-900">{{ $pasien->nik ?? '-' }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -242,8 +199,8 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold text-sm">
-                                    {{ $pasien->vaccine_requests_count }}
+                                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold text-sm" title="Total permohonan dengan NIK yang sama">
+                                    {{ $pasien->total_permohonan_by_nik ?? $pasien->vaccine_requests_count }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -286,20 +243,11 @@
     // Auto submit on filter change
     let searchTimeout;
     const searchInput = document.getElementById('search');
-    const simrsInput = document.getElementById('sim_rs');
     const jenisKelaminSelect = document.getElementById('jenis_kelamin');
     const filterForm = document.getElementById('filterForm');
 
     // Auto submit untuk search nama
     searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            filterForm.submit();
-        }, 500);
-    });
-
-    // Auto submit untuk search SIM RS
-    simrsInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
             filterForm.submit();

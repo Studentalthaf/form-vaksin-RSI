@@ -220,6 +220,12 @@
                 <span class="form-label">Nama</span>
                 <span>: <span class="form-value"><strong>{{ $screening->pasien->nama }}</strong></span></span>
             </div>
+            @if($screening->pasien->nik)
+            <div class="form-row">
+                <span class="form-label">NIK</span>
+                <span>: <span class="form-value"><strong>{{ $screening->pasien->nik }}</strong></span></span>
+            </div>
+            @endif
             <div class="form-row">
                 <span class="form-label">Tempat, Tanggal Lahir</span>
                 <span>: <span class="form-value">{{ $screening->pasien->tempat_lahir ?? '-' }}, {{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->locale('id')->isoFormat('DD MMMM YYYY') }} ({{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->age }} tahun)</span></span>
@@ -236,43 +242,29 @@
                 <span class="form-label">No. Telp</span>
                 <span>: <span class="form-value">{{ $screening->pasien->no_telp }}</span></span>
             </div>
-            @if($screening->pasien->nomor_paspor)
-            <div class="form-row">
-                <span class="form-label">No. Paspor</span>
-                <span>: <span class="form-value">{{ $screening->pasien->nomor_paspor }}</span></span>
-            </div>
-            @endif
         </div>
 
         <div class="form-section" style="margin-top: 15px;">
             <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">JENIS VAKSINASI</div>
+            @php
+                $jenisVaksin = $screening->vaccineRequest->jenis_vaksin ?? '-';
+                if (is_array($jenisVaksin)) {
+                    $jenisVaksin = implode(', ', $jenisVaksin);
+                }
+            @endphp
             @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
             <div class="form-row">
                 <span class="form-label">Jenis</span>
-                <span>: <span class="form-value"><strong>{{ $screening->vaccineRequest->jenis_vaksin ?? '-' }}</strong></span></span>
+                <span>: <span class="form-value"><strong>{{ $jenisVaksin }}</strong></span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Kategori</span>
                 <span>: <span class="form-value"><strong>Vaksinasi Perjalanan Luar Negeri</strong></span></span>
             </div>
-            <div class="form-row">
-                <span class="form-label">Negara Tujuan</span>
-                <span>: <span class="form-value">{{ $screening->vaccineRequest->negara_tujuan ?? '-' }}</span></span>
-            </div>
-            <div class="form-row">
-                <span class="form-label">Tanggal Berangkat</span>
-                <span>: <span class="form-value">{{ $screening->vaccineRequest->tanggal_berangkat ? \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->locale('id')->isoFormat('DD MMMM YYYY') : '-' }}</span></span>
-            </div>
-            @if($screening->vaccineRequest->nama_travel)
-            <div class="form-row">
-                <span class="form-label">Travel</span>
-                <span>: <span class="form-value">{{ $screening->vaccineRequest->nama_travel }}</span></span>
-            </div>
-            @endif
             @else
             <div class="form-row">
                 <span class="form-label">Jenis</span>
-                <span>: <span class="form-value"><strong>{{ $screening->penilaian->jenis_vaksin ?? $screening->vaccineRequest->jenis_vaksin ?? '-' }}</strong></span></span>
+                <span>: <span class="form-value"><strong>{{ $jenisVaksin }}</strong></span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Kategori</span>
@@ -281,48 +273,91 @@
             @endif
         </div>
 
-        @if($screening->penilaian)
+        @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
+        <div class="form-section" style="margin-top: 15px;">
+            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">DATA PERJALANAN</div>
+            <div class="form-row">
+                <span class="form-label">Negara Tujuan</span>
+                <span>: <span class="form-value">{{ $screening->vaccineRequest->negara_tujuan ?? '-' }}</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Tanggal Berangkat</span>
+                <span>: <span class="form-value">{{ $screening->vaccineRequest->tanggal_berangkat ? \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->locale('id')->isoFormat('DD MMMM YYYY') : '-' }}</span></span>
+            </div>
+            @if($screening->pasien->nomor_paspor)
+            <div class="form-row">
+                <span class="form-label">No. Paspor</span>
+                <span>: <span class="form-value"><strong>{{ $screening->pasien->nomor_paspor }}</strong></span></span>
+            </div>
+            @endif
+            @if($screening->vaccineRequest->nama_travel)
+            <div class="form-row">
+                <span class="form-label">Travel</span>
+                <span>: <span class="form-value">{{ $screening->vaccineRequest->nama_travel }}</span></span>
+            </div>
+            @endif
+        </div>
+        @endif
+
+        @if($screening->nilaiScreening)
         <div class="form-section" style="margin-top: 15px;">
             <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">HASIL PEMERIKSAAN FISIK</div>
             <div class="form-row">
                 <span class="form-label">Tekanan Darah</span>
-                <span>: <span class="form-value"><strong>{{ $screening->penilaian->td ?? '-' }}</strong> mmHg</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->td ?? '-' }}</strong> mmHg</span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Nadi</span>
-                <span>: <span class="form-value"><strong>{{ $screening->penilaian->nadi ?? '-' }}</strong> x/menit</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->nadi ?? '-' }}</strong> x/menit</span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Suhu</span>
-                <span>: <span class="form-value"><strong>{{ $screening->penilaian->suhu ?? '-' }}</strong> °C</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->suhu ?? '-' }}</strong> °C</span></span>
             </div>
+            <div class="form-row">
+                <span class="form-label">Berat Badan</span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->bb ?? '-' }}</strong> Kg</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Tinggi Badan</span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->tb ?? '-' }}</strong> cm</span></span>
+            </div>
+            @if($screening->tanggal_vaksinasi)
             <div class="form-row">
                 <span class="form-label">Tanggal Vaksinasi</span>
                 <span>: <span class="form-value"><strong>{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('DD MMMM YYYY') }}</strong></span></span>
             </div>
+            @endif
         </div>
-
-        @if($screening->penilaian->catatan)
-        <div class="form-section" style="margin-top: 15px;">
-            <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">CATATAN DOKTER</div>
-            <div style="padding: 5px 0; text-align: justify; line-height: 1.5;">{{ $screening->penilaian->catatan }}</div>
-        </div>
-        @endif
 
         <div class="form-section" style="margin-top: 15px;">
             <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">KESIMPULAN</div>
+            @if($screening->catatan_dokter)
+            <div style="padding: 5px 0; text-align: justify; line-height: 1.5;">{{ $screening->catatan_dokter }}</div>
+            @else
             <div style="padding: 5px 0; min-height: 80px; border-bottom: 1px solid #ccc; margin-top: 10px;">
                 <!-- Ruang kosong untuk menulis kesimpulan -->
             </div>
+            @endif
         </div>
 
         <div style="margin-top: 30px;">
             <p style="margin: 2px 0; text-align: right; font-size: 10pt;">Dokter Pemeriksa,</p>
+            @if($screening->tanda_tangan_dokter)
+            <div style="margin-top: 10px; float: right; text-align: center;">
+                <img src="{{ public_path('storage/' . $screening->tanda_tangan_dokter) }}" 
+                     style="max-width: 180px; max-height: 60px; display: block; margin: 0 auto;" />
+                <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px; margin-top: 5px;">
+                    <p style="margin: 0;"><strong>{{ $screening->dokter->nama ?? 'Dr. [Nama Dokter]' }}</strong></p>
+                </div>
+            </div>
+            @else
             <div style="margin-top: 70px; float: right;">
                 <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px; text-align: center;">
                     <p style="margin: 0;"><strong>{{ $screening->dokter->nama ?? 'Dr. [Nama Dokter]' }}</strong></p>
                 </div>
             </div>
+            @endif
             <div style="clear: both;"></div>
         </div>
         @endif
@@ -415,6 +450,41 @@
 
     <div style="margin-top: 15px; border: 1px solid #333; padding: 10px;">
         <p style="margin: 3px 0;"><strong>Hasil Screening:</strong></p>
+        @if($screening->nilaiScreening)
+        <div style="margin-top: 8px;">
+            <table style="width: 100%; font-size: 9pt; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 3px 0; width: 35%;"><strong>Tekanan Darah</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->td ?? '-' }} mmHg</td>
+                    <td style="padding: 3px 0; width: 35%;"><strong>Nadi</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->nadi ?? '-' }} x/menit</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px 0;"><strong>Suhu</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->suhu ?? '-' }} °C</td>
+                    <td style="padding: 3px 0;"><strong>Berat Badan</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->bb ?? '-' }} Kg</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px 0;"><strong>Tinggi Badan</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->tb ?? '-' }} cm</td>
+                    <td style="padding: 3px 0;"><strong>Hasil</strong></td>
+                    <td style="padding: 3px 0;">: 
+                        @if($screening->nilaiScreening->hasil_screening === 'aman')
+                            <strong>AMAN</strong>
+                        @elseif($screening->nilaiScreening->hasil_screening === 'perlu_perhatian')
+                            <strong>PERLU PERHATIAN</strong>
+                        @else
+                            <strong>TIDAK LAYAK</strong>
+                        @endif
+                    </td>
+                </tr>
+            </table>
+            @if($screening->nilaiScreening->admin)
+            <p style="margin: 5px 0 0 0; font-size: 9pt;"><strong>Diperiksa oleh:</strong> {{ $screening->nilaiScreening->admin->nama }}</p>
+            @endif
+        </div>
+        @endif
     </div>
 
     <div style="margin-top: 12px; padding: 8px; background-color: #f9f9f9; border: 1px dashed #666;">
@@ -442,6 +512,12 @@
             <span class="form-label">Nama</span>
             <span>: <span class="form-value">{{ $screening->pasien->nama }}</span></span>
         </div>
+        @if($screening->pasien->nik)
+        <div class="form-row">
+            <span class="form-label">NIK</span>
+            <span>: <span class="form-value"><strong>{{ $screening->pasien->nik }}</strong></span></span>
+        </div>
+        @endif
         <div class="form-row">
             <span class="form-label">Alamat</span>
             <span>: <span class="form-value">{{ $screening->pasien->alamat }}</span></span>
@@ -453,11 +529,17 @@
     </div>
 
     <div class="intro-text">
+        @php
+            $jenisVaksinText = $screening->vaccineRequest->jenis_vaksin ?? '.............................';
+            if (is_array($jenisVaksinText)) {
+                $jenisVaksinText = implode(', ', $jenisVaksinText);
+            }
+        @endphp
         Dengan ini menyatakan dengan <strong>sesungguhnya</strong> telah memberikan <strong>PERSETUJUAN/ IZIN*</strong> untuk diberikan vaksinasi 
         @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
-            <strong><u>{{ $screening->vaccineRequest->jenis_vaksin ?? '.............................' }}</u></strong> untuk perjalanan ke <strong><u>{{ $screening->vaccineRequest->negara_tujuan ?? '.............................' }}</u></strong>
+            <strong><u>{{ $jenisVaksinText }}</u></strong> untuk perjalanan ke <strong><u>{{ $screening->vaccineRequest->negara_tujuan ?? '.............................' }}</u></strong>
         @else
-            <strong><u>{{ $screening->penilaian->jenis_vaksin ?? $screening->vaccineRequest->jenis_vaksin ?? '.............................' }}</u></strong> (Vaksinasi Umum)
+            <strong><u>{{ $jenisVaksinText }}</u></strong> (Vaksinasi Umum)
         @endif
         kepada diri saya sendiri:
     </div>
@@ -467,6 +549,12 @@
             <span class="form-label">Nama Lengkap</span>
             <span>: <span class="form-value">{{ $screening->pasien->nama }}</span></span>
         </div>
+        @if($screening->pasien->nik)
+        <div class="form-row">
+            <span class="form-label">NIK</span>
+            <span>: <span class="form-value"><strong>{{ $screening->pasien->nik }}</strong></span></span>
+        </div>
+        @endif
         <div class="form-row">
             <span class="form-label">Umur</span>
             <span>: <span class="form-value">{{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->age }} tahun</span></span>
@@ -479,10 +567,12 @@
             <span class="form-label">Pekerjaan</span>
             <span>: <span class="form-value">{{ $screening->pasien->pekerjaan ?? '-' }}</span></span>
         </div>
+        @if($screening->tanggal_vaksinasi)
         <div class="form-row">
             <span class="form-label">Tanggal Vaksinasi</span>
             <span>: <span class="form-value"><strong>{{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('dddd, D MMMM Y') }}</strong></span></span>
         </div>
+        @endif
     </div>
 
     <div class="consent-text">
@@ -501,23 +591,36 @@
     <div class="signature-grid">
         <div class="signature-box">
             <p><strong>Dokter/Operator</strong></p>
-            <div class="signature-line">
-                <p>(&nbsp;..........................................................&nbsp;)</p>
-                <p class="small">Nama jelas</p>
+            @if($screening->tanda_tangan_dokter)
+            <div style="margin: 10px 0; text-align: center;">
+                <img src="{{ public_path('storage/' . $screening->tanda_tangan_dokter) }}" 
+                     style="max-width: 150px; max-height: 60px; display: inline-block;" />
             </div>
+            <div style="margin-top: 5px; padding-top: 0;">
+                <p style="margin: 0;"><strong>{{ $screening->dokter->nama ?? '' }}</strong></p>
+            </div>
+            @else
+            <div style="margin: 70px 0 0 0;">
+                <p>(&nbsp;..........................................................&nbsp;)</p>
+            </div>
+            @endif
         </div>
         <div class="signature-box">
             <p><strong>Pasien</strong></p>
-            <div class="signature-line">
-                <p>(&nbsp;..........................................................&nbsp;)</p>
-                <p class="small">Nama jelas</p>
+            <div style="margin: 10px 0 -5px 0; text-align: center; min-height: 60px;">
+                @if($screening->tanda_tangan_pasien)
+                <img src="{{ public_path('storage/' . $screening->tanda_tangan_pasien) }}" 
+                     style="max-width: 150px; max-height: 60px; display: inline-block; filter: grayscale(100%) brightness(0%);" />
+                @endif
+            </div>
+            <div style="padding-top: 0;">
+                <p style="margin: 0;"><strong>{{ $screening->pasien->nama ?? '' }}</strong></p>
             </div>
         </div>
         <div class="signature-box">
             <p><strong>Keluarga/Pendamping</strong></p>
-            <div class="signature-line">
+            <div style="margin: 70px 0 0 0;">
                 <p>(&nbsp;..........................................................&nbsp;)</p>
-                <p class="small">Nama jelas</p>
             </div>
         </div>
     </div>
@@ -526,9 +629,8 @@
         <p class="bold">Saksi dari Pihak RS</p>
         <p class="small italic">Tenaga Ahli</p>
         <div class="rs-witness-box">
-            <div class="rs-witness-line">
+            <div style="margin-top: 70px;">
                 <p>(&nbsp;..........................................................&nbsp;)</p>
-                <p class="small">Nama Jelas</p>
             </div>
         </div>
     </div>

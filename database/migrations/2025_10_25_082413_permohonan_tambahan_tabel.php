@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('pasien_id')->constrained('pasiens')->onDelete('cascade');
             $table->boolean('is_perjalanan')->default(false)->comment('Apakah untuk perjalanan luar negeri');
-            $table->string('jenis_vaksin', 100)->comment('Jenis vaksin yang diminta');
+            $table->text('jenis_vaksin')->comment('Jenis vaksin yang diminta (dapat lebih dari satu, disimpan sebagai JSON)');
             $table->string('negara_tujuan', 100)->nullable()->comment('Hanya untuk perjalanan');
             $table->date('tanggal_berangkat')->nullable()->comment('Hanya untuk perjalanan');
             $table->string('nama_travel', 100)->nullable()->comment('Hanya untuk perjalanan');

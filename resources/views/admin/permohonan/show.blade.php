@@ -1,34 +1,22 @@
-@extends('layouts.app')
-@section('title', 'Detail Permohonan')
+@extends('layouts.admin')
+
+@section('page-title', 'Detail Permohonan')
+@section('page-subtitle', 'Informasi lengkap permohonan vaksinasi')
+
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <nav class="bg-gradient from-red-600 to-pink-600 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <span class="text-xl font-bold text-white">Detail Permohonan Vaksinasi</span>
-            <div class="flex items-center space-x-4">
-                <span class="text-white">{{ Auth::user()->nama }}</span>
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 bg-white text-red-600 hover:bg-red-50 rounded-lg font-semibold">Logout</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ route('admin.permohonan.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-semibold transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Kembali ke Daftar
+        </a>
+    </div>
 
-    <main class="max-w-5xl mx-auto px-4 py-8">
-        <!-- Back Button -->
-        <div class="mb-6">
-            <a href="{{ route('admin.permohonan.index') }}" class="inline-flex items-center text-red-600 hover:text-red-700 font-semibold">
-                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-                </svg>
-                Kembali ke Daftar
-            </a>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6">
-            <!-- Main Content -->
-            <div class="md:col-span-2 space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
                 <!-- Data Pasien -->
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-blue-600 text-white px-6 py-4">
@@ -38,6 +26,61 @@
                         <div class="grid grid-cols-3 gap-4">
                             <div class="text-sm text-gray-600">Nama Lengkap</div>
                             <div class="col-span-2 font-semibold">{{ $permohonan->pasien->nama }}</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 border-t pt-4">
+                            <div class="text-sm text-gray-600">NIK</div>
+                            <div class="col-span-2 font-semibold">{{ $permohonan->pasien->nik ?? '-' }}</div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 border-t pt-4">
+                            <div class="text-sm text-gray-600">Status Pasien</div>
+                            <div class="col-span-2">
+                                @if($permohonan->pasien->status_pasien === 'baru')
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">Pasien Baru</span>
+                                @else
+                                <span class="px-3 py-1 bg-green-100 text-green-800 text-xs font-semibold rounded-full">Pasien Lama</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-4 border-t pt-4">
+                            <div class="text-sm text-gray-600">Nomor Rekam Medis</div>
+                            <div class="col-span-2">
+                                @if($permohonan->pasien->nomor_rm)
+                                <div class="flex items-center justify-between">
+                                    <span class="font-semibold text-lg text-blue-600">{{ $permohonan->pasien->nomor_rm }}</span>
+                                    <button onclick="toggleEditRM()" class="text-sm text-blue-500 hover:text-blue-700 underline">
+                                        Edit
+                                    </button>
+                                </div>
+                                @else
+                                <span class="text-red-600 font-medium">Belum ada - Silakan isi</span>
+                                @endif
+                                
+                                <!-- Form Edit RM (hidden by default) -->
+                                <form id="formEditRM" method="POST" action="{{ route('admin.pasien.update-rm', $permohonan->pasien) }}" 
+                                      class="mt-3 {{ $permohonan->pasien->nomor_rm ? 'hidden' : '' }}" onsubmit="return confirm('Yakin ingin menyimpan Nomor RM ini?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <div class="flex items-center space-x-2">
+                                        <input type="text" 
+                                               name="nomor_rm" 
+                                               value="{{ $permohonan->pasien->nomor_rm }}"
+                                               placeholder="Masukkan Nomor RM"
+                                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                               required>
+                                        <button type="submit" 
+                                                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold text-sm">
+                                            Simpan
+                                        </button>
+                                        @if($permohonan->pasien->nomor_rm)
+                                        <button type="button" 
+                                                onclick="toggleEditRM()" 
+                                                class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-semibold text-sm">
+                                            Batal
+                                        </button>
+                                        @endif
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                         <div class="grid grid-cols-3 gap-4 border-t pt-4">
                             <div class="text-sm text-gray-600">Nomor Paspor</div>
@@ -72,6 +115,105 @@
                     </div>
                 </div>
 
+                <!-- Dokumen Pasien -->
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-indigo-600 text-white px-6 py-4">
+                        <h2 class="text-xl font-bold">Dokumen Identitas</h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Foto KTP -->
+                            @if($permohonan->pasien->foto_ktp)
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Foto KTP</label>
+                                <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->foto_ktp) }}', 'Foto KTP - {{ $permohonan->pasien->nama }}')">
+                                    <img src="{{ asset('storage/' . $permohonan->pasien->foto_ktp) }}" 
+                                         alt="Foto KTP" 
+                                         class="w-full h-48 object-cover hover:scale-105 transition">
+                                    <div class="bg-gray-50 px-3 py-2 text-center">
+                                        <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Foto KTP</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-500">Tidak ada foto</p>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Foto Paspor -->
+                            @if($permohonan->pasien->foto_paspor)
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Paspor</label>
+                                <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->foto_paspor) }}', 'Foto Paspor - {{ $permohonan->pasien->nama }}')">
+                                    <img src="{{ asset('storage/' . $permohonan->pasien->foto_paspor) }}" 
+                                         alt="Foto Paspor" 
+                                         class="w-full h-48 object-cover hover:scale-105 transition">
+                                    <div class="bg-gray-50 px-3 py-2 text-center">
+                                        <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Paspor</label>
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <p class="text-sm text-gray-500">Tidak ada foto</p>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tanda Tangan Pasien -->
+                @if($permohonan->screening && $permohonan->screening->tanda_tangan_pasien)
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-purple-600 text-white px-6 py-4">
+                        <h2 class="text-xl font-bold flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            Tanda Tangan Persetujuan Pasien
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-4 mb-3">
+                            <p class="text-sm text-purple-700 mb-2">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Pasien telah menandatangani form persetujuan saat pengisian screening
+                            </p>
+                            <p class="text-xs text-purple-600">
+                                Ditandatangani pada: {{ $permohonan->screening->tanggal_screening ? $permohonan->screening->tanggal_screening->format('d/m/Y H:i') : '-' }}
+                            </p>
+                        </div>
+                        
+                        <div class="border-2 border-purple-200 rounded-lg bg-white p-4 hover:border-purple-400 transition cursor-pointer" 
+                             onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}', 'Tanda Tangan Persetujuan - {{ $permohonan->pasien->nama }}')">
+                            <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}" 
+                                 alt="Tanda Tangan Pasien" 
+                                 class="w-full max-h-48 object-contain hover:scale-105 transition">
+                            <div class="bg-purple-50 px-3 py-2 text-center mt-3 rounded">
+                                <span class="text-xs text-purple-700 font-medium">Klik untuk memperbesar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Data Perjalanan & Vaksinasi -->
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-green-600 text-white px-6 py-4">
@@ -88,7 +230,15 @@
                         </div>
                         <div class="grid grid-cols-3 gap-4 border-t pt-4">
                             <div class="text-sm text-gray-600">Jenis Vaksin</div>
-                            <div class="col-span-2">{{ $permohonan->jenis_vaksin ?? '-' }}</div>
+                            <div class="col-span-2">
+                                @if(is_array($permohonan->jenis_vaksin))
+                                    @foreach($permohonan->jenis_vaksin as $vaksin)
+                                        <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded mr-1 mb-1">{{ $vaksin }}</span>
+                                    @endforeach
+                                @else
+                                    {{ $permohonan->jenis_vaksin ?? '-' }}
+                                @endif
+                            </div>
                         </div>
                         <div class="grid grid-cols-3 gap-4 border-t pt-4">
                             <div class="text-sm text-gray-600">Nama Travel</div>
@@ -104,120 +254,142 @@
 
             <!-- Sidebar Actions -->
             <div class="space-y-6">
-                <!-- Status Card -->
+                <!-- Status Pemeriksaan -->
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="font-bold mb-4">Status Permohonan</h3>
-                    @if($permohonan->disetujui)
-                    <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4 text-center">
-                        <svg class="w-12 h-12 mx-auto text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p class="text-green-700 font-bold">DISETUJUI</p>
-                    </div>
-                    @else
-                    <div class="bg-yellow-50 border-2 border-yellow-500 rounded-lg p-4 text-center">
-                        <svg class="w-12 h-12 mx-auto text-yellow-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <p class="text-yellow-700 font-bold">PENDING</p>
-                    </div>
-                    @endif
-
-                    <div class="mt-4 text-sm text-gray-600">
-                        <p>Dibuat: {{ $permohonan->created_at->format('d/m/Y H:i') }}</p>
-                    </div>
-                </div>
-
-                <!-- Screening Status -->
-                @php
-                    $screening = \App\Models\Screening::where('pasien_id', $permohonan->pasien_id)
-                        ->where('vaccine_request_id', $permohonan->id)
-                        ->with('dokter')
-                        ->first();
-                @endphp
-
-                <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="font-bold mb-4">Status Screening</h3>
-                    @if($screening)
+                    <h3 class="font-bold mb-4">Status Pemeriksaan</h3>
+                    
+                    @if($permohonan->screening && $permohonan->screening->nilaiScreening)
+                    <!-- SUDAH DICEK -->
                     <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4 text-center mb-4">
                         <svg class="w-12 h-12 mx-auto text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <p class="text-green-700 font-bold">SUDAH DI-SCREENING</p>
-                        <p class="text-sm text-green-600 mt-1">{{ $screening->tanggal_screening->format('d/m/Y H:i') }}</p>
+                        <p class="text-green-700 font-bold">SUDAH DICEK</p>
+                        <p class="text-sm text-green-600 mt-1">Diperiksa: {{ $permohonan->screening->nilaiScreening->updated_at->format('d/m/Y H:i') }}</p>
                     </div>
 
-                    @if($screening->dokter_id)
+                    @if($permohonan->screening->nilaiScreening)
+                    <!-- Detail Pemeriksaan -->
                     <div class="bg-blue-50 border-2 border-blue-500 rounded-lg p-4 mb-4">
                         <div class="flex items-center justify-center mb-2">
                             <svg class="w-8 h-8 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <div class="text-left">
-                                <p class="text-xs text-blue-600 font-medium">Ditangani oleh:</p>
-                                <p class="text-blue-900 font-bold">Dr. {{ $screening->dokter->nama }}</p>
+                                <p class="text-xs text-blue-600 font-medium">Diperiksa oleh:</p>
+                                <p class="text-blue-900 font-bold">{{ $permohonan->screening->nilaiScreening->admin->nama }}</p>
                             </div>
                         </div>
-                        <div class="text-center">
-                            @if($screening->status_vaksinasi === 'proses_vaksinasi')
-                            <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-bold">PROSES VAKSINASI</span>
-                            @elseif($screening->status_vaksinasi === 'sudah_divaksin')
-                            <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold">SUDAH DIVAKSIN</span>
-                            @if($screening->tanggal_vaksinasi)
-                            <p class="text-xs text-green-600 mt-1">{{ $screening->tanggal_vaksinasi->format('d/m/Y H:i') }}</p>
-                            @endif
+                        <div class="text-center mt-2">
+                            @if($permohonan->screening->nilaiScreening->hasil_screening === 'aman')
+                            <span class="px-3 py-1 bg-green-500 text-white rounded-full text-xs font-bold">AMAN</span>
+                            @elseif($permohonan->screening->nilaiScreening->hasil_screening === 'perlu_perhatian')
+                            <span class="px-3 py-1 bg-yellow-500 text-white rounded-full text-xs font-bold">PERLU PERHATIAN</span>
                             @else
-                            <span class="px-3 py-1 bg-gray-500 text-white rounded-full text-xs font-bold">BELUM DIVAKSIN</span>
+                            <span class="px-3 py-1 bg-red-500 text-white rounded-full text-xs font-bold">TIDAK LAYAK</span>
                             @endif
                         </div>
                     </div>
-                    @endif
-
-                    <a href="{{ route('admin.screening.pasien.show', $permohonan) }}" 
-                        class="block w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-center">
-                        Lihat Hasil Screening
+                    <a href="{{ route('admin.screening.show', $permohonan) }}" 
+                        class="block w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-center mb-4">
+                        Lihat & Edit Hasil Pemeriksaan
                     </a>
+
+                    <!-- Assign to Dokter Section (only if hasil_screening is aman and not yet assigned) -->
+                    @if($permohonan->screening->nilaiScreening->hasil_screening === 'aman' && !$permohonan->screening->dokter_id)
+                    <div class="bg-indigo-50 border-2 border-indigo-500 rounded-lg p-4 mb-4">
+                        <h4 class="font-semibold text-indigo-900 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Serahkan ke Dokter
+                        </h4>
+                        <form method="POST" action="{{ route('admin.screening.assign-dokter', $permohonan) }}" onsubmit="return confirm('Yakin ingin menyerahkan ke dokter?')">
+                            @csrf
+                            <div class="mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Dokter <span class="text-red-500">*</span></label>
+                                <select name="dokter_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                                    <option value="">-- Pilih Dokter --</option>
+                                    @foreach($dokterList ?? [] as $dokter)
+                                    <option value="{{ $dokter->id }}">Dr. {{ $dokter->nama }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Vaksinasi <span class="text-red-500">*</span></label>
+                                <input type="date" name="tanggal_vaksinasi" 
+                                    min="{{ date('Y-m-d') }}"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
+                            </div>
+                            <button type="submit" class="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-lg">
+                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Serahkan ke Dokter
+                            </button>
+                        </form>
+                    </div>
+                    @elseif($permohonan->screening->dokter_id)
+                    <!-- Already assigned to dokter -->
+                    <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <svg class="w-8 h-8 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <p class="text-xs text-green-600 font-medium">Diserahkan ke:</p>
+                                <p class="text-green-900 font-bold">Dr. {{ $permohonan->screening->dokter->nama ?? '-' }}</p>
+                            </div>
+                        </div>
+                        @if($permohonan->screening->tanggal_vaksinasi)
+                        <p class="text-sm text-green-700">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Jadwal: {{ $permohonan->screening->tanggal_vaksinasi->format('d/m/Y') }}
+                        </p>
+                        @endif
+                    </div>
+                    @endif
                     @else
+                    <!-- Sudah isi screening tapi belum dicek -->
+                    <div class="bg-red-50 border-2 border-red-500 rounded-lg p-4 text-center mb-4">
+                        <svg class="w-12 h-12 mx-auto text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <p class="text-red-700 font-bold">BELUM DICEK</p>
+                        <p class="text-sm text-red-600 mt-1">Pasien sudah isi data, menunggu pemeriksaan</p>
+                    </div>
+                    <a href="{{ route('admin.screening.show', $permohonan) }}" 
+                        class="block w-full px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold text-center">
+                        Lakukan Pemeriksaan
+                    </a>
+                    @endif
+                    
+                    @else
+                    <!-- Pasien belum isi form screening sama sekali - Admin tetap bisa beri nilai -->
                     <div class="bg-yellow-50 border-2 border-yellow-500 rounded-lg p-4 text-center mb-4">
                         <svg class="w-12 h-12 mx-auto text-yellow-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
-                        <p class="text-yellow-700 font-bold">BELUM DI-SCREENING</p>
+                        <p class="text-yellow-700 font-bold">BELUM DICEK</p>
+                        <p class="text-sm text-yellow-600 mt-1">Pasien belum mengisi data screening</p>
                     </div>
-                    <a href="{{ route('admin.screening.pasien.create', $permohonan) }}" 
+                    <a href="{{ route('admin.screening.show', $permohonan) }}" 
                         class="block w-full px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold text-center">
-                        Mulai Screening
+                        Lakukan Pemeriksaan
                     </a>
                     @endif
                 </div>
 
-                <!-- Actions -->
+                <!-- Info Tambahan -->
                 <div class="bg-white rounded-lg shadow-lg p-6">
-                    <h3 class="font-bold mb-4">Aksi</h3>
-                    <div class="space-y-3">
-                        @if(!$permohonan->disetujui)
-                        <form method="POST" action="{{ route('admin.permohonan.approve', $permohonan) }}">
-                            @csrf @method('PATCH')
-                            <button type="submit" class="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold">
-                                Setujui Permohonan
-                            </button>
-                        </form>
-                        <form method="POST" action="{{ route('admin.permohonan.reject', $permohonan) }}">
-                            @csrf @method('PATCH')
-                            <button type="submit" class="w-full px-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-white rounded-lg font-semibold">
-                                Tolak Permohonan
-                            </button>
-                        </form>
-                        @endif
-                        <form method="POST" action="{{ route('admin.permohonan.destroy', $permohonan) }}" onsubmit="return confirm('Yakin hapus permohonan ini?')">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold">
-                                Hapus Permohonan
-                            </button>
-                        </form>
+                    <h3 class="font-bold mb-4">Informasi</h3>
+                    <div class="space-y-3 text-sm text-gray-600">
+                        <p>✓ Pasien mengisi screening sendiri</p>
+                        <p>✓ Admin memberi nilai screening</p>
+                        <p>✓ Status diperbarui otomatis</p>
                     </div>
-                </div>
-
                 <!-- Contact Info -->
                 <div class="bg-blue-50 rounded-lg p-4">
                     <h4 class="font-semibold text-sm mb-2">Hubungi Pasien</h4>
@@ -230,6 +402,42 @@
                 </div>
             </div>
         </div>
-    </main>
-</div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
+        <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl">
+            <p id="modalTitle" class="text-white text-center mt-4 font-semibold"></p>
+        </div>
+    </div>
+
+    <script>
+    function toggleEditRM() {
+        const form = document.getElementById('formEditRM');
+        form.classList.toggle('hidden');
+    }
+
+    function openImageModal(imageSrc, title) {
+        document.getElementById('modalImage').src = imageSrc;
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('imageModal').classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+    }
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+    </script>
 @endsection

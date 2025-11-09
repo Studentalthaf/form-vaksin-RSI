@@ -1,34 +1,13 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Kelola Pertanyaan Screening - Admin Panel')
+@section('page-title', 'Bank Pertanyaan')
+@section('page-subtitle', 'Kelola pertanyaan screening pasien')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <a href="{{ route('admin.dashboard') }}" class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </a>
-                    <span class="ml-3 text-xl font-bold text-gray-800">Pertanyaan Screening</span>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <p class="text-sm font-medium text-gray-800">{{ Auth::user()->nama }}</p>
-                    <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg">Logout</button></form>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        @if(session('success'))<div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg"><p class="text-green-700">{{ session('success') }}</p></div>@endif
-
-        <div class="mb-6 flex justify-between items-center">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-800">Pertanyaan Screening</h1>
+    <!-- Header & Add Button -->
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">Bank Pertanyaan Screening</h1>
                 <p class="text-gray-600 mt-2">Kelola pertanyaan untuk screening pasien vaksin</p>
             </div>
             <div class="flex space-x-3">
@@ -90,6 +69,4 @@
                 </tbody>
             </table>
         </div>
-    </main>
-</div>
 @endsection

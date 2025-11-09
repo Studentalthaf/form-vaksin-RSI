@@ -1,61 +1,110 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 📋 Form Vaksinasi - Rumah Sakit Islam (RSI)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistem manajemen form vaksinasi berbasis Laravel 11 untuk Rumah Sakit Islam.
 
-## About Laravel
+## 🚀 Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Public Form
+- ✅ Form permohonan vaksinasi online
+- ✅ Upload foto KTP & Paspor
+- ✅ Screening kesehatan dengan tanda tangan digital
+- ✅ Validasi data otomatis
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Admin Panel
+- ✅ Dashboard monitoring permohonan
+- ✅ Manajemen data pasien
+- ✅ Input hasil pemeriksaan fisik (TD, Nadi, Suhu, BB, TB)
+- ✅ Assignment pasien ke dokter
+- ✅ Manajemen user (Admin & Dokter)
+- ✅ Lihat permohonan terverifikasi
+- ✅ Export PDF surat persetujuan
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Dokter Panel
+- ✅ Dashboard pasien yang di-assign
+- ✅ Review data pasien & hasil screening
+- ✅ Input catatan dokter
+- ✅ Tanda tangan digital dokter
+- ✅ Konfirmasi persetujuan vaksinasi
 
-## Learning Laravel
+## 🛠️ Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Framework**: Laravel 11
+- **Database**: MySQL
+- **PDF Generator**: DomPDF
+- **Frontend**: Tailwind CSS
+- **Authentication**: Laravel Sanctum
+- **File Storage**: Laravel Storage
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 📦 Installation
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Prerequisites
+- PHP >= 8.2
+- Composer
+- MySQL
+- Node.js & NPM
 
-## Laravel Sponsors
+### Setup Steps
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+# Clone repository
+git clone https://github.com/Studentalthaf/form-vaksin-RSI.git
+cd form-vaksin-RSI
 
-### Premium Partners
+# Install dependencies
+composer install
+npm install
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# Copy environment file
+cp .env.example .env
 
-## Contributing
+# Generate application key
+php artisan key:generate
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# Configure database in .env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=form_vaksin
+DB_USERNAME=root
+DB_PASSWORD=
 
-## Code of Conduct
+# Run migrations & seeders
+php artisan migrate:fresh --seed
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+# Create storage link
+php artisan storage:link
 
-## Security Vulnerabilities
+# Build assets
+npm run build
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Start development server
+php artisan serve
+```
 
-## License
+## 👤 Default Login
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+**Admin:**
+- Email: `admin@rsi.com`
+- Password: `password123`
+
+**Dokter:**
+- Email: `dokter@rsi.com`
+- Password: `password123`
+
+## 🔐 Security
+
+- ✅ CSRF Protection
+- ✅ XSS Protection
+- ✅ SQL Injection Prevention (Eloquent ORM)
+- ✅ Role-based Access Control
+- ✅ File Upload Validation
+- ✅ Password Hashing (Bcrypt)
+
+⚠️ **IMPORTANT**: 
+- Ubah password default setelah deployment
+- Set `APP_DEBUG=false` di production
+- Generate APP_KEY baru dengan `php artisan key:generate`
+
+## 📄 License
+
+MIT License

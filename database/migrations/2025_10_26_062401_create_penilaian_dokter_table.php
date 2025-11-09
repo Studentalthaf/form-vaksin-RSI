@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('penilaian_dokter', function (Blueprint $table) {
+        Schema::create('nilai_screening', function (Blueprint $table) {
             $table->id();
             $table->foreignId('screening_id')->constrained('screenings')->onDelete('cascade');
+            $table->foreignId('admin_id')->constrained('users')->onDelete('cascade')->comment('Admin yang memberi nilai');
             
             // Data vaksinasi dari vaccine_request
             $table->string('jenis_vaksin')->nullable()->comment('Jenis vaksin yang diminta');
@@ -21,7 +22,7 @@ return new class extends Migration
             
             // Field penilaian sesuai gambar
             $table->string('alergi_obat')->nullable(); // "Ada / tidak *"
-            $table->string('alergi_vasin')->nullable(); // "Ada / tidak *"
+            $table->string('alergi_vaksin')->nullable(); // "Ada / tidak *"
             $table->enum('sudah_vaksin_covid', ['1', '2', 'booster'])->nullable(); // "1 / 2 / booster"
             $table->string('nama_vaksin_covid')->nullable(); // "Nama vaksin covid 19"
             $table->text('dimana')->nullable(); // Dimana
@@ -35,7 +36,8 @@ return new class extends Migration
             $table->string('tb')->nullable(); // Tinggi Badan
             $table->string('bb')->nullable(); // Berat Badan
             
-            // Catatan tambahan
+            // Hasil screening dan status
+            $table->enum('hasil_screening', ['aman', 'perlu_perhatian', 'tidak_layak'])->default('aman');
             $table->text('catatan')->nullable();
             
             $table->timestamps();
@@ -47,6 +49,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('penilaian_dokter');
+        Schema::dropIfExists('nilai_screening');
     }
 };

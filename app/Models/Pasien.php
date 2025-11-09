@@ -12,8 +12,9 @@ class Pasien extends Model
     protected $table = 'pasiens';
 
     protected $fillable = [
-        'sim_rs',
+        'nik',
         'nama',
+        'nomor_rm',
         'nomor_paspor',
         'tempat_lahir',
         'tanggal_lahir',
@@ -21,7 +22,20 @@ class Pasien extends Model
         'pekerjaan',
         'alamat',
         'no_telp',
+        'foto_ktp',
+        'foto_paspor',
+        'status_pasien',
     ];
+
+    protected $appends = ['sim_rs'];
+
+    /**
+     * Accessor untuk SIM RS (menggunakan NIK sebagai identitas)
+     */
+    public function getSimRsAttribute()
+    {
+        return $this->nik ?? 'N/A';
+    }
 
     protected $casts = [
         'tanggal_lahir' => 'date',

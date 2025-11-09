@@ -26,10 +26,16 @@ class VaccineRequest extends Model
         'tanggal_berangkat' => 'date',
         'is_perjalanan' => 'boolean',
         'disetujui' => 'boolean',
+        'jenis_vaksin' => 'array', // Cast to array for multiple vaccines
     ];
 
     public function pasien()
     {
         return $this->belongsTo(Pasien::class, 'pasien_id');
+    }
+
+    public function screening()
+    {
+        return $this->hasOne(Screening::class, 'vaccine_request_id');
     }
 }

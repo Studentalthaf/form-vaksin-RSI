@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PenilaianDokter extends Model
+class NilaiScreening extends Model
 {
     use HasFactory;
 
-    protected $table = 'penilaian_dokter';
+    protected $table = 'nilai_screening';
 
     protected $fillable = [
         'screening_id',
+        'admin_id',
         'alergi_obat',
-        'alergi_vasin',
+        'alergi_vaksin',
         'sudah_vaksin_covid',
         'jenis_vaksin',
         'negara_tujuan',
@@ -27,6 +28,7 @@ class PenilaianDokter extends Model
         'suhu',
         'tb',
         'bb',
+        'hasil_screening',
         'catatan',
     ];
 
@@ -40,5 +42,13 @@ class PenilaianDokter extends Model
     public function screening()
     {
         return $this->belongsTo(Screening::class);
+    }
+
+    /**
+     * Relasi ke Admin yang memberi nilai
+     */
+    public function admin()
+    {
+        return $this->belongsTo(User::class, 'admin_id');
     }
 }

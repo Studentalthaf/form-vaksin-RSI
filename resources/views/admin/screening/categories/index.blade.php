@@ -1,34 +1,16 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
-@section('title', 'Kategori Pertanyaan - Admin Panel')
+@section('page-title', 'Kategori Pertanyaan')
+@section('page-subtitle', 'Kelola kategori pertanyaan screening')
 
 @section('content')
-    <div class="min-h-screen bg-gray-50">
-        <!-- Navbar -->
-        <nav class="bg-white shadow-sm border-b border-gray-200">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center h-16">
-                    <div class="flex items-center">
-                        <a href="{{ route('admin.dashboard') }}"
-                            class="w-10 h-10 bg-red-500 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                            </svg>
-                        </a>
-                        <span class="ml-3 text-xl font-bold text-gray-800">Kategori Pertanyaan Screening</span>
-                    </div>
-
-                    <div class="flex items-center space-x-4">
-                        <div class="text-right">
-                            <p class="text-sm font-medium text-gray-800">{{ Auth::user()->nama }}</p>
-                            <p class="text-xs text-red-600 font-semibold">Administrator</p>
-                        </div>
-
-                        <form method="POST" action="{{ route('logout') }}" class="inline">
-                            @csrf
-                            <button type="submit"
-                                class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition duration-200">
+    <!-- Header & Add Button -->
+    <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl lg:text-3xl font-bold text-gray-800">Kategori Pertanyaan</h1>
+            <p class="text-gray-600 mt-1 text-sm lg:text-base">Kelola kategori untuk pertanyaan screening</p>
+        </div>
+        <a href="{{ route('admin.screening.categories.create') }}" class="inline-flex items-center px-4 lg:px-6 py-2 lg:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition">
                                 Logout
                             </button>
                         </form>
@@ -195,6 +177,4 @@
                     </tbody>
                 </table>
             </div>
-        </main>
-    </div>
 @endsection

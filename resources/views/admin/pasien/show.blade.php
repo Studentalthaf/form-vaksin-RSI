@@ -1,36 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('page-title', 'Detail Pasien')
+@section('page-subtitle', 'Informasi lengkap data pasien')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-    <!-- Navbar -->
-    <nav class="bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <svg class="w-8 h-8 text-white mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <div>
-                        <h1 class="text-2xl font-bold text-white">Detail Pasien</h1>
-                        <p class="text-sm text-blue-100">Informasi Lengkap Pasien</p>
-                    </div>
-                </div>
-                <div class="flex items-center">
-                    <a href="{{ route('admin.pasien.index') }}" class="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 hover:bg-opacity-30 text-white rounded-lg transition-all duration-200">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Kembali
-                    </a>
-                </div>
-            </div>
-        </div>
-    </nav>
+    <!-- Back Button -->
+    <div class="mb-6">
+        <a href="{{ route('admin.pasien.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-semibold transition">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            Kembali ke Daftar Pasien
+        </a>
+    </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- Informasi Pasien -->
-        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+    <!-- Informasi Pasien -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
             <div class="bg-gradient-to-r from-blue-500 to-indigo-500 px-6 py-4">
                 <h2 class="text-xl font-bold text-white flex items-center">
                     <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +26,7 @@
             </div>
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- SIM RS -->
+                    <!-- NIK -->
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
                             <svg class="w-6 h-6 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,8 +34,8 @@
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <p class="text-sm font-semibold text-gray-600">SIM Rumah Sakit</p>
-                            <p class="mt-1 text-lg font-bold text-gray-900 font-mono">{{ $pasien->sim_rs }}</p>
+                            <p class="text-sm font-semibold text-gray-600">NIK</p>
+                            <p class="mt-1 text-lg font-bold text-gray-900 font-mono">{{ $pasien->nik ?? '-' }}</p>
                         </div>
                     </div>
 
@@ -63,7 +48,7 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">Nama Lengkap</p>
-                            <p class="mt-1 text-lg font-bold text-gray-900">{{ $pasien->nama }}</p>
+                            <p class="mt-1 text-lg font-bold text-gray-900">{{ is_string($pasien->nama) ? $pasien->nama : '-' }}</p>
                         </div>
                     </div>
 
@@ -76,15 +61,17 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">Tempat, Tanggal Lahir</p>
-                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ $pasien->tempat_lahir }}, {{ \Carbon\Carbon::parse($pasien->tanggal_lahir)->format('d F Y') }}</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ is_string($pasien->tempat_lahir) ? $pasien->tempat_lahir : '-' }}, {{ $pasien->tanggal_lahir ? \Carbon\Carbon::parse($pasien->tanggal_lahir)->format('d F Y') : '-' }}</p>
+                            @if($pasien->tanggal_lahir)
                             <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($pasien->tanggal_lahir)->age }} tahun</p>
+                            @endif
                         </div>
                     </div>
 
                     <!-- Jenis Kelamin -->
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
-                            @if($pasien->jenis_kelamin == 'L')
+                            @if(is_string($pasien->jenis_kelamin) && $pasien->jenis_kelamin == 'L')
                             <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
@@ -96,7 +83,7 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">Jenis Kelamin</p>
-                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ $pasien->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ is_string($pasien->jenis_kelamin) && $pasien->jenis_kelamin == 'L' ? 'Laki-Laki' : 'Perempuan' }}</p>
                         </div>
                     </div>
 
@@ -109,7 +96,7 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">No. Telepon</p>
-                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ $pasien->no_telp }}</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ is_string($pasien->no_telp) ? $pasien->no_telp : '-' }}</p>
                         </div>
                     </div>
 
@@ -122,7 +109,7 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">Pekerjaan</p>
-                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ $pasien->pekerjaan }}</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ is_string($pasien->pekerjaan) ? $pasien->pekerjaan : '-' }}</p>
                         </div>
                     </div>
 
@@ -136,12 +123,12 @@
                         </div>
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">Alamat Lengkap</p>
-                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ $pasien->alamat }}</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">{{ is_string($pasien->alamat) ? $pasien->alamat : '-' }}</p>
                         </div>
                     </div>
 
                     <!-- Nomor Paspor (jika ada) -->
-                    @if($pasien->nomor_paspor)
+                    @if($pasien->nomor_paspor && is_string($pasien->nomor_paspor))
                     <div class="flex items-start md:col-span-2">
                         <div class="flex-shrink-0">
                             <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,7 +186,7 @@
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                                     </svg>
-                                    {{ $request->jenis_vaksin }}
+                                    {{ is_string($request->jenis_vaksin) ? $request->jenis_vaksin : '-' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -210,7 +197,7 @@
                                     </svg>
                                     Perjalanan LN
                                 </span>
-                                <div class="text-xs text-gray-600 mt-1">{{ $request->negara_tujuan }}</div>
+                                <div class="text-xs text-gray-600 mt-1">{{ is_string($request->negara_tujuan) ? $request->negara_tujuan : '-' }}</div>
                                 @else
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
                                     <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,17 +257,17 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($request->screening && $request->screening->dokter)
+                                @if($request->screening && $request->screening->dokter && isset($request->screening->dokter->nama))
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-8 w-8 bg-purple-500 rounded-full flex items-center justify-center">
-                                        <span class="text-white font-semibold text-sm">{{ substr($request->screening->dokter->name, 0, 1) }}</span>
+                                        <span class="text-white font-semibold text-sm">{{ substr($request->screening->dokter->nama, 0, 1) }}</span>
                                     </div>
                                     <div class="ml-3">
-                                        <p class="text-sm font-semibold text-gray-900">{{ $request->screening->dokter->name }}</p>
+                                        <p class="text-sm font-semibold text-gray-900">{{ $request->screening->dokter->nama }}</p>
                                     </div>
                                 </div>
                                 @else
-                                <span class="text-sm text-gray-400">-</span>
+                                <span class="text-sm text-gray-400">Belum Ditugaskan</span>
                                 @endif
                             </td>
                         </tr>
@@ -299,6 +286,4 @@
             </div>
             @endif
         </div>
-    </div>
-</div>
 @endsection
