@@ -72,7 +72,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-center">
                     <div class="flex items-center justify-center space-x-2">
                         <a href="{{ route('admin.permohonan.show', $item) }}" 
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+                           class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
                            title="Lihat Detail & Beri Nilai">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -80,6 +80,21 @@
                             </svg>
                             Detail
                         </a>
+                        
+                        <form action="{{ route('admin.permohonan.destroy', $item) }}" method="POST" 
+                              onsubmit="return confirm('⚠️ PERHATIAN!\n\nAnda yakin ingin menghapus permohonan pasien {{ $item->pasien->nama }}?\n\nSemua data akan dihapus:\n- Data permohonan\n- Data screening\n- Foto KTP\n- Foto Paspor\n- Tanda tangan pasien\n- Tanda tangan dokter\n\nTindakan ini TIDAK BISA dibatalkan!')"
+                              class="inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" 
+                                    class="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all"
+                                    title="Hapus Permohonan & Semua Data">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                                Hapus
+                            </button>
+                        </form>
                     </div>
                 </td>
             </tr>

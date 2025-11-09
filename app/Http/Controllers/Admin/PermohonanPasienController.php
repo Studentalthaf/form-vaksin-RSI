@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pasien;
 use App\Models\VaccineRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PermohonanPasienController extends Controller
@@ -241,5 +242,49 @@ class PermohonanPasienController extends Controller
             'Pragma' => 'no-cache',
             'Expires' => '0'
         ]);
+    }
+
+    /**
+     * Hapus permohonan pasien beserta semua data terkait
+     */
+    public function destroy(VaccineRequest $permohonan)
+    {
+        try {
+            $pasienNama = $permohonan->pasien->nama;
+            
+            // Hapus file foto KTP jika ada
+            if ($permohonan->pasien->foto_ktp && Storage::disk('public')->exists($permohonan->pasien->foto_ktp)) {
+                Storage::disk('public')->delete($permohonan->pasien->foto_ktp);
+            }
+            
+            // Hapus file foto Paspor jika ada
+            if ($permohonan->pasien->foto_paspor && Storage::disk('public')->exists($permohonan->pasien->foto_paspor)) {
+                Storage::disk('public')->delete($permohonan->pasien->foto_paspor);
+            }
+            
+            // Hapus tanda tangan pasien jika ada
+            if ($permohonan->screening && $permohonan->screening->tanda_tangan_pasien) {
+                if (Storage::disk('public')->exists($permohonan->screening->tanda_tangan_pasien)) {
+                    Storage::disk('public')->delete($permohonan->screening->tanda_tangan_pasien);
+                }
+            }
+            
+            // Hapus tanda tangan dokter jika ada
+            if ($permohonan->screening && $permohonan->screening->tanda_tangan_dokter) {
+                if (Storage::disk('public')->exists($permohonan->screening->tanda_tangan_dokter)) {
+                    Storage::disk('public')->delete($permohonan->screening->tanda_tangan_dokter);
+                }
+            }
+            
+            // Hapus permohonan (akan cascade delete ke screening, answers, dll)
+            $permohonan->delete();
+            
+            return redirect()->route('admin.permohonan.index')
+                ->with('success', "Permohonan pasien {$pasienNama} berhasil dihapus beserta semua data terkait!");
+                
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Gagal menghapus permohonan: ' . $e->getMessage());
+        }
     }
 }

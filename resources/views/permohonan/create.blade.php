@@ -319,6 +319,22 @@
                     </div>
                 </div>
 
+                <!-- reCAPTCHA Verification -->
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">Verifikasi Keamanan</h3>
+                    <div class="flex flex-col items-center">
+                        <div class="p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+                            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                        </div>
+                        @error('g-recaptcha-response')
+                        <div class="mt-3 text-sm text-red-600 text-center font-semibold bg-red-50 px-4 py-2 rounded-lg">
+                            ⚠️ {{ $message }}
+                        </div>
+                        @enderror
+                        <p class="mt-2 text-xs text-gray-500 text-center">Centang kotak "Saya bukan robot" untuk melanjutkan</p>
+                    </div>
+                </div>
+
                 <!-- Submit Button -->
                 <div class="flex justify-end gap-4 pt-6 border-t">
                     <button type="submit" 
@@ -438,6 +454,25 @@
                 });
             });
         });
+    </script>
+
+    <!-- Google reCAPTCHA Script - Load at end for better performance -->
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    
+    <!-- Fallback if reCAPTCHA doesn't load -->
+    <script>
+        // Check if reCAPTCHA loaded after 5 seconds
+        setTimeout(function() {
+            const recaptchaDiv = document.querySelector('.g-recaptcha');
+            if (recaptchaDiv && !recaptchaDiv.innerHTML) {
+                console.error('reCAPTCHA gagal dimuat. Periksa koneksi internet.');
+                // Show error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'mt-2 text-sm text-red-600 text-center';
+                errorDiv.innerHTML = '⚠️ reCAPTCHA gagal dimuat. Periksa koneksi internet atau disable AdBlock.';
+                recaptchaDiv.parentNode.appendChild(errorDiv);
+            }
+        }, 5000);
     </script>
 </body>
 </html>

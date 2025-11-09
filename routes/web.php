@@ -51,12 +51,13 @@ Route::middleware('auth')->group(function () {
             'as' => 'admin'
         ]);
         
-        // Permohonan Pasien Routes (Read Only - Admin hanya lihat & review)
+        // Permohonan Pasien Routes
         Route::get('admin/permohonan', [PermohonanPasienController::class, 'index'])->name('admin.permohonan.index');
         Route::get('admin/permohonan-terverifikasi', [PermohonanPasienController::class, 'terverifikasi'])->name('admin.permohonan.terverifikasi');
         Route::get('admin/permohonan-terverifikasi/{permohonan}', [PermohonanPasienController::class, 'showTerverifikasi'])->name('admin.permohonan.terverifikasi.show');
         Route::get('admin/permohonan-terverifikasi/{permohonan}/cetak-pdf', [PermohonanPasienController::class, 'cetakPdfTerverifikasi'])->name('admin.permohonan.terverifikasi.cetak-pdf');
         Route::get('admin/permohonan/{permohonan}', [PermohonanPasienController::class, 'show'])->name('admin.permohonan.show');
+        Route::delete('admin/permohonan/{permohonan}', [PermohonanPasienController::class, 'destroy'])->name('admin.permohonan.destroy');
         
         // Nilai Screening Routes (Admin memberi nilai screening)
         Route::get('admin/screening/{permohonan}/nilai', [ScreeningPasienController::class, 'show'])->name('admin.screening.show');

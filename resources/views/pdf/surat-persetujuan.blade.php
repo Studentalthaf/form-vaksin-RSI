@@ -634,5 +634,87 @@
             </div>
         </div>
     </div>
+
+    {{-- HALAMAN 4: LAMPIRAN FOTO KTP & PASPOR --}}
+    <div style="page-break-before: always;"></div>
+    
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 16pt; font-weight: bold;">LAMPIRAN</h2>
+        <h3 style="margin: 5px 0 0 0; font-size: 14pt;">DOKUMEN IDENTITAS PASIEN</h3>
+    </div>
+
+    <div style="border: 2px solid #000; padding: 15px; margin-top: 20px;">
+        {{-- Informasi Pasien --}}
+        <div style="margin-bottom: 20px; padding: 10px; background-color: #f5f5f5; border: 1px solid #ddd;">
+            <table style="width: 100%; font-size: 10pt;">
+                <tr>
+                    <td style="width: 25%;"><strong>Nama Pasien</strong></td>
+                    <td>: {{ $screening->pasien->nama }}</td>
+                </tr>
+                <tr>
+                    <td><strong>NIK</strong></td>
+                    <td>: {{ $screening->pasien->nik }}</td>
+                </tr>
+                <tr>
+                    <td><strong>Tanggal Lahir</strong></td>
+                    <td>: {{ \Carbon\Carbon::parse($screening->pasien->tanggal_lahir)->format('d F Y') }}</td>
+                </tr>
+            </table>
+        </div>
+
+        {{-- Layout 2 Kolom: KTP Kiri, Paspor Kanan --}}
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                {{-- Kolom Kiri: KTP --}}
+                <td style="width: 50%; vertical-align: top; padding-right: 10px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 11pt; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 5px;">
+                        KARTU TANDA PENDUDUK (KTP)
+                    </h4>
+                    <div style="text-align: center; padding: 10px; border: 1px solid #ccc; background-color: #fafafa;">
+                        @if($screening->pasien->foto_ktp)
+                            <img src="{{ public_path('storage/' . $screening->pasien->foto_ktp) }}" 
+                                 style="max-width: 100%; max-height: 300px; border: 2px solid #333;" 
+                                 alt="Foto KTP" />
+                        @else
+                            <div style="padding: 40px 20px; background-color: #f0f0f0; border: 2px dashed #999;">
+                                <p style="color: #666; font-style: italic; margin: 0; font-size: 9pt;">Foto KTP tidak tersedia</p>
+                            </div>
+                        @endif
+                    </div>
+                </td>
+
+                {{-- Kolom Kanan: Paspor --}}
+                <td style="width: 50%; vertical-align: top; padding-left: 10px;">
+                    <h4 style="margin: 0 0 10px 0; font-size: 11pt; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 5px;">
+                        PASPOR (Jika Ada)
+                    </h4>
+                    <div style="text-align: center; padding: 10px; border: 1px solid #ccc; background-color: #fafafa;">
+                        @if($screening->pasien->foto_paspor)
+                            <img src="{{ public_path('storage/' . $screening->pasien->foto_paspor) }}" 
+                                 style="max-width: 100%; max-height: 300px; border: 2px solid #333;" 
+                                 alt="Foto Paspor" />
+                        @else
+                            <div style="padding: 40px 20px; background-color: #f0f0f0; border: 2px dashed #999;">
+                                <p style="color: #666; font-style: italic; margin: 0; font-size: 9pt;">Foto Paspor tidak tersedia</p>
+                            </div>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        {{-- Catatan --}}
+        <div style="margin-top: 20px; padding: 10px; background-color: #fffbea; border: 1px solid #f59e0b; border-radius: 5px;">
+            <p style="margin: 0; font-size: 9pt; color: #92400e;">
+                <strong>Catatan:</strong> Dokumen ini merupakan lampiran sah dari Surat Persetujuan Vaksinasi yang telah ditandatangani oleh pasien dan dokter pemeriksa.
+            </p>
+        </div>
+    </div>
+
+    {{-- Footer Halaman 4 --}}
+    <div style="margin-top: 30px; text-align: center; font-size: 8pt; color: #666;">
+        <p style="margin: 5px 0;">Dokumen ini dicetak secara otomatis oleh Sistem Manajemen Vaksinasi RSI</p>
+        <p style="margin: 5px 0;">Tanggal Cetak: {{ \Carbon\Carbon::now()->format('d F Y, H:i') }} WIB</p>
+    </div>
 </body>
 </html>

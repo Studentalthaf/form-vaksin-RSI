@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 class PermohonanController extends Controller
 {
@@ -31,6 +32,27 @@ class PermohonanController extends Controller
         $request->merge([
             'is_perjalanan' => $request->has('is_perjalanan') ? 1 : 0,
         ]);
+
+        // Validasi reCAPTCHA terlebih dahulu
+        $recaptchaResponse = $request->input('g-recaptcha-response');
+        if (empty($recaptchaResponse)) {
+            return back()->withErrors(['g-recaptcha-response' => 'Silakan centang "Saya bukan robot"'])->withInput();
+        }
+
+        // Verify reCAPTCHA with Google
+        $recaptchaSecret = config('services.recaptcha.secret_key');
+        $verifyResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => $recaptchaSecret,
+            'response' => $recaptchaResponse,
+            'remoteip' => $request->ip()
+        ]);
+
+        $recaptchaResult = $verifyResponse->json();
+        
+        if (!$recaptchaResult['success']) {
+            Log::warning('reCAPTCHA verification failed', ['result' => $recaptchaResult]);
+            return back()->withErrors(['g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.'])->withInput();
+        }
 
         // Validasi
         $rules = [
