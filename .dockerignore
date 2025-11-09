@@ -1,45 +1,67 @@
 # Git
 .git
 .gitignore
+.gitattributes
+.github
 
 # IDE
 .idea
 .vscode
+.editorconfig
 
 # Node
 node_modules
+npm-debug.log
+yarn-error.log
 
-# Vendor (akan di-install di container)
+# Vendor (akan di-install di container via composer install)
 /vendor
 
-# Environment
+# Environment files (akan di-copy manual saat deployment)
 .env
-.env.*
+.env.local
+.env.development
+.env.testing
 !.env.example
-!.env.docker
+!.env.production
 
 # Testing
 /.phpunit.cache
 /coverage
+/tests
+phpunit.xml
 
-# Logs
+# Logs (akan di-generate di container)
 *.log
 /storage/logs/*
 !/storage/logs/.gitkeep
 
-# Cache files
+# Cache files (akan di-generate di container)
 /bootstrap/cache/*
 !/bootstrap/cache/.gitkeep
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+
+# Uploaded files (sudah ada di VPS, tidak perlu di-copy lagi)
+/storage/app/public/ktp/*
+/storage/app/public/paspor/*
+/storage/app/public/photos/*
+/storage/app/public/signatures/*
+!/storage/app/public/.gitkeep
 
 # Documentation
 *.md
 !README.md
 
-# Scripts
-*.sh
+# Build files
+package-lock.json
+composer.lock
 
-# Docker files lama
+# Docker compose untuk development
 docker-compose.yml
-supervisord.conf
-mysql.cnf
-php.ini
+docker-compose.override.yml
+
+# Misc
+.DS_Store
+Thumbs.db
