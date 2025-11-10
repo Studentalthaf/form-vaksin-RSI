@@ -80,19 +80,6 @@
     </div>
 </div>
 
-<div class="bg-gradient-to-r from-yellow-50 to-orange-50 border-l-4 border-yellow-500 rounded-xl p-6 mb-8 shadow-md">
-    <div class="flex items-start">
-        <div class="flex-shrink-0">
-            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-        </div>
-        <div class="ml-4 flex-1">
-            <h3 class="text-lg font-bold text-yellow-900 mb-2">Pemberitahuan Sistem</h3>
-            <p class="text-yellow-800 mb-3">Fitur manajemen pasien sementara sedang dalam pemeliharaan dan pengembangan sistem.</p>
-        </div>
-    </div>
-</div>
 
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="bg-white rounded-xl shadow-md p-6">

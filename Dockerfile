@@ -5,7 +5,7 @@
 
 FROM php:8.2-fpm-alpine
 
-# Install system dependencies
+# Install system dependencies dan PHP extensions
 RUN apk add --no-cache \
     bash \
     curl \
@@ -26,11 +26,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy application files
-COPY . /var/www
+# Copy hanya composer files dulu untuk caching layer
+COPY composer.json composer.lock ./
 
 # Install Composer dependencies (production mode)
-RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
+# Jalankan SEBELUM copy semua files untuk optimize Docker cache
+RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction
+
+# Copy application files (setelah composer install)
+COPY . /var/www
+
+# Generate autoload files (setelah semua files di-copy)
+RUN composer dump-autoload --optimize --no-dev
 
 # Copy Nginx configuration
 # Alpine Linux menggunakan /etc/nginx/http.d/ bukan /etc/nginx/conf.d/
@@ -52,8 +59,9 @@ RUN mkdir -p /var/www/storage/app/public/ktp \
     && mkdir -p /var/log/supervisor \
     && mkdir -p /var/log/nginx
 
-# Set correct permissions
-RUN chown -R www-data:www-data /var/www \
+# Set correct permissions (hanya untuk folder spesifik, bukan semua /var/www)
+RUN chown -R www-data:www-data /var/www/storage \
+    && chown -R www-data:www-data /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
 

@@ -93,20 +93,22 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            @if($screening->pasien->jenis_kelamin == 'laki-laki')
+                            @if($screening->pasien->jenis_kelamin == 'L')
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
                                     </svg>
                                     Laki-laki
                                 </span>
-                            @else
+                            @elseif($screening->pasien->jenis_kelamin == 'P')
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-pink-100 text-pink-800">
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
                                     </svg>
                                     Perempuan
                                 </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">-</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
