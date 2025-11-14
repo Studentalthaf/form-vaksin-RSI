@@ -52,6 +52,21 @@
                         </div>
                     </div>
 
+                    <!-- Nama Keluarga -->
+                    @if($pasien->nama_keluarga)
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-indigo-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-600">Nama Keluarga</p>
+                            <p class="mt-1 text-lg font-bold text-gray-900">{{ $pasien->nama_keluarga }}</p>
+                        </div>
+                    </div>
+                    @endif
+
                     <!-- Tempat, Tanggal Lahir -->
                     <div class="flex items-start">
                         <div class="flex-shrink-0">
@@ -97,6 +112,27 @@
                         <div class="flex-1">
                             <p class="text-sm font-semibold text-gray-600">No. Telepon</p>
                             <p class="mt-1 text-lg font-semibold text-gray-900">{{ is_string($pasien->no_telp) ? $pasien->no_telp : '-' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-6 h-6 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-semibold text-gray-600">Email</p>
+                            <p class="mt-1 text-lg font-semibold text-gray-900">
+                                @if($pasien->email)
+                                    <a href="mailto:{{ $pasien->email }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                        {{ $pasien->email }}
+                                    </a>
+                                @else
+                                    <span class="text-gray-400">-</span>
+                                @endif
+                            </p>
                         </div>
                     </div>
 
@@ -181,13 +217,34 @@
                                 <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($request->created_at)->format('d/m/Y') }}</div>
                                 <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($request->created_at)->format('H:i') }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                                    </svg>
-                                    {{ is_string($request->jenis_vaksin) ? $request->jenis_vaksin : '-' }}
-                                </span>
+                            <td class="px-6 py-4">
+                                <div class="space-y-2">
+                                    @if(is_array($request->jenis_vaksin) && count($request->jenis_vaksin) > 0)
+                                        @foreach($request->jenis_vaksin as $vaksin)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 mr-1 mb-1">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                                </svg>
+                                                {{ $vaksin }}
+                                            </span>
+                                        @endforeach
+                                    @elseif($request->jenis_vaksin)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                            </svg>
+                                            {{ $request->jenis_vaksin }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                    
+                                    @if($request->vaksin_lainnya)
+                                        <div class="mt-1 text-xs text-yellow-700 bg-yellow-50 px-2 py-1 rounded border-l-2 border-yellow-500">
+                                            <strong>Lainnya:</strong> {{ $request->vaksin_lainnya }}
+                                        </div>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($request->is_perjalanan)

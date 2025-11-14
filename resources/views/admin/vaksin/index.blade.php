@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Kategori Pertanyaan')
-@section('page-subtitle', 'Kelola kategori pertanyaan screening')
+@section('page-title', 'Kelola Vaksin')
+@section('page-subtitle', 'Kelola daftar vaksin yang tersedia untuk pasien')
 
 @section('content')
     <!-- Alert Messages -->
@@ -31,49 +31,27 @@
     <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
-                <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Kategori Pertanyaan Screening</h1>
-                <p class="text-gray-600 text-sm lg:text-base">Kelola kategori untuk mengelompokkan pertanyaan screening pasien</p>
+                <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Kelola Vaksin</h1>
+                <p class="text-gray-600 text-sm lg:text-base">Kelola daftar vaksin yang dapat dipilih oleh pasien saat mengajukan permohonan</p>
             </div>
-            <div class="flex flex-wrap gap-3">
-                <a href="{{ route('admin.screening.questions.index') }}"
-                    class="inline-flex items-center px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    Kelola Pertanyaan
-                </a>
-                <a href="{{ route('admin.screening.categories.create') }}"
-                    class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                    </svg>
-                    Tambah Kategori
-                </a>
-            </div>
+            <a href="{{ route('admin.vaksin.create') }}"
+                class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Tambah Vaksin
+            </a>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    @if($categories->count() > 0)
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    @if($vaksins->count() > 0)
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm font-medium mb-1">Total Kategori</p>
-                    <p class="text-3xl font-bold">{{ $categories->count() }}</p>
-                </div>
-                <div class="bg-white bg-opacity-20 rounded-full p-3">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
-        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-green-100 text-sm font-medium mb-1">Kategori Aktif</p>
-                    <p class="text-3xl font-bold">{{ $categories->where('aktif', true)->count() }}</p>
+                    <p class="text-blue-100 text-sm font-medium mb-1">Total Vaksin</p>
+                    <p class="text-3xl font-bold">{{ $vaksins->count() }}</p>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,15 +60,15 @@
                 </div>
             </div>
         </div>
-        <div class="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-purple-100 text-sm font-medium mb-1">Total Pertanyaan</p>
-                    <p class="text-3xl font-bold">{{ $categories->sum('questions_count') }}</p>
+                    <p class="text-green-100 text-sm font-medium mb-1">Vaksin Aktif</p>
+                    <p class="text-3xl font-bold">{{ $vaksins->where('aktif', true)->count() }}</p>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
             </div>
@@ -98,14 +76,14 @@
     </div>
     @endif
 
-    <!-- Categories Table -->
+    <!-- Vaksin Table -->
     <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <h2 class="text-lg font-bold text-gray-800 flex items-center">
                 <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                Daftar Kategori
+                Daftar Vaksin
             </h2>
         </div>
         
@@ -117,13 +95,10 @@
                             No
                         </th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Nama Kategori
+                            Nama Vaksin
                         </th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Deskripsi
-                        </th>
-                        <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
-                            Jumlah Pertanyaan
                         </th>
                         <th class="px-6 py-4 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">
                             Urutan
@@ -137,43 +112,35 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($categories as $index => $category)
+                    @forelse($vaksins as $index => $vaksin)
                         <tr class="hover:bg-indigo-50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <span class="text-sm font-semibold text-gray-900">{{ $index + 1 }}</span>
-                                </div>
+                                <span class="text-sm font-semibold text-gray-900">{{ $index + 1 }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
-                                        <span class="text-white font-bold text-sm">{{ strtoupper(substr($category->nama_kategori, 0, 2)) }}</span>
+                                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-bold text-gray-900">{{ $category->nama_kategori }}</div>
+                                        <div class="text-sm font-bold text-gray-900">{{ $vaksin->nama_vaksin }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="text-sm text-gray-600 max-w-md">
-                                    {{ $category->deskripsi ? Str::limit($category->deskripsi, 60) : '-' }}
+                                    {{ $vaksin->deskripsi ? Str::limit($vaksin->deskripsi, 60) : '-' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                    </svg>
-                                    {{ $category->questions_count }} pertanyaan
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-800 font-bold text-sm">
-                                    {{ $category->urutan ?? '-' }}
+                                    {{ $vaksin->urutan ?? '-' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                @if ($category->aktif)
+                                @if ($vaksin->aktif)
                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 border border-green-200">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -191,16 +158,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <a href="{{ route('admin.screening.categories.edit', $category) }}"
+                                    <a href="{{ route('admin.vaksin.edit', $vaksin) }}"
                                         class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition duration-150"
                                         title="Edit">
                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                     </a>
-                                    <form action="{{ route('admin.screening.categories.destroy', $category) }}"
+                                    <form action="{{ route('admin.vaksin.destroy', $vaksin) }}"
                                         method="POST" class="inline"
-                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus kategori \'{{ $category->nama_kategori }}\'? Kategori yang memiliki pertanyaan tidak dapat dihapus.')">
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus vaksin \'{{ $vaksin->nama_vaksin }}\'?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 
@@ -216,19 +183,19 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                     </svg>
-                                    <p class="text-gray-500 text-lg font-medium mb-2">Belum ada kategori pertanyaan</p>
-                                    <p class="text-gray-400 text-sm mb-4">Mulai dengan menambahkan kategori pertama Anda</p>
-                                    <a href="{{ route('admin.screening.categories.create') }}"
+                                    <p class="text-gray-500 text-lg font-medium mb-2">Belum ada vaksin</p>
+                                    <p class="text-gray-400 text-sm mb-4">Mulai dengan menambahkan vaksin pertama Anda</p>
+                                    <a href="{{ route('admin.vaksin.create') }}"
                                         class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
-                                        Tambah Kategori Pertama
+                                        Tambah Vaksin Pertama
                                     </a>
                                 </div>
                             </td>
@@ -239,3 +206,5 @@
         </div>
     </div>
 @endsection
+
+

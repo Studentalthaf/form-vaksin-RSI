@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('nik', 20)->unique()->nullable()->comment('NIK Pasien');
             $table->string('nama', 100);
+            $table->string('email', 100)->nullable();
             $table->string('nomor_rm', 50)->nullable()->comment('Nomor Rekam Medis RSI');
             $table->string('nomor_paspor', 50)->nullable();
             $table->string('tempat_lahir', 100)->nullable();

@@ -17,6 +17,7 @@ class VaccineRequest extends Model
         'negara_tujuan',
         'tanggal_berangkat',
         'jenis_vaksin',
+        'vaksin_lainnya',
         'nama_travel',
         'alamat_travel',
         'disetujui',

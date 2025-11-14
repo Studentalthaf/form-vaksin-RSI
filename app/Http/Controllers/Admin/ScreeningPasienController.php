@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ScreeningPasienController extends Controller
 {
@@ -85,11 +86,29 @@ class ScreeningPasienController extends Controller
                 'catatan' => $request->catatan,
             ]);
 
-            // Update screening status
+            // Parse tekanan darah dari format "120/80" menjadi sistol dan diastol
+            $tekananDarahSistol = null;
+            $tekananDarahDiastol = null;
+            if ($request->td) {
+                $tdParts = explode('/', $request->td);
+                if (count($tdParts) == 2) {
+                    $tekananDarahSistol = trim($tdParts[0]);
+                    $tekananDarahDiastol = trim($tdParts[1]);
+                }
+            }
+
+            // Update screening dengan data pemeriksaan fisik
             $screening->update([
                 'admin_id' => Auth::id(),
                 'hasil_screening' => $request->hasil_screening,
                 'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
+                'tekanan_darah_sistol' => $tekananDarahSistol,
+                'tekanan_darah_diastol' => $tekananDarahDiastol,
+                'nadi' => $request->nadi,
+                'suhu' => $request->suhu ? (float) $request->suhu : null,
+                'berat_badan' => $request->bb ? (float) $request->bb : null,
+                'tinggi_badan' => $request->tb ? (float) $request->tb : null,
+                'catatan_pemeriksaan' => $request->catatan,
             ]);
 
             DB::commit();
@@ -177,10 +196,29 @@ class ScreeningPasienController extends Controller
                 'catatan' => $request->catatan,
             ]);
 
-            // Update screening status
+            // Parse tekanan darah dari format "120/80" menjadi sistol dan diastol
+            $tekananDarahSistol = null;
+            $tekananDarahDiastol = null;
+            if ($request->td) {
+                $tdParts = explode('/', $request->td);
+                if (count($tdParts) == 2) {
+                    $tekananDarahSistol = trim($tdParts[0]);
+                    $tekananDarahDiastol = trim($tdParts[1]);
+                }
+            }
+
+            // Update screening dengan data pemeriksaan fisik
             $screening->update([
+                'admin_id' => Auth::id(),
                 'hasil_screening' => $request->hasil_screening,
                 'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
+                'tekanan_darah_sistol' => $tekananDarahSistol,
+                'tekanan_darah_diastol' => $tekananDarahDiastol,
+                'nadi' => $request->nadi,
+                'suhu' => $request->suhu ? (float) $request->suhu : null,
+                'berat_badan' => $request->bb ? (float) $request->bb : null,
+                'tinggi_badan' => $request->tb ? (float) $request->tb : null,
+                'catatan_pemeriksaan' => $request->catatan,
             ]);
 
             DB::commit();
@@ -202,12 +240,14 @@ class ScreeningPasienController extends Controller
     {
         $request->validate([
             'dokter_id' => 'required|exists:users,id',
-            'tanggal_vaksinasi' => 'required|date|after_or_equal:today'
+            'tanggal_vaksinasi' => 'required|date|after_or_equal:today',
+            'tanda_tangan_admin' => 'required|string'
         ], [
             'dokter_id.required' => 'Dokter harus dipilih',
             'dokter_id.exists' => 'Dokter tidak valid',
             'tanggal_vaksinasi.required' => 'Tanggal vaksinasi harus diisi',
-            'tanggal_vaksinasi.after_or_equal' => 'Tanggal vaksinasi tidak boleh kurang dari hari ini'
+            'tanggal_vaksinasi.after_or_equal' => 'Tanggal vaksinasi tidak boleh kurang dari hari ini',
+            'tanda_tangan_admin.required' => 'Tanda tangan admin wajib diisi'
         ]);
 
         // Validasi: pastikan dokter yang dipilih memang role dokter
@@ -226,16 +266,25 @@ class ScreeningPasienController extends Controller
                 return back()->withErrors(['error' => 'Belum ada penilaian screening. Silakan beri nilai terlebih dahulu.']);
             }
 
-            // Validasi: pastikan hasil screening adalah aman
-            if ($screening->nilaiScreening->hasil_screening !== 'aman') {
-                return back()->withErrors(['error' => 'Hanya screening dengan hasil AMAN yang dapat diserahkan ke dokter.']);
-            }
+            // Semua hasil screening (aman, perlu_perhatian, tidak_layak) bisa dikirim ke dokter untuk evaluasi lebih lanjut
+
+            // Process signature admin
+            $signatureAdminData = $request->tanda_tangan_admin;
+            $signatureAdminData = str_replace('data:image/png;base64,', '', $signatureAdminData);
+            $signatureAdminData = str_replace(' ', '+', $signatureAdminData);
+            $signatureAdminDecoded = base64_decode($signatureAdminData);
+            
+            // Save signature file admin
+            $signatureAdminFileName = 'signature_admin_' . $permohonan->id . '_' . time() . '.png';
+            $signatureAdminPath = 'signatures/' . $signatureAdminFileName;
+            Storage::disk('public')->put($signatureAdminPath, $signatureAdminDecoded);
 
             // Update screening
             $screening->update([
                 'dokter_id' => $request->dokter_id,
                 'tanggal_vaksinasi' => $request->tanggal_vaksinasi,
-                'status_vaksinasi' => 'dijadwalkan'
+                'status_vaksinasi' => 'dijadwalkan',
+                'tanda_tangan_admin' => $signatureAdminPath, // Simpan path signature admin
             ]);
 
             return redirect()->route('admin.permohonan.show', $permohonan)

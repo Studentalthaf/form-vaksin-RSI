@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('screenings', function (Blueprint $table) {
-            $table->string('tanda_tangan_pasien')->nullable()->after('catatan_dokter')->comment('Path file tanda tangan pasien sebagai persetujuan');
+        Schema::table('pasiens', function (Blueprint $table) {
+            $table->dropUnique(['email']);
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('screenings', function (Blueprint $table) {
-            $table->dropColumn('tanda_tangan_pasien');
+        Schema::table('pasiens', function (Blueprint $table) {
+            $table->unique('email');
         });
     }
 };

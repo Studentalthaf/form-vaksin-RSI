@@ -26,8 +26,11 @@ class ScreeningSeeder extends Seeder
         // Get all questions
         $questions = ScreeningQuestion::all();
         
-        // Get admin user (petugas)
+        // Get admin user
         $admin = User::where('role', 'admin_rumah_sakit')->first();
+        
+        // Get dokter user
+        $dokter = User::where('role', 'dokter')->first();
 
         if (!$admin) {
             $this->command->error('❌ Admin user tidak ditemukan! Jalankan UserSeeder terlebih dahulu.');
@@ -37,12 +40,13 @@ class ScreeningSeeder extends Seeder
         foreach ($vaccineRequests as $vaccineRequest) {
             // 80% chance to have screening (some might not have been screened yet)
             if ($faker->boolean(80)) {
+                $tanggalScreening = $faker->dateTimeBetween('-30 days', 'now');
+                
                 // Create screening
                 $screening = Screening::create([
                     'pasien_id' => $vaccineRequest->pasien_id,
                     'vaccine_request_id' => $vaccineRequest->id,
-                    'tanggal_screening' => $faker->dateTimeBetween('-30 days', 'now')->format('Y-m-d'),
-                    'petugas_id' => $admin->id,
+                    'tanggal_screening' => $tanggalScreening,
                     'hasil_screening' => 'pending', // Will be updated after answers
                     'catatan' => 'Screening sedang diproses',
                 ]);
@@ -79,10 +83,41 @@ class ScreeningSeeder extends Seeder
                     ? 'Pasien memiliki kondisi yang memerlukan perhatian: ' . implode('; ', $catatanArray)
                     : 'Tidak ada kontraindikasi. Pasien dalam kondisi sehat dan aman untuk divaksinasi.';
 
-                $screening->update([
+                // 70% chance screening sudah direview oleh admin
+                $isReviewed = $faker->boolean(70);
+                $updateData = [
                     'hasil_screening' => $hasilScreening,
                     'catatan' => $catatan,
-                ]);
+                ];
+
+                if ($isReviewed) {
+                    $updateData['admin_id'] = $admin->id;
+                    
+                    // Jika hasil aman, 60% chance sudah di-assign ke dokter
+                    if ($hasilScreening === 'aman' && $dokter && $faker->boolean(60)) {
+                        $updateData['dokter_id'] = $dokter->id;
+                        $updateData['status_vaksinasi'] = 'dijadwalkan';
+                        $updateData['tanggal_vaksinasi'] = $faker->dateTimeBetween('now', '+14 days');
+                    } else {
+                        $updateData['status_vaksinasi'] = $hasilScreening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin';
+                    }
+
+                    // 50% chance ada data pemeriksaan fisik
+                    if ($faker->boolean(50)) {
+                        $updateData['tekanan_darah_sistol'] = (string) $faker->numberBetween(100, 140);
+                        $updateData['tekanan_darah_diastol'] = (string) $faker->numberBetween(60, 90);
+                        $updateData['nadi'] = (string) $faker->numberBetween(60, 100);
+                        $updateData['suhu'] = $faker->randomFloat(1, 36.0, 37.5);
+                        $updateData['berat_badan'] = $faker->randomFloat(2, 45.0, 100.0);
+                        $updateData['tinggi_badan'] = $faker->randomFloat(2, 150.0, 180.0);
+                        $updateData['saturasi_oksigen'] = $faker->numberBetween(95, 100);
+                        $updateData['catatan_pemeriksaan'] = 'Pemeriksaan fisik dalam batas normal. ' . $catatan;
+                    }
+                } else {
+                    $updateData['status_vaksinasi'] = 'belum_divaksin';
+                }
+
+                $screening->update($updateData);
             }
         }
 
