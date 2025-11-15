@@ -27,10 +27,13 @@ class ScreeningQuestionCategoryController extends Controller
             'nama_kategori' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
             'urutan' => 'nullable|integer|min:0',
-            'aktif' => 'boolean',
+            'aktif' => 'nullable|boolean',
         ], [
             'nama_kategori.required' => 'Nama kategori wajib diisi.',
         ]);
+
+        // Aktif value is already set by checkbox (1) or hidden input (0)
+        $validated['aktif'] = (bool) $request->input('aktif', 0);
 
         ScreeningQuestionCategory::create($validated);
 
@@ -49,10 +52,13 @@ class ScreeningQuestionCategoryController extends Controller
             'nama_kategori' => 'required|string|max:100',
             'deskripsi' => 'nullable|string',
             'urutan' => 'nullable|integer|min:0',
-            'aktif' => 'boolean',
+            'aktif' => 'nullable|boolean',
         ], [
             'nama_kategori.required' => 'Nama kategori wajib diisi.',
         ]);
+
+        // Aktif value is already set by checkbox (1) or hidden input (0)
+        $validated['aktif'] = (bool) $request->input('aktif', 0);
 
         $category->update($validated);
 
