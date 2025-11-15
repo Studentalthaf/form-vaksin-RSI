@@ -56,7 +56,7 @@ phpunit.xml
 
 # Build files
 package-lock.json
-composer.lock
+# composer.lock - JANGAN di-ignore, diperlukan untuk konsistensi dependency di Docker
 
 # Docker compose untuk development
 docker-compose.yml
