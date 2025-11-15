@@ -11,7 +11,6 @@ use App\Http\Controllers\Admin\PasienController;
 use App\Http\Controllers\Admin\ScreeningQuestionCategoryController;
 use App\Http\Controllers\Admin\ScreeningQuestionController;
 use App\Http\Controllers\Admin\ScreeningPasienController;
-use App\Http\Controllers\Admin\VaksinController;
 use App\Http\Controllers\Dokter\DokterDashboardController;
 
 // Redirect root ke form permohonan
@@ -80,17 +79,6 @@ Route::middleware('auth')->group(function () {
         // Screening Question Routes
         Route::resource('admin/screening/questions', ScreeningQuestionController::class, [
             'as' => 'admin.screening'
-        ]);
-        
-        // Vaksin Routes (CRUD Jenis Vaksin)
-        Route::resource('admin/vaksin', VaksinController::class)->names([
-            'index' => 'admin.vaksin.index',
-            'create' => 'admin.vaksin.create',
-            'store' => 'admin.vaksin.store',
-            'show' => 'admin.vaksin.show',
-            'edit' => 'admin.vaksin.edit',
-            'update' => 'admin.vaksin.update',
-            'destroy' => 'admin.vaksin.destroy',
         ]);
     });
     

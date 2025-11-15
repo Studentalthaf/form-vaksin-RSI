@@ -17,9 +17,7 @@ class PermohonanPasienController extends Controller
     public function index(Request $request)
     {
         // Query semua permohonan dengan screening
-        // HANYA tampilkan permohonan yang sudah selesai screening (sudah ada screening record)
-        $query = VaccineRequest::with(['pasien', 'screening.nilaiScreening'])
-            ->whereHas('screening'); // Hanya tampilkan yang sudah punya screening (sudah selesai diisi pasien)
+        $query = VaccineRequest::with(['pasien', 'screening.nilaiScreening']);
 
         // Filter berdasarkan search nama pemohon
         if ($request->filled('search')) {
@@ -40,9 +38,12 @@ class PermohonanPasienController extends Controller
         // Filter berdasarkan status screening
         if ($request->filled('status')) {
             if ($request->status === 'belum_screening') {
-                // Belum screening: sudah ada screening tapi belum dinilai admin
-                $query->whereHas('screening', function($subQ) {
-                    $subQ->doesntHave('nilaiScreening');
+                // Belum screening: belum ada screening ATAU screening belum dinilai
+                $query->where(function($q) {
+                    $q->doesntHave('screening')
+                      ->orWhereHas('screening', function($subQ) {
+                          $subQ->doesntHave('nilaiScreening');
+                      });
                 });
             } elseif ($request->status === 'sudah_screening') {
                 // Sudah screening: screening ada DAN sudah dinilai
@@ -53,14 +54,16 @@ class PermohonanPasienController extends Controller
         // Ambil data - DATA TERBARU DI ATAS
         $permohonan = $query->orderBy('created_at', 'desc')->paginate(15);
 
-        // Statistik untuk card - hanya hitung yang sudah selesai screening
-        $totalPermohonan = VaccineRequest::whereHas('screening')->count();
-        $hariIni = VaccineRequest::whereHas('screening')
-            ->whereDate('created_at', today())->count();
+        // Statistik untuk card
+        $totalPermohonan = VaccineRequest::count();
+        $hariIni = VaccineRequest::whereDate('created_at', today())->count();
         
-        // Belum screening: sudah ada screening tapi belum dinilai admin
-        $belumScreening = VaccineRequest::whereHas('screening', function($subQ) {
-            $subQ->doesntHave('nilaiScreening');
+        // Belum screening: tidak punya screening ATAU screening belum dinilai
+        $belumScreening = VaccineRequest::where(function($q) {
+            $q->doesntHave('screening')
+              ->orWhereHas('screening', function($subQ) {
+                  $subQ->doesntHave('nilaiScreening');
+              });
         })->count();
         
         // Sudah screening: punya screening DAN sudah dinilai
@@ -208,8 +211,7 @@ class PermohonanPasienController extends Controller
             'pasien',
             'screening.answers.question.category',
             'screening.nilaiScreening.admin',
-            'screening.dokter',
-            'screening.vaccineRequest'
+            'screening.dokter'
         ]);
 
         // Pastikan ini benar-benar permohonan yang sudah terverifikasi

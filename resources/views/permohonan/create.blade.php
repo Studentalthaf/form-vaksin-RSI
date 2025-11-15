@@ -111,15 +111,6 @@
                                 placeholder="Contoh: 08123456789" required>
                         </div>
 
-                        <!-- Email -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
-                            <input type="email" name="email" id="email" value="{{ old('email') }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                placeholder="Contoh: nama@email.com">
-                            <p class="text-sm text-gray-500 mt-1">Email untuk notifikasi (opsional)</p>
-                        </div>
-
                         <!-- Tempat Lahir -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Tempat Lahir</label>
@@ -183,31 +174,65 @@
                         <p class="text-sm text-gray-600 mb-3">Pilih satu atau lebih vaksin yang Anda butuhkan:</p>
                         
                         <div class="grid md:grid-cols-2 gap-3">
-                            @forelse($vaksins as $vaksin)
                             <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
-                                <input type="checkbox" name="jenis_vaksin[]" value="{{ $vaksin->nama_vaksin }}"
-                                    {{ in_array($vaksin->nama_vaksin, old('jenis_vaksin', [])) ? 'checked' : '' }}
+                                <input type="checkbox" name="jenis_vaksin[]" value="Yellow Fever" 
                                     class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
-                                <div class="ml-3 flex-1">
-                                    <span class="text-gray-700 font-medium">{{ $vaksin->nama_vaksin }}</span>
-                                    @if($vaksin->deskripsi)
-                                    <p class="text-xs text-gray-500 mt-1">{{ $vaksin->deskripsi }}</p>
-                                    @endif
-                                </div>
+                                <span class="ml-3 text-gray-700">Yellow Fever (Demam Kuning)</span>
                             </label>
-                            @empty
-                            <div class="md:col-span-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                <p class="text-sm text-yellow-800">Belum ada jenis vaksin yang tersedia. Silakan hubungi admin.</p>
-                            </div>
-                            @endforelse
                             
-                            <!-- Pilihan Lainnya -->
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Meningitis" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Meningitis (Meningokokus)</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Hepatitis A" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Hepatitis A</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Hepatitis B" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Hepatitis B</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Typhoid" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Typhoid (Tifus)</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Rabies" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Rabies</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Japanese Encephalitis" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Japanese Encephalitis</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="Influenza" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">Influenza</span>
+                            </label>
+                            
+                            <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
+                                <input type="checkbox" name="jenis_vaksin[]" value="MMR" 
+                                    class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500">
+                                <span class="ml-3 text-gray-700">MMR (Campak, Gondongan, Rubella)</span>
+                            </label>
+                            
                             <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-purple-50 cursor-pointer transition">
                                 <input type="checkbox" name="jenis_vaksin[]" value="Lainnya" id="vaksinLainnya"
-                                    {{ in_array('Lainnya', old('jenis_vaksin', [])) ? 'checked' : '' }}
                                     class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
                                     onchange="toggleVaksinLainnyaInput()">
-                                <span class="ml-3 text-gray-700 font-medium">Lainnya</span>
+                                <span class="ml-3 text-gray-700">Lainnya</span>
                             </label>
                         </div>
                         
@@ -294,8 +319,7 @@
                     </div>
                 </div>
 
-                <!-- reCAPTCHA Verification - Hanya tampilkan jika production -->
-                @if(config('app.env') !== 'local')
+                <!-- reCAPTCHA Verification -->
                 <div class="mt-6 pt-6 border-t border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 text-center">Verifikasi Keamanan</h3>
                     <div class="flex flex-col items-center">
@@ -310,7 +334,6 @@
                         <p class="mt-2 text-xs text-gray-500 text-center">Centang kotak "Saya bukan robot" untuk melanjutkan</p>
                     </div>
                 </div>
-                @endif
 
                 <!-- Submit Button -->
                 <div class="flex justify-end gap-4 pt-6 border-t">
@@ -433,8 +456,7 @@
         });
     </script>
 
-    <!-- Google reCAPTCHA Script - Load at end for better performance (hanya jika production) -->
-    @if(config('app.env') !== 'local')
+    <!-- Google reCAPTCHA Script - Load at end for better performance -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
     
     <!-- Fallback if reCAPTCHA doesn't load -->
@@ -452,6 +474,5 @@
             }
         }, 5000);
     </script>
-    @endif
 </body>
 </html>

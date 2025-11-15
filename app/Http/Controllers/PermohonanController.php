@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Pasien;
 use App\Models\VaccineRequest;
-use App\Models\Vaksin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -18,13 +17,7 @@ class PermohonanController extends Controller
      */
     public function create()
     {
-        // Ambil vaksin aktif dari database yang diinput admin
-        $vaksins = Vaksin::where('aktif', true)
-            ->orderBy('urutan')
-            ->orderBy('nama_vaksin')
-            ->get();
-        
-        return view('permohonan.create', compact('vaksins'));
+        return view('permohonan.create');
     }
 
     /**
@@ -40,27 +33,25 @@ class PermohonanController extends Controller
             'is_perjalanan' => $request->has('is_perjalanan') ? 1 : 0,
         ]);
 
-        // Validasi reCAPTCHA terlebih dahulu (skip di local environment)
-        if (config('app.env') !== 'local') {
-            $recaptchaResponse = $request->input('g-recaptcha-response');
-            if (empty($recaptchaResponse)) {
-                return back()->withErrors(['g-recaptcha-response' => 'Silakan centang "Saya bukan robot"'])->withInput();
-            }
+        // Validasi reCAPTCHA terlebih dahulu
+        $recaptchaResponse = $request->input('g-recaptcha-response');
+        if (empty($recaptchaResponse)) {
+            return back()->withErrors(['g-recaptcha-response' => 'Silakan centang "Saya bukan robot"'])->withInput();
+        }
 
-            // Verify reCAPTCHA with Google
-            $recaptchaSecret = config('services.recaptcha.secret_key');
-            $verifyResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-                'secret' => $recaptchaSecret,
-                'response' => $recaptchaResponse,
-                'remoteip' => $request->ip()
-            ]);
+        // Verify reCAPTCHA with Google
+        $recaptchaSecret = config('services.recaptcha.secret_key');
+        $verifyResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => $recaptchaSecret,
+            'response' => $recaptchaResponse,
+            'remoteip' => $request->ip()
+        ]);
 
-            $recaptchaResult = $verifyResponse->json();
-            
-            if (!$recaptchaResult['success']) {
-                Log::warning('reCAPTCHA verification failed', ['result' => $recaptchaResult]);
-                return back()->withErrors(['g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.'])->withInput();
-            }
+        $recaptchaResult = $verifyResponse->json();
+        
+        if (!$recaptchaResult['success']) {
+            Log::warning('reCAPTCHA verification failed', ['result' => $recaptchaResult]);
+            return back()->withErrors(['g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.'])->withInput();
         }
 
         // Validasi
@@ -68,7 +59,6 @@ class PermohonanController extends Controller
             // Data Pasien (WAJIB)
             'nik' => 'required|string|max:20',
             'nama' => 'required|string|max:100',
-            'email' => 'nullable|email|max:100',
             'no_telp' => 'required|string|max:20',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
@@ -81,7 +71,7 @@ class PermohonanController extends Controller
             // Upload Files
             'foto_ktp' => 'required|image|mimes:jpeg,jpg,png,pdf|max:2048',
             
-            // Jenis Vaksin (WAJIB) - bisa lebih dari satu atau pilih "Lainnya"
+            // Jenis Vaksin (WAJIB) - bisa lebih dari satu
             'jenis_vaksin' => 'required|array|min:1',
             'jenis_vaksin.*' => 'required|string|max:100',
             'vaksin_lainnya_text' => 'nullable|string|max:200',
@@ -94,9 +84,6 @@ class PermohonanController extends Controller
         if ($request->has('jenis_vaksin') && in_array('Lainnya', $request->jenis_vaksin)) {
             $rules['vaksin_lainnya_text'] = 'required|string|max:200';
         }
-        
-        // Jika hanya pilih "Lainnya", jenis_vaksin minimal 1 (hanya "Lainnya")
-        // Jika pilih vaksin lain + "Lainnya", minimal 1 vaksin + "Lainnya"
 
         // Jika perjalanan luar negeri - paspor dan foto paspor WAJIB
         if ($request->is_perjalanan == 1) {
@@ -111,7 +98,6 @@ class PermohonanController extends Controller
         $validated = $request->validate($rules, [
             'nik.required' => 'NIK wajib diisi',
             'nama.required' => 'Nama lengkap wajib diisi',
-            'email.required' => 'Email wajib diisi',
             'no_telp.required' => 'Nomor telepon wajib diisi',
             'status_pasien.required' => 'Status pasien wajib dipilih',
             'foto_ktp.required' => 'Foto KTP wajib diupload',
@@ -131,31 +117,22 @@ class PermohonanController extends Controller
 
         DB::beginTransaction();
         try {
-            // Process jenis_vaksin: pisahkan vaksin dari database dengan vaksin lainnya
+            // Process jenis_vaksin: if patient selected "Lainnya", remove it from the list
+            // and store the custom text separately in vaksin_lainnya so it will be saved
+            // but NOT shown in public vaccine lists (only stored for admin reference).
             $jenisVaksin = $validated['jenis_vaksin'];
-            $vaksinLainnya = null;
-            
-            // Jika ada "Lainnya" yang dipilih dan ada text input
-            if (in_array('Lainnya', $jenisVaksin) && !empty($request->vaksin_lainnya_text)) {
-                // Simpan text ke vaksin_lainnya
-                $vaksinLainnya = trim($request->vaksin_lainnya_text);
-                // Remove "Lainnya" dari array jenis_vaksin (hanya simpan vaksin dari database)
-                $jenisVaksin = array_filter($jenisVaksin, function($item) {
-                    return $item !== 'Lainnya';
-                });
-                // Re-index array
-                $jenisVaksin = array_values($jenisVaksin);
-            } else if (in_array('Lainnya', $jenisVaksin)) {
-                // Jika "Lainnya" dipilih tapi tidak ada text, remove dari array
+            $vaksinLainnyaText = null;
+            if (in_array('Lainnya', $jenisVaksin)) {
+                // Remove "Lainnya" from array so only predefined vaccines remain
                 $jenisVaksin = array_filter($jenisVaksin, function($item) {
                     return $item !== 'Lainnya';
                 });
                 $jenisVaksin = array_values($jenisVaksin);
-            }
-            
-            // Pastikan minimal ada 1 vaksin yang dipilih (dari database atau lainnya)
-            if (empty($jenisVaksin) && empty($vaksinLainnya)) {
-                return back()->withErrors(['jenis_vaksin' => 'Minimal pilih satu jenis vaksin'])->withInput();
+
+                // Capture the custom text (if provided)
+                if (!empty($request->vaksin_lainnya_text)) {
+                    $vaksinLainnyaText = trim($request->vaksin_lainnya_text);
+                }
             }
             
             // Upload foto KTP
@@ -177,7 +154,6 @@ class PermohonanController extends Controller
                 // Update data pasien jika ada perubahan
                 $updateData = [
                     'nama' => $validated['nama'],
-                    'email' => $validated['email'] ?? $pasien->email,
                     'nomor_rm' => $validated['nomor_rm'] ?? $pasien->nomor_rm,
                     'nomor_paspor' => $request->is_perjalanan == 1 ? $request->nomor_paspor : $pasien->nomor_paspor,
                     'tempat_lahir' => $validated['tempat_lahir'] ?? $pasien->tempat_lahir,
@@ -203,7 +179,6 @@ class PermohonanController extends Controller
                 $pasien = Pasien::create([
                     'nik' => $validated['nik'],
                     'nama' => $validated['nama'],
-                    'email' => $validated['email'] ?? null,
                     'nomor_rm' => $validated['nomor_rm'] ?? null,
                     'nomor_paspor' => $request->is_perjalanan == 1 ? $request->nomor_paspor : null,
                     'tempat_lahir' => $validated['tempat_lahir'] ?? null,
@@ -218,13 +193,12 @@ class PermohonanController extends Controller
                 ]);
             }
 
-            // Simpan permohonan vaksin
-            // Jika jenis_vaksin kosong (hanya pilih "Lainnya"), simpan sebagai array kosong
+            // Simpan permohonan vaksin (simpan vaksin_lainnya terpisah jika ada)
             $vaccineRequest = VaccineRequest::create([
                 'pasien_id' => $pasien->id,
                 'is_perjalanan' => $request->is_perjalanan == 1,
-                'jenis_vaksin' => !empty($jenisVaksin) ? $jenisVaksin : [], // Hanya vaksin dari database (tidak termasuk vaksin_lainnya)
-                'vaksin_lainnya' => $vaksinLainnya, // Simpan vaksin lainnya terpisah (tidak ditampilkan di form permohonan)
+                'jenis_vaksin' => $jenisVaksin, // Use processed vaccine array
+                'vaksin_lainnya' => $vaksinLainnyaText,
                 'negara_tujuan' => $validated['negara_tujuan'] ?? null,
                 'tanggal_berangkat' => $validated['tanggal_berangkat'] ?? null,
                 'nama_travel' => $validated['nama_travel'] ?? null,
@@ -284,10 +258,8 @@ class PermohonanController extends Controller
         // Validasi tanda tangan
         $request->validate([
             'tanda_tangan' => 'required|string',
-            'tanda_tangan_keluarga' => 'nullable|string',
-            'nama_keluarga' => 'nullable|string|max:100',
         ], [
-            'tanda_tangan.required' => 'Tanda tangan pasien wajib diisi',
+            'tanda_tangan.required' => 'Tanda tangan persetujuan wajib diisi',
         ]);
         
         foreach ($questions as $question) {
@@ -299,47 +271,26 @@ class PermohonanController extends Controller
         
         DB::beginTransaction();
         try {
-            // Process signature pasien
+            // Process signature
             $signatureData = $request->tanda_tangan;
             $signatureData = str_replace('data:image/png;base64,', '', $signatureData);
             $signatureData = str_replace(' ', '+', $signatureData);
             $signatureDecoded = base64_decode($signatureData);
             
-            // Save signature file pasien
+            // Save signature file
             $signatureFileName = 'signature_pasien_' . $vaccine_request_id . '_' . time() . '.png';
             $signaturePath = 'signatures/' . $signatureFileName;
             Storage::disk('public')->put($signaturePath, $signatureDecoded);
-            
-            // Process signature keluarga (opsional)
-            $signatureKeluargaPath = null;
-            if ($request->has('tanda_tangan_keluarga') && !empty($request->tanda_tangan_keluarga)) {
-                $signatureKeluargaData = $request->tanda_tangan_keluarga;
-                $signatureKeluargaData = str_replace('data:image/png;base64,', '', $signatureKeluargaData);
-                $signatureKeluargaData = str_replace(' ', '+', $signatureKeluargaData);
-                $signatureKeluargaDecoded = base64_decode($signatureKeluargaData);
-                
-                // Save signature file keluarga
-                $signatureKeluargaFileName = 'signature_keluarga_' . $vaccine_request_id . '_' . time() . '.png';
-                $signatureKeluargaPath = 'signatures/' . $signatureKeluargaFileName;
-                Storage::disk('public')->put($signatureKeluargaPath, $signatureKeluargaDecoded);
-            }
-            
-            // Update nama_keluarga pasien jika ada
-            if ($request->has('nama_keluarga') && !empty($request->nama_keluarga)) {
-                $vaccineRequest->pasien->update([
-                    'nama_keluarga' => $request->nama_keluarga
-                ]);
-            }
             
             // Buat record screening
             $screening = \App\Models\Screening::create([
                 'pasien_id' => $vaccineRequest->pasien_id,
                 'vaccine_request_id' => $vaccine_request_id,
+                'petugas_id' => null, // Dijawab oleh pasien sendiri, bukan petugas
                 'tanggal_screening' => now(),
                 'hasil_screening' => 'pending', // Akan di-review oleh admin/dokter
                 'catatan' => 'Dijawab oleh pasien',
-                'tanda_tangan_pasien' => $signaturePath, // Simpan path signature pasien
-                'tanda_tangan_keluarga' => $signatureKeluargaPath, // Simpan path signature keluarga
+                'tanda_tangan_pasien' => $signaturePath, // Simpan path signature
             ]);
             
             // Simpan semua jawaban

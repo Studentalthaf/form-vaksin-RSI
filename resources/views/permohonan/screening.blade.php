@@ -173,7 +173,7 @@
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
                                 </svg>
-                                Tanda Tangan Persetujuan Pasien
+                                Tanda Tangan Persetujuan
                                 <span class="text-red-500 ml-1">*</span>
                             </h3>
                             <p class="text-sm text-green-700 mt-1">
@@ -181,84 +181,21 @@
                             </p>
                         </div>
 
-                        <!-- Signature Pad Pasien -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">
-                                Tanda Tangan Pasien <span class="text-red-500">*</span>
-                            </label>
-                            <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
-                                <canvas id="signaturePad" width="600" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
-                            </div>
-                            <div class="flex items-center justify-between mt-2">
-                                <p class="text-xs text-gray-500">Silakan tanda tangan di kotak di atas</p>
-                                <button type="button" onclick="clearSignature()" class="text-xs text-red-600 hover:text-red-700 font-semibold flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                    Hapus Tanda Tangan
-                                </button>
-                            </div>
-                            <input type="hidden" name="tanda_tangan" id="tandaTanganInput" required>
+                        <div class="bg-white border-2 border-green-300 rounded-lg overflow-hidden">
+                            <canvas id="signaturePad" width="700" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
                         </div>
-                    </div>
 
-                    <!-- Tanda Tangan Keluarga Pasien -->
-                    <div class="mt-6 p-6 border-2 border-blue-500 rounded-lg bg-blue-50">
-                        <div class="mb-4">
-                            <h3 class="text-lg font-bold text-blue-900 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                        <div class="flex items-center justify-between mt-3">
+                            <p class="text-xs text-gray-600">Silakan tanda tangan di kotak putih di atas</p>
+                            <button type="button" onclick="clearSignature()" class="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center px-3 py-1 border border-red-300 rounded hover:bg-red-50 transition">
+                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                 </svg>
-                                Tanda Tangan Keluarga Pasien
-                            </h3>
-                            <p class="text-sm text-blue-700 mt-1">
-                                Tanda tangan keluarga pasien sebagai persetujuan untuk vaksinasi (opsional).
-                            </p>
+                                Hapus Tanda Tangan
+                            </button>
                         </div>
 
-                        <!-- Checkbox untuk memilih apakah ada tanda tangan keluarga -->
-                        <div class="mb-4">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" name="ada_tanda_tangan_keluarga" id="adaTandaTanganKeluarga" 
-                                    {{ old('ada_tanda_tangan_keluarga') ? 'checked' : '' }}
-                                    onchange="toggleTandaTanganKeluarga()"
-                                    class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500">
-                                <span class="ml-2 text-sm font-semibold text-blue-900">Ada tanda tangan keluarga</span>
-                            </label>
-                        </div>
-
-                        <!-- Container untuk tanda tangan keluarga (hidden by default) -->
-                        <div id="tandaTanganKeluargaContainer" class="{{ old('ada_tanda_tangan_keluarga') ? '' : 'hidden' }}">
-                            <!-- Signature Pad Keluarga -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-bold text-gray-700 mb-2">
-                                    Tanda Tangan Keluarga
-                                </label>
-                                <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
-                                    <canvas id="signaturePadKeluarga" width="600" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
-                                </div>
-                                <div class="flex items-center justify-between mt-2">
-                                    <p class="text-xs text-gray-500">Silakan tanda tangan di kotak di atas</p>
-                                    <button type="button" onclick="clearSignatureKeluarga()" class="text-xs text-red-600 hover:text-red-700 font-semibold flex items-center">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                        Hapus Tanda Tangan
-                                    </button>
-                                </div>
-                                <input type="hidden" name="tanda_tangan_keluarga" id="tandaTanganKeluargaInput">
-                            </div>
-
-                            <!-- Nama Keluarga -->
-                            <div class="mb-4">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Keluarga</label>
-                                <input type="text" name="nama_keluarga" id="namaKeluargaInput" 
-                                    value="{{ old('nama_keluarga', $vaccineRequest->pasien->nama_keluarga ?? '') }}"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                    placeholder="Masukkan nama keluarga yang menandatangani">
-                                <p class="text-xs text-gray-500 mt-1">Nama keluarga yang menandatangani persetujuan (opsional)</p>
-                            </div>
-                        </div>
+                        <input type="hidden" name="tanda_tangan" id="tandaTanganInput" required>
                     </div>
 
                     <!-- Submit Button -->
@@ -294,288 +231,113 @@
     </div>
 
     <script>
-        console.log('✅ Signature pad script loaded!');
-        
-        // ========== SIGNATURE PAD PASIEN ==========
+        // ========== SIGNATURE PAD ==========
         const canvas = document.getElementById('signaturePad');
-        console.log('Canvas element:', canvas);
-        
-        if (!canvas) {
-            console.error('Canvas element not found!');
-        }
-        
-        const ctx = canvas.getContext('2d');
-        console.log('Canvas context:', ctx);
-        
-        let isDrawing = false;
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let isDrawing = false;
 
-        // Setup canvas context
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        
-        console.log('Canvas setup complete');
+            // Setup canvas
+            ctx.strokeStyle = '#000000'; // Black
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
 
-        // Get mouse/touch position relative to canvas
-        function getPosition(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            
-            if (e.touches && e.touches[0]) {
+            function getPosition(e) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                
+                if (e.touches && e.touches[0]) {
+                    return {
+                        x: (e.touches[0].clientX - rect.left) * scaleX,
+                        y: (e.touches[0].clientY - rect.top) * scaleY
+                    };
+                }
+                
                 return {
-                    x: (e.touches[0].clientX - rect.left) * scaleX,
-                    y: (e.touches[0].clientY - rect.top) * scaleY
+                    x: (e.clientX - rect.left) * scaleX,
+                    y: (e.clientY - rect.top) * scaleY
                 };
             }
-            
-            return {
-                x: (e.clientX - rect.left) * scaleX,
-                y: (e.clientY - rect.top) * scaleY
-            };
-        }
 
-        // Start drawing
-        function startDrawing(e) {
-            console.log('Start drawing at:', getPosition(e));
-            isDrawing = true;
-            const pos = getPosition(e);
-            ctx.beginPath();
-            ctx.moveTo(pos.x, pos.y);
-        }
+            function startDrawing(e) {
+                isDrawing = true;
+                const pos = getPosition(e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
 
-        // Draw
-        function draw(e) {
-            if (!isDrawing) return;
-            e.preventDefault();
-            
-            const pos = getPosition(e);
-            console.log('Drawing to:', pos);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-        }
+            function draw(e) {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const pos = getPosition(e);
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            }
 
-        // Stop drawing
-        function stopDrawing() {
-            console.log('Stop drawing');
-            isDrawing = false;
-            ctx.beginPath();
-        }
+            function stopDrawing() {
+                isDrawing = false;
+                ctx.beginPath();
+            }
 
-        // Mouse events
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseout', stopDrawing);
-        
-        console.log('Mouse events attached');
+            // Mouse events
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseout', stopDrawing);
 
-        // Touch events
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            startDrawing(e);
-        });
-        canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            stopDrawing();
-        });
-
-        // Clear signature
-        function clearSignature() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            document.getElementById('tandaTanganInput').value = '';
-        }
-
-        // Check if canvas is blank
-        function isCanvasBlank() {
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width;
-            blank.height = canvas.height;
-            return canvas.toDataURL() === blank.toDataURL();
-        }
-
-        // ========== SIGNATURE PAD KELUARGA ==========
-        const canvasKeluarga = document.getElementById('signaturePadKeluarga');
-        let ctxKeluarga = null;
-        let isDrawingKeluarga = false;
-        
-        // Inisialisasi canvas keluarga hanya jika container terlihat
-        function initCanvasKeluarga() {
-            if (!canvasKeluarga || ctxKeluarga) return;
-            
-            console.log('Canvas keluarga element:', canvasKeluarga);
-            ctxKeluarga = canvasKeluarga.getContext('2d');
-            console.log('Canvas keluarga context:', ctxKeluarga);
-            
-            // Setup canvas context
-            ctxKeluarga.strokeStyle = '#000000';
-            ctxKeluarga.lineWidth = 3;
-            ctxKeluarga.lineCap = 'round';
-            ctxKeluarga.lineJoin = 'round';
-            
-            console.log('Canvas keluarga setup complete');
-            
-            // Attach event listeners
-            canvasKeluarga.addEventListener('mousedown', startDrawingKeluarga);
-            canvasKeluarga.addEventListener('mousemove', drawKeluarga);
-            canvasKeluarga.addEventListener('mouseup', stopDrawingKeluarga);
-            canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
-            
             // Touch events
-            canvasKeluarga.addEventListener('touchstart', (e) => {
+            canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
-                startDrawingKeluarga(e);
+                startDrawing(e);
             });
-            canvasKeluarga.addEventListener('touchmove', drawKeluarga);
-            canvasKeluarga.addEventListener('touchend', (e) => {
+            canvas.addEventListener('touchmove', draw);
+            canvas.addEventListener('touchend', (e) => {
                 e.preventDefault();
-                stopDrawingKeluarga();
+                stopDrawing();
             });
-        }
-        
-        // Inisialisasi jika container sudah terlihat
-        if (document.getElementById('tandaTanganKeluargaContainer') && !document.getElementById('tandaTanganKeluargaContainer').classList.contains('hidden')) {
-            initCanvasKeluarga();
-        }
 
-        // Get mouse/touch position relative to canvas
-        function getPositionKeluarga(e) {
-            if (!canvasKeluarga || !ctxKeluarga) return { x: 0, y: 0 };
-            const rect = canvasKeluarga.getBoundingClientRect();
-            const scaleX = canvasKeluarga.width / rect.width;
-            const scaleY = canvasKeluarga.height / rect.height;
-            
-            if (e.touches && e.touches[0]) {
-                return {
-                    x: (e.touches[0].clientX - rect.left) * scaleX,
-                    y: (e.touches[0].clientY - rect.top) * scaleY
-                };
-            }
-            
-            return {
-                x: (e.clientX - rect.left) * scaleX,
-                y: (e.clientY - rect.top) * scaleY
-            };
-        }
-
-        // Start drawing
-        function startDrawingKeluarga(e) {
-            if (!ctxKeluarga) return;
-            console.log('Start drawing keluarga at:', getPositionKeluarga(e));
-            isDrawingKeluarga = true;
-            const pos = getPositionKeluarga(e);
-            ctxKeluarga.beginPath();
-            ctxKeluarga.moveTo(pos.x, pos.y);
-        }
-
-        // Draw
-        function drawKeluarga(e) {
-            if (!isDrawingKeluarga || !ctxKeluarga) return;
-            e.preventDefault();
-            
-            const pos = getPositionKeluarga(e);
-            console.log('Drawing keluarga to:', pos);
-            ctxKeluarga.lineTo(pos.x, pos.y);
-            ctxKeluarga.stroke();
-        }
-
-        // Stop drawing
-        function stopDrawingKeluarga() {
-            if (!ctxKeluarga) return;
-            console.log('Stop drawing keluarga');
-            isDrawingKeluarga = false;
-            ctxKeluarga.beginPath();
-        }
-
-        // Clear signature keluarga
-        function clearSignatureKeluarga() {
-            if (!ctxKeluarga || !canvasKeluarga) return;
-            ctxKeluarga.clearRect(0, 0, canvasKeluarga.width, canvasKeluarga.height);
-            document.getElementById('tandaTanganKeluargaInput').value = '';
-        }
-
-        // Check if canvas keluarga is blank
-        function isCanvasKeluargaBlank() {
-            if (!canvasKeluarga || !ctxKeluarga) return true;
-            const blank = document.createElement('canvas');
-            blank.width = canvasKeluarga.width;
-            blank.height = canvasKeluarga.height;
-            return canvasKeluarga.toDataURL() === blank.toDataURL();
-        }
-
-        // Toggle tanda tangan keluarga
-        function toggleTandaTanganKeluarga() {
-            const checkbox = document.getElementById('adaTandaTanganKeluarga');
-            const container = document.getElementById('tandaTanganKeluargaContainer');
-            
-            if (checkbox.checked) {
-                container.classList.remove('hidden');
-                // Inisialisasi canvas jika belum diinisialisasi
-                initCanvasKeluarga();
-            } else {
-                container.classList.add('hidden');
-                // Clear signature dan nama keluarga jika di-uncheck
-                clearSignatureKeluarga();
-                document.getElementById('namaKeluargaInput').value = '';
-            }
-        }
-
-        // Form submission handler
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            
-            // Validate signature pasien
-            if (isCanvasBlank()) {
-                alert('Silakan buat tanda tangan pasien terlebih dahulu!');
-                canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                return false;
+            // Clear signature
+            window.clearSignature = function() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.getElementById('tandaTanganInput').value = '';
             }
 
-            // Save signature pasien as base64
-            const signatureDataPasien = canvas.toDataURL('image/png');
-            document.getElementById('tandaTanganInput').value = signatureDataPasien;
+            // Check if canvas is blank
+            function isCanvasBlank() {
+                const blank = document.createElement('canvas');
+                blank.width = canvas.width;
+                blank.height = canvas.height;
+                return canvas.toDataURL() === blank.toDataURL();
+            }
 
-            // Validate dan save signature keluarga (opsional)
-            const adaTandaTanganKeluarga = document.getElementById('adaTandaTanganKeluarga').checked;
-            if (adaTandaTanganKeluarga) {
-                // Jika checkbox dicentang, validasi tanda tangan harus ada
-                if (isCanvasKeluargaBlank()) {
-                    alert('Silakan buat tanda tangan keluarga terlebih dahulu!');
-                    canvasKeluarga.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Form submission validation
+            const form = document.getElementById('screeningForm');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Validate signature
+                if (isCanvasBlank()) {
+                    alert('❌ Tanda tangan belum dibuat!\n\nSilakan tanda tangan terlebih dahulu di kotak yang tersedia sebagai tanda persetujuan Anda.');
+                    canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return false;
                 }
-                // Save signature keluarga as base64
-                const signatureDataKeluarga = canvasKeluarga.toDataURL('image/png');
-                document.getElementById('tandaTanganKeluargaInput').value = signatureDataKeluarga;
-            } else {
-                // Jika checkbox tidak dicentang, kosongkan tanda tangan keluarga
-                document.getElementById('tandaTanganKeluargaInput').value = '';
-            }
 
-            // Show confirmation
-            const confirmMessage = adaTandaTanganKeluarga 
-                ? 'Apakah Anda yakin data yang Anda isi sudah benar?\n\nPastikan:\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan pasien sudah dibuat\n✓ Tanda tangan keluarga sudah dibuat\n\nData tidak dapat diubah setelah dikirim.'
-                : 'Apakah Anda yakin data yang Anda isi sudah benar?\n\nPastikan:\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan pasien sudah dibuat\n\nData tidak dapat diubah setelah dikirim.';
-            
-            if (confirm(confirmMessage)) {
-                // Clear localStorage
-                localStorage.clear();
-                
-                // Remove event listener to allow normal form submission
-                const form = document.getElementById('screeningForm');
-                form.removeEventListener('submit', handleFormSubmit);
-                
-                // Submit form normally (without preventDefault)
-                form.submit();
-            }
+                // Save signature as base64
+                const signatureData = canvas.toDataURL('image/png');
+                document.getElementById('tandaTanganInput').value = signatureData;
+
+                // Confirm before submit
+                if (confirm('Apakah Anda yakin data yang Anda isi sudah benar?\n\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan sudah dibuat\n\nData tidak dapat diubah setelah dikirim.')) {
+                    // Clear localStorage
+                    localStorage.clear();
+                    this.submit();
+                }
+            });
         }
 
-        // Attach event listener
-        document.getElementById('screeningForm').addEventListener('submit', handleFormSubmit);
-
-        // Auto-refresh CSRF token setiap 5 menit untuk mencegah 419 Page Expired
+        // Auto-refresh CSRF token setiap 10 menit untuk mencegah 419 Page Expired
         setInterval(function() {
             fetch('/permohonan', {
                 method: 'GET',
@@ -592,21 +354,15 @@
                 
                 if (newToken) {
                     // Update CSRF token in meta tag
-                    const metaTag = document.querySelector('meta[name="csrf-token"]');
-                    if (metaTag) {
-                        metaTag.setAttribute('content', newToken);
-                    }
+                    document.querySelector('meta[name="csrf-token"]').setAttribute('content', newToken);
                     // Update CSRF token in form
-                    const tokenInput = document.querySelector('input[name="_token"]');
-                    if (tokenInput) {
-                        tokenInput.value = newToken;
-                    }
-                    console.log('CSRF token auto-refreshed');
+                    document.querySelector('input[name="_token"]').value = newToken;
+                    console.log('CSRF token refreshed');
                 }
             }).catch(function(error) {
                 console.error('Failed to refresh CSRF token:', error);
             });
-        }, 5 * 60 * 1000); // 5 menit
+        }, 10 * 60 * 1000); // 10 menit
         
         // Simpan progress ke localStorage setiap ada perubahan
         const form = document.getElementById('screeningForm');
