@@ -131,6 +131,14 @@
                     <span class="font-medium">Data Pasien</span>
                 </a>
 
+                <!-- Manajemen Jenis Vaksin -->
+                <a href="{{ route('admin.vaksin.index') }}" class="menu-item {{ request()->routeIs('admin.vaksin.*') ? 'menu-item-active' : '' }} sidebar-transition flex items-center space-x-3 px-4 py-3 rounded-lg">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span class="font-medium">Jenis Vaksin</span>
+                </a>
+
                 <!-- Manajemen Screening -->
                 <div class="space-y-1">
                     <button onclick="toggleSubmenu('screening')" class="menu-item sidebar-transition w-full flex items-center justify-between px-4 py-3 rounded-lg {{ request()->routeIs('admin.screening.categories.*') || request()->routeIs('admin.screening.questions.*') ? 'menu-item-active' : '' }}">

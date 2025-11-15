@@ -121,7 +121,14 @@
                         <h2 class="text-xl font-bold">Dokumen Identitas</h2>
                     </div>
                     <div class="p-6">
-                        <div class="grid grid-cols-2 gap-4">
+                        @php
+                            $isPerjalananLuarNegeri = $permohonan->is_perjalanan == 1 || !empty($permohonan->negara_tujuan);
+                            $hasKtp = !empty($permohonan->pasien->foto_ktp);
+                            $hasPaspor = $isPerjalananLuarNegeri;
+                            $gridCols = ($hasKtp && $hasPaspor) ? 'grid-cols-2' : 'grid-cols-1';
+                        @endphp
+                        @if($hasKtp || $hasPaspor)
+                        <div class="grid {{ $gridCols }} gap-4">
                             <!-- Foto KTP -->
                             @if($permohonan->pasien->foto_ktp)
                             <div>
@@ -148,10 +155,15 @@
                             </div>
                             @endif
 
-                            <!-- Foto Paspor -->
-                            @if($permohonan->pasien->foto_paspor)
+                            <!-- Foto Paspor (hanya untuk perjalanan luar negeri) -->
+                            @php
+                                $isPerjalananLuarNegeri = $permohonan->is_perjalanan == 1 || !empty($permohonan->negara_tujuan);
+                                $showPaspor = $isPerjalananLuarNegeri;
+                            @endphp
+                            @if($showPaspor)
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Paspor</label>
+                                @if($permohonan->pasien->foto_paspor)
                                 <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
                                      onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->foto_paspor) }}', 'Foto Paspor - {{ $permohonan->pasien->nama }}')">
                                     <img src="{{ asset('storage/' . $permohonan->pasien->foto_paspor) }}" 
@@ -161,19 +173,22 @@
                                         <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
                                     </div>
                                 </div>
-                            </div>
-                            @else
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Paspor</label>
+                                @else
                                 <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                     <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
                                     <p class="text-sm text-gray-500">Tidak ada foto</p>
                                 </div>
+                                @endif
                             </div>
                             @endif
                         </div>
+                        @else
+                        <div class="text-center py-8 text-gray-500">
+                            <p>Tidak ada dokumen identitas yang diunggah</p>
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -295,8 +310,8 @@
                         Lihat & Edit Hasil Pemeriksaan
                     </a>
 
-                    <!-- Assign to Dokter Section (only if hasil_screening is aman and not yet assigned) -->
-                    @if($permohonan->screening->nilaiScreening->hasil_screening === 'aman' && !$permohonan->screening->dokter_id)
+                    <!-- Assign to Dokter Section (semua hasil screening bisa dikirim ke dokter) -->
+                    @if(!$permohonan->screening->dokter_id)
                     <div class="bg-indigo-50 border-2 border-indigo-500 rounded-lg p-4 mb-4">
                         <h4 class="font-semibold text-indigo-900 mb-3 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -304,7 +319,7 @@
                             </svg>
                             Serahkan ke Dokter
                         </h4>
-                        <form method="POST" action="{{ route('admin.screening.assign-dokter', $permohonan) }}" onsubmit="return confirm('Yakin ingin menyerahkan ke dokter?')">
+                        <form id="assignDokterForm" method="POST" action="{{ route('admin.screening.assign-dokter', $permohonan) }}" onsubmit="return handleFormSubmit(event)">
                             @csrf
                             <div class="mb-3">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Dokter <span class="text-red-500">*</span></label>
@@ -321,6 +336,22 @@
                                     min="{{ date('Y-m-d') }}"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
                             </div>
+                            
+                            <!-- Signature Pad Admin -->
+                            <div class="mb-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Tanda Tangan Admin <span class="text-red-500">*</span></label>
+                                <div class="border-2 border-gray-300 rounded-lg p-2 bg-white">
+                                    <canvas id="signaturePadAdmin" width="500" height="200" style="border: 1px solid #ddd; border-radius: 4px; cursor: crosshair; width: 100%; height: 200px;"></canvas>
+                                </div>
+                                <div class="flex justify-between mt-2">
+                                    <button type="button" onclick="clearSignatureAdmin()" class="px-3 py-1 bg-gray-500 hover:bg-gray-600 text-white text-sm rounded">
+                                        Hapus
+                                    </button>
+                                    <span class="text-xs text-gray-500 self-center">Gambar tanda tangan Anda di atas</span>
+                                </div>
+                                <input type="hidden" name="tanda_tangan_admin" id="tanda_tangan_admin_input" required>
+                            </div>
+                            
                             <button type="submit" class="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-lg">
                                 <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -348,6 +379,19 @@
                             </svg>
                             Jadwal: {{ $permohonan->screening->tanggal_vaksinasi->format('d/m/Y') }}
                         </p>
+                        @endif
+                        
+                        <!-- Tanda Tangan Admin -->
+                        @if($permohonan->screening->tanda_tangan_admin)
+                        <div class="mt-4 pt-4 border-t border-green-300">
+                            <p class="text-xs text-green-600 font-medium mb-2">Tanda Tangan Admin:</p>
+                            <div class="border-2 border-green-200 rounded-lg p-2 bg-white">
+                                <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_admin) }}" 
+                                     alt="Tanda Tangan Admin" 
+                                     class="max-h-16 mx-auto">
+                            </div>
+                            <p class="text-xs text-green-700 mt-1 text-center">{{ $permohonan->screening->nilaiScreening->admin->nama ?? 'Admin' }}</p>
+                        </div>
                         @endif
                     </div>
                     @endif
@@ -418,6 +462,94 @@
     </div>
 
     <script>
+    // Signature Pad Admin
+    let canvasAdmin = null;
+    let ctxAdmin = null;
+    let isDrawingAdmin = false;
+
+    function initCanvasAdmin() {
+        canvasAdmin = document.getElementById('signaturePadAdmin');
+        if (!canvasAdmin) return;
+        
+        ctxAdmin = canvasAdmin.getContext('2d');
+        ctxAdmin.strokeStyle = '#000';
+        ctxAdmin.lineWidth = 2;
+        ctxAdmin.lineCap = 'round';
+        ctxAdmin.lineJoin = 'round';
+
+        // Mouse events
+        canvasAdmin.addEventListener('mousedown', startDrawingAdmin);
+        canvasAdmin.addEventListener('mousemove', drawAdmin);
+        canvasAdmin.addEventListener('mouseup', stopDrawingAdmin);
+        canvasAdmin.addEventListener('mouseout', stopDrawingAdmin);
+
+        // Touch events
+        canvasAdmin.addEventListener('touchstart', handleTouchAdmin);
+        canvasAdmin.addEventListener('touchmove', handleTouchAdmin);
+        canvasAdmin.addEventListener('touchend', stopDrawingAdmin);
+    }
+
+    function startDrawingAdmin(e) {
+        isDrawingAdmin = true;
+        const rect = canvasAdmin.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        ctxAdmin.beginPath();
+        ctxAdmin.moveTo(x, y);
+    }
+
+    function drawAdmin(e) {
+        if (!isDrawingAdmin) return;
+        e.preventDefault();
+        const rect = canvasAdmin.getBoundingClientRect();
+        const x = (e.clientX || e.touches[0].clientX) - rect.left;
+        const y = (e.clientY || e.touches[0].clientY) - rect.top;
+        ctxAdmin.lineTo(x, y);
+        ctxAdmin.stroke();
+    }
+
+    function stopDrawingAdmin() {
+        if (isDrawingAdmin) {
+            isDrawingAdmin = false;
+            updateSignatureAdmin();
+        }
+    }
+
+    function handleTouchAdmin(e) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                         e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        });
+        canvasAdmin.dispatchEvent(mouseEvent);
+    }
+
+    function clearSignatureAdmin() {
+        if (ctxAdmin) {
+            ctxAdmin.clearRect(0, 0, canvasAdmin.width, canvasAdmin.height);
+            document.getElementById('tanda_tangan_admin_input').value = '';
+        }
+    }
+
+    function updateSignatureAdmin() {
+        if (canvasAdmin) {
+            const dataURL = canvasAdmin.toDataURL('image/png');
+            document.getElementById('tanda_tangan_admin_input').value = dataURL;
+        }
+    }
+
+    function handleFormSubmit(e) {
+        const signature = document.getElementById('tanda_tangan_admin_input').value;
+        if (!signature || signature.trim() === '') {
+            e.preventDefault();
+            alert('Tanda tangan admin wajib diisi!');
+            return false;
+        }
+        return confirm('Yakin ingin menyerahkan ke dokter?');
+    }
+
     function toggleEditRM() {
         const form = document.getElementById('formEditRM');
         form.classList.toggle('hidden');
@@ -432,6 +564,11 @@
     function closeImageModal() {
         document.getElementById('imageModal').classList.add('hidden');
     }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        initCanvasAdmin();
+    });
 
     // Close modal with ESC key
     document.addEventListener('keydown', function(e) {

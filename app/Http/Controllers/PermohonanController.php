@@ -17,7 +17,13 @@ class PermohonanController extends Controller
      */
     public function create()
     {
-        return view('permohonan.create');
+        // Ambil daftar vaksin aktif dari database
+        $vaksins = \App\Models\Vaksin::where('aktif', true)
+            ->orderBy('urutan')
+            ->orderBy('nama_vaksin')
+            ->get();
+        
+        return view('permohonan.create', compact('vaksins'));
     }
 
     /**
@@ -33,25 +39,28 @@ class PermohonanController extends Controller
             'is_perjalanan' => $request->has('is_perjalanan') ? 1 : 0,
         ]);
 
-        // Validasi reCAPTCHA terlebih dahulu
-        $recaptchaResponse = $request->input('g-recaptcha-response');
-        if (empty($recaptchaResponse)) {
-            return back()->withErrors(['g-recaptcha-response' => 'Silakan centang "Saya bukan robot"'])->withInput();
-        }
+        // Validasi reCAPTCHA (hanya di production, skip di local)
+        $isLocal = config('app.env') === 'local';
+        if (!$isLocal) {
+            $recaptchaResponse = $request->input('g-recaptcha-response');
+            if (empty($recaptchaResponse)) {
+                return back()->withErrors(['g-recaptcha-response' => 'Silakan centang "Saya bukan robot"'])->withInput();
+            }
 
-        // Verify reCAPTCHA with Google
-        $recaptchaSecret = config('services.recaptcha.secret_key');
-        $verifyResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => $recaptchaSecret,
-            'response' => $recaptchaResponse,
-            'remoteip' => $request->ip()
-        ]);
+            // Verify reCAPTCHA with Google
+            $recaptchaSecret = config('services.recaptcha.secret_key');
+            $verifyResponse = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+                'secret' => $recaptchaSecret,
+                'response' => $recaptchaResponse,
+                'remoteip' => $request->ip()
+            ]);
 
-        $recaptchaResult = $verifyResponse->json();
-        
-        if (!$recaptchaResult['success']) {
-            Log::warning('reCAPTCHA verification failed', ['result' => $recaptchaResult]);
-            return back()->withErrors(['g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.'])->withInput();
+            $recaptchaResult = $verifyResponse->json();
+            
+            if (!$recaptchaResult['success']) {
+                Log::warning('reCAPTCHA verification failed', ['result' => $recaptchaResult]);
+                return back()->withErrors(['g-recaptcha-response' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.'])->withInput();
+            }
         }
 
         // Validasi
@@ -60,6 +69,7 @@ class PermohonanController extends Controller
             'nik' => 'required|string|max:20',
             'nama' => 'required|string|max:100',
             'no_telp' => 'required|string|max:20',
+            'email' => 'nullable|email|max:100',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -154,6 +164,7 @@ class PermohonanController extends Controller
                 // Update data pasien jika ada perubahan
                 $updateData = [
                     'nama' => $validated['nama'],
+                    'email' => $validated['email'] ?? $pasien->email,
                     'nomor_rm' => $validated['nomor_rm'] ?? $pasien->nomor_rm,
                     'nomor_paspor' => $request->is_perjalanan == 1 ? $request->nomor_paspor : $pasien->nomor_paspor,
                     'tempat_lahir' => $validated['tempat_lahir'] ?? $pasien->tempat_lahir,
@@ -179,6 +190,7 @@ class PermohonanController extends Controller
                 $pasien = Pasien::create([
                     'nik' => $validated['nik'],
                     'nama' => $validated['nama'],
+                    'email' => $validated['email'] ?? null,
                     'nomor_rm' => $validated['nomor_rm'] ?? null,
                     'nomor_paspor' => $request->is_perjalanan == 1 ? $request->nomor_paspor : null,
                     'tempat_lahir' => $validated['tempat_lahir'] ?? null,
@@ -258,6 +270,8 @@ class PermohonanController extends Controller
         // Validasi tanda tangan
         $request->validate([
             'tanda_tangan' => 'required|string',
+            'tanda_tangan_keluarga' => 'nullable|string',
+            'nama_keluarga' => 'nullable|string|max:100',
         ], [
             'tanda_tangan.required' => 'Tanda tangan persetujuan wajib diisi',
         ]);
@@ -282,15 +296,35 @@ class PermohonanController extends Controller
             $signaturePath = 'signatures/' . $signatureFileName;
             Storage::disk('public')->put($signaturePath, $signatureDecoded);
             
+            // Process family signature if provided
+            $signatureKeluargaPath = null;
+            if ($request->has('tanda_tangan_keluarga') && $request->tanda_tangan_keluarga) {
+                $signatureKeluargaData = $request->tanda_tangan_keluarga;
+                $signatureKeluargaData = str_replace('data:image/png;base64,', '', $signatureKeluargaData);
+                $signatureKeluargaData = str_replace(' ', '+', $signatureKeluargaData);
+                $signatureKeluargaDecoded = base64_decode($signatureKeluargaData);
+                
+                $signatureKeluargaFileName = 'signature_keluarga_' . $vaccine_request_id . '_' . time() . '.png';
+                $signatureKeluargaPath = 'signatures/' . $signatureKeluargaFileName;
+                Storage::disk('public')->put($signatureKeluargaPath, $signatureKeluargaDecoded);
+            }
+            
+            // Update pasien dengan nama_keluarga jika ada
+            if ($request->has('nama_keluarga') && $request->nama_keluarga) {
+                $vaccineRequest->pasien->update([
+                    'nama_keluarga' => $request->nama_keluarga
+                ]);
+            }
+            
             // Buat record screening
             $screening = \App\Models\Screening::create([
                 'pasien_id' => $vaccineRequest->pasien_id,
                 'vaccine_request_id' => $vaccine_request_id,
-                'petugas_id' => null, // Dijawab oleh pasien sendiri, bukan petugas
                 'tanggal_screening' => now(),
                 'hasil_screening' => 'pending', // Akan di-review oleh admin/dokter
                 'catatan' => 'Dijawab oleh pasien',
                 'tanda_tangan_pasien' => $signaturePath, // Simpan path signature
+                'tanda_tangan_keluarga' => $signatureKeluargaPath, // Simpan path signature keluarga jika ada
             ]);
             
             // Simpan semua jawaban

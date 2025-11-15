@@ -247,10 +247,20 @@
         <div class="form-section" style="margin-top: 15px;">
             <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">JENIS VAKSINASI</div>
             @php
-                $jenisVaksin = $screening->vaccineRequest->jenis_vaksin ?? '-';
-                if (is_array($jenisVaksin)) {
-                    $jenisVaksin = implode(', ', $jenisVaksin);
+                $jenisVaksinArray = [];
+                if ($screening->vaccineRequest) {
+                    if (is_array($screening->vaccineRequest->jenis_vaksin) && count($screening->vaccineRequest->jenis_vaksin) > 0) {
+                        $jenisVaksinArray = $screening->vaccineRequest->jenis_vaksin;
+                    } elseif ($screening->vaccineRequest->jenis_vaksin) {
+                        $jenisVaksinArray = [$screening->vaccineRequest->jenis_vaksin];
+                    }
+                    
+                    // Tambahkan vaksin lainnya jika ada
+                    if ($screening->vaccineRequest->vaksin_lainnya) {
+                        $jenisVaksinArray[] = $screening->vaccineRequest->vaksin_lainnya;
+                    }
                 }
+                $jenisVaksin = !empty($jenisVaksinArray) ? implode(', ', $jenisVaksinArray) : '-';
             @endphp
             @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
             <div class="form-row">
@@ -530,10 +540,20 @@
 
     <div class="intro-text">
         @php
-            $jenisVaksinText = $screening->vaccineRequest->jenis_vaksin ?? '.............................';
-            if (is_array($jenisVaksinText)) {
-                $jenisVaksinText = implode(', ', $jenisVaksinText);
+            $jenisVaksinTextArray = [];
+            if ($screening->vaccineRequest) {
+                if (is_array($screening->vaccineRequest->jenis_vaksin) && count($screening->vaccineRequest->jenis_vaksin) > 0) {
+                    $jenisVaksinTextArray = $screening->vaccineRequest->jenis_vaksin;
+                } elseif ($screening->vaccineRequest->jenis_vaksin) {
+                    $jenisVaksinTextArray = [$screening->vaccineRequest->jenis_vaksin];
+                }
+                
+                // Tambahkan vaksin lainnya jika ada
+                if ($screening->vaccineRequest->vaksin_lainnya) {
+                    $jenisVaksinTextArray[] = $screening->vaccineRequest->vaksin_lainnya;
+                }
             }
+            $jenisVaksinText = !empty($jenisVaksinTextArray) ? implode(', ', $jenisVaksinTextArray) : '.............................';
         @endphp
         Dengan ini menyatakan dengan <strong>sesungguhnya</strong> telah memberikan <strong>PERSETUJUAN/ IZIN*</strong> untuk diberikan vaksinasi 
         @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan)
@@ -584,7 +604,7 @@
     </div>
 
     <div style="text-align: right; margin: 8px 30px 8px 0;">
-        <p style="margin: 3px 0;">..........................................................., {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('D MMMM Y') }}</p>
+        <p style="margin: 3px 0;">Surabaya, {{ $screening->tanggal_vaksinasi ? \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->locale('id')->isoFormat('D MMMM Y') : \Carbon\Carbon::now()->locale('id')->isoFormat('D MMMM Y') }}</p>
         <p style="margin: 3px 0; font-size: 8pt; font-style: italic;">(Tempat, Tanggal)</p>
     </div>
 
@@ -619,9 +639,19 @@
         </div>
         <div class="signature-box">
             <p><strong>Keluarga/Pendamping</strong></p>
+            @if($screening->tanda_tangan_keluarga)
+            <div style="margin: 10px 0 -5px 0; text-align: center; min-height: 60px;">
+                <img src="{{ public_path('storage/' . $screening->tanda_tangan_keluarga) }}" 
+                     style="max-width: 150px; max-height: 60px; display: inline-block; filter: grayscale(100%) brightness(0%);" />
+            </div>
+            <div style="padding-top: 0;">
+                <p style="margin: 0;"><strong>{{ $screening->pasien->nama_keluarga ?? '' }}</strong></p>
+            </div>
+            @else
             <div style="margin: 70px 0 0 0;">
                 <p>(&nbsp;..........................................................&nbsp;)</p>
             </div>
+            @endif
         </div>
     </div>
 
@@ -629,9 +659,19 @@
         <p class="bold">Saksi dari Pihak RS</p>
         <p class="small italic">Tenaga Ahli</p>
         <div class="rs-witness-box">
+            @if($screening->tanda_tangan_admin)
+            <div style="margin: 10px 0; text-align: center;">
+                <img src="{{ public_path('storage/' . $screening->tanda_tangan_admin) }}" 
+                     style="max-width: 180px; max-height: 60px; display: inline-block;" />
+            </div>
+            <div style="margin-top: 5px; padding-top: 0;">
+                <p style="margin: 0;"><strong>{{ $screening->nilaiScreening->admin->nama ?? '' }}</strong></p>
+            </div>
+            @else
             <div style="margin-top: 70px;">
                 <p>(&nbsp;..........................................................&nbsp;)</p>
             </div>
+            @endif
         </div>
     </div>
 

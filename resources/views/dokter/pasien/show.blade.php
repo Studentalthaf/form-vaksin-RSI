@@ -192,13 +192,15 @@
                             {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('H:i') }} WIB
                         </p>
                     </div>
+                    @if($screening->admin_id)
                     <hr>
                     <div>
-                        <p class="text-sm text-gray-500 font-medium mb-1">Petugas Screening</p>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Admin Screening</p>
                         <p class="text-base font-semibold text-gray-900">
-                            {{ $screening->petugas->nama ?? '-' }}
+                            {{ $screening->admin->nama ?? '-' }}
                         </p>
                     </div>
+                    @endif
                     <hr>
                     <div>
                         <p class="text-sm text-gray-500 font-medium mb-1">Dokter Pemeriksa</p>
