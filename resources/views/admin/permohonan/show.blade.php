@@ -112,6 +112,12 @@
                             <div class="text-sm text-gray-600">No. Telepon</div>
                             <div class="col-span-2 font-semibold text-blue-600">{{ $permohonan->pasien->no_telp }}</div>
                         </div>
+                        @if($permohonan->pasien->email)
+                        <div class="grid grid-cols-3 gap-4 border-t pt-4">
+                            <div class="text-sm text-gray-600">Email</div>
+                            <div class="col-span-2 font-semibold text-blue-600">{{ $permohonan->pasien->email }}</div>
+                        </div>
+                        @endif
                     </div>
                 </div>
 
@@ -229,6 +235,45 @@
                 </div>
                 @endif
 
+                <!-- Tanda Tangan Keluarga -->
+                @if($permohonan->screening && $permohonan->screening->tanda_tangan_keluarga)
+                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-blue-600 text-white px-6 py-4">
+                        <h2 class="text-xl font-bold flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            Tanda Tangan Keluarga/Pendamping
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-3">
+                            <p class="text-sm text-blue-700 mb-2">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Keluarga/Pendamping telah menandatangani form persetujuan saat pengisian screening
+                            </p>
+                            @if($permohonan->pasien->nama_keluarga)
+                            <p class="text-sm text-blue-800 font-semibold">
+                                Nama: {{ $permohonan->pasien->nama_keluarga }}
+                            </p>
+                            @endif
+                        </div>
+                        
+                        <div class="border-2 border-blue-200 rounded-lg bg-white p-4 hover:border-blue-400 transition cursor-pointer" 
+                             onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}', 'Tanda Tangan Keluarga - {{ $permohonan->pasien->nama_keluarga ?? $permohonan->pasien->nama }}')">
+                            <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}" 
+                                 alt="Tanda Tangan Keluarga" 
+                                 class="w-full max-h-48 object-contain hover:scale-105 transition">
+                            <div class="bg-blue-50 px-3 py-2 text-center mt-3 rounded">
+                                <span class="text-xs text-blue-700 font-medium">Klik untuk memperbesar</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Data Perjalanan & Vaksinasi -->
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-green-600 text-white px-6 py-4">
@@ -246,13 +291,31 @@
                         <div class="grid grid-cols-3 gap-4 border-t pt-4">
                             <div class="text-sm text-gray-600">Jenis Vaksin</div>
                             <div class="col-span-2">
-                                @if(is_array($permohonan->jenis_vaksin))
-                                    @foreach($permohonan->jenis_vaksin as $vaksin)
-                                        <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded mr-1 mb-1">{{ $vaksin }}</span>
-                                    @endforeach
-                                @else
-                                    {{ $permohonan->jenis_vaksin ?? '-' }}
-                                @endif
+                                <div class="flex flex-wrap gap-2">
+                                    @if(is_array($permohonan->jenis_vaksin) && count($permohonan->jenis_vaksin) > 0)
+                                        @foreach($permohonan->jenis_vaksin as $vaksin)
+                                            @if($vaksin !== 'Lainnya')
+                                                <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded mr-1 mb-1">{{ $vaksin }}</span>
+                                            @endif
+                                        @endforeach
+                                    @elseif($permohonan->jenis_vaksin)
+                                        @if($permohonan->jenis_vaksin !== 'Lainnya')
+                                            <span class="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded mr-1 mb-1">{{ $permohonan->jenis_vaksin }}</span>
+                                        @endif
+                                    @endif
+                                    
+                                    @if($permohonan->vaksin_lainnya)
+                                        <span class="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded mr-1 mb-1 border border-amber-300">
+                                            {{ $permohonan->vaksin_lainnya }}
+                                        </span>
+                                    @elseif(is_array($permohonan->jenis_vaksin) && in_array('Lainnya', $permohonan->jenis_vaksin) && !$permohonan->vaksin_lainnya)
+                                        <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded mr-1 mb-1">Lainnya (belum diisi)</span>
+                                    @endif
+                                    
+                                    @if(empty($permohonan->jenis_vaksin) && empty($permohonan->vaksin_lainnya))
+                                        <span class="text-gray-500 text-sm italic">-</span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-3 gap-4 border-t pt-4">
