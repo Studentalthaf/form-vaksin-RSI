@@ -49,9 +49,8 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Kolom Kiri -->
-        <div class="space-y-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
                 <div class="bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4">
                     <h2 class="text-lg font-bold text-white flex items-center">
@@ -103,12 +102,6 @@
                             <p class="text-sm text-gray-500 font-medium">No. Telepon</p>
                             <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->no_telp ?? '-' }}</p>
                         </div>
-                        @if($screening->pasien->email)
-                        <div class="border-l-4 border-green-500 pl-4 py-2">
-                            <p class="text-sm text-gray-500 font-medium">Email</p>
-                            <p class="text-base font-semibold text-blue-600">{{ $screening->pasien->email }}</p>
-                        </div>
-                        @endif
                         <div class="border-l-4 border-green-500 pl-4 py-2">
                             <p class="text-sm text-gray-500 font-medium">Pekerjaan</p>
                             <p class="text-base font-semibold text-gray-900">{{ $screening->pasien->pekerjaan ?? '-' }}</p>
@@ -121,223 +114,6 @@
                 </div>
             </div>
 
-            <!-- Informasi Permohonan -->
-            @if($screening->vaccineRequest)
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4">
-                    <h2 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Informasi Permohonan
-                    </h2>
-                </div>
-                <div class="p-6 space-y-4">
-                    <!-- Jenis Vaksin -->
-                    <div>
-                        <p class="text-sm text-gray-500 font-medium mb-2">Jenis Vaksin yang Dimohonkan</p>
-                        <div class="flex flex-wrap gap-2">
-                            @if(is_array($screening->vaccineRequest->jenis_vaksin) && count($screening->vaccineRequest->jenis_vaksin) > 0)
-                                @foreach($screening->vaccineRequest->jenis_vaksin as $vaksin)
-                                    @if($vaksin !== 'Lainnya')
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            {{ $vaksin }}
-                                        </span>
-                                    @endif
-                                @endforeach
-                            @elseif($screening->vaccineRequest->jenis_vaksin)
-                                @if($screening->vaccineRequest->jenis_vaksin !== 'Lainnya')
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                        </svg>
-                                        {{ $screening->vaccineRequest->jenis_vaksin }}
-                                    </span>
-                                @endif
-                            @endif
-                            
-                            @if($screening->vaccineRequest->vaksin_lainnya)
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800 border border-yellow-300">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
-                                    </svg>
-                                    {{ $screening->vaccineRequest->vaksin_lainnya }}
-                                </span>
-                            @endif
-                            
-                            @if(empty($screening->vaccineRequest->jenis_vaksin) && empty($screening->vaccineRequest->vaksin_lainnya))
-                                <span class="text-gray-500 text-sm italic">-</span>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Data Keberangkatan -->
-                    @if($screening->vaccineRequest->negara_tujuan || $screening->vaccineRequest->tanggal_berangkat)
-                    <div class="border-t pt-4">
-                        <p class="text-sm text-gray-500 font-medium mb-3">Data Keberangkatan</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            @if($screening->vaccineRequest->negara_tujuan)
-                            <div class="border-l-4 border-amber-500 pl-4 py-2">
-                                <p class="text-xs text-gray-500 font-medium">Negara Tujuan</p>
-                                <p class="text-base font-semibold text-gray-900">{{ $screening->vaccineRequest->negara_tujuan }}</p>
-                            </div>
-                            @endif
-                            @if($screening->vaccineRequest->tanggal_berangkat)
-                            <div class="border-l-4 border-amber-500 pl-4 py-2">
-                                <p class="text-xs text-gray-500 font-medium">Tanggal Berangkat</p>
-                                <p class="text-base font-semibold text-gray-900">
-                                    {{ \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->format('d M Y') }}
-                                </p>
-                            </div>
-                            @endif
-                            @if($screening->vaccineRequest->nama_travel)
-                            <div class="border-l-4 border-amber-500 pl-4 py-2 md:col-span-2">
-                                <p class="text-xs text-gray-500 font-medium">Nama Travel</p>
-                                <p class="text-base font-semibold text-gray-900">{{ $screening->vaccineRequest->nama_travel }}</p>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-            @endif
-
-            <!-- Dokumen Identitas -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4">
-                    <h2 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        Dokumen Identitas
-                    </h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Foto KTP -->
-                        @if($screening->pasien->foto_ktp)
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Foto KTP</label>
-                            <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                 onclick="openImageModal('{{ asset('storage/' . $screening->pasien->foto_ktp) }}', 'Foto KTP - {{ $screening->pasien->nama }}')">
-                                <img src="{{ asset('storage/' . $screening->pasien->foto_ktp) }}" 
-                                     alt="Foto KTP" 
-                                     class="w-full h-48 object-cover hover:scale-105 transition">
-                                <div class="bg-gray-50 px-3 py-2 text-center">
-                                    <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
-                                </div>
-                            </div>
-                        </div>
-                        @else
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Foto KTP</label>
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-sm text-gray-500">Tidak ada foto</p>
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Foto Paspor -->
-                        @php
-                            $showPaspor = $screening->vaccineRequest && ($screening->vaccineRequest->is_perjalanan == 1 || !empty($screening->vaccineRequest->negara_tujuan));
-                        @endphp
-                        @if($showPaspor)
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Paspor</label>
-                            @if($screening->pasien->foto_paspor)
-                            <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                 onclick="openImageModal('{{ asset('storage/' . $screening->pasien->foto_paspor) }}', 'Foto Paspor - {{ $screening->pasien->nama }}')">
-                                <img src="{{ asset('storage/' . $screening->pasien->foto_paspor) }}" 
-                                     alt="Foto Paspor" 
-                                     class="w-full h-48 object-cover hover:scale-105 transition">
-                                <div class="bg-gray-50 px-3 py-2 text-center">
-                                    <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
-                                </div>
-                            </div>
-                            @else
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-sm text-gray-500">Tidak ada foto</p>
-                            </div>
-                            @endif
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tanda Tangan Pasien & Keluarga -->
-            <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4">
-                    <h2 class="text-lg font-bold text-white flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                        </svg>
-                        Tanda Tangan Persetujuan
-                    </h2>
-                </div>
-                <div class="p-6 space-y-6">
-                    <!-- Tanda Tangan Pasien -->
-                    @if($screening->tanda_tangan_pasien)
-                    <div>
-                        <div class="bg-purple-50 border-l-4 border-purple-500 p-4 mb-3">
-                            <h3 class="text-sm font-bold text-purple-900 mb-1">Tanda Tangan Pasien</h3>
-                            <p class="text-xs text-purple-700">
-                                Ditandatangani pada: {{ $screening->tanggal_screening ? \Carbon\Carbon::parse($screening->tanggal_screening)->format('d M Y H:i') : '-' }}
-                            </p>
-                        </div>
-                        <div class="border-2 border-purple-200 rounded-lg bg-white p-4 hover:border-purple-400 transition cursor-pointer" 
-                             onclick="openImageModal('{{ asset('storage/' . $screening->tanda_tangan_pasien) }}', 'Tanda Tangan Pasien - {{ $screening->pasien->nama }}')">
-                            <img src="{{ asset('storage/' . $screening->tanda_tangan_pasien) }}" 
-                                 alt="Tanda Tangan Pasien" 
-                                 class="w-full max-h-48 object-contain hover:scale-105 transition">
-                            <div class="bg-purple-50 px-3 py-2 text-center mt-3 rounded">
-                                <span class="text-xs text-purple-700 font-medium">Klik untuk memperbesar</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- Tanda Tangan Keluarga (hanya tampil jika ada) -->
-                    @if($screening->tanda_tangan_keluarga)
-                    <div>
-                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-3">
-                            <h3 class="text-sm font-bold text-blue-900 mb-1">Tanda Tangan Keluarga/Pendamping</h3>
-                            <p class="text-xs text-blue-700">
-                                Keluarga/Pendamping telah menandatangani form persetujuan
-                            </p>
-                            @if($screening->pasien->nama_keluarga)
-                            <p class="text-sm text-blue-800 font-semibold mt-1">
-                                Nama: {{ $screening->pasien->nama_keluarga }}
-                            </p>
-                            @endif
-                        </div>
-                        <div class="border-2 border-blue-200 rounded-lg bg-white p-4 hover:border-blue-400 transition cursor-pointer" 
-                             onclick="openImageModal('{{ asset('storage/' . $screening->tanda_tangan_keluarga) }}', 'Tanda Tangan Keluarga - {{ $screening->pasien->nama_keluarga ?? $screening->pasien->nama }}')">
-                            <img src="{{ asset('storage/' . $screening->tanda_tangan_keluarga) }}" 
-                                 alt="Tanda Tangan Keluarga" 
-                                 class="w-full max-h-48 object-contain hover:scale-105 transition">
-                            <div class="bg-blue-50 px-3 py-2 text-center mt-3 rounded">
-                                <span class="text-xs text-blue-700 font-medium">Klik untuk memperbesar</span>
-                            </div>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        <!-- Kolom Kanan -->
-        <div class="space-y-6">
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
                 <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
                     <h2 class="text-lg font-bold text-white flex items-center">
@@ -392,6 +168,44 @@
                             <p class="text-gray-500">Belum ada hasil screening</p>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                <div class="bg-gradient-to-r from-blue-600 to-cyan-600 px-6 py-4">
+                    <h2 class="text-lg font-bold text-white flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Info Vaksinasi
+                    </h2>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Tanggal Vaksinasi</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('d F Y') }}
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('H:i') }} WIB
+                        </p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Petugas Screening</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            {{ $screening->petugas->nama ?? '-' }}
+                        </p>
+                    </div>
+                    <hr>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium mb-1">Dokter Pemeriksa</p>
+                        <p class="text-base font-semibold text-gray-900">
+                            Dr. {{ Auth::user()->nama }}
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -680,39 +494,8 @@
     </div>
 </div>
 
-<!-- Image Preview Modal -->
-<div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
-    <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
-        <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-        <img id="modalImage" src="" alt="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl">
-        <p id="modalTitle" class="text-white text-center mt-4 font-semibold"></p>
-    </div>
-</div>
-
 @push('scripts')
 <script>
-    // Image Modal Functions
-    function openImageModal(imageSrc, title) {
-        document.getElementById('modalImage').src = imageSrc;
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('imageModal').classList.remove('hidden');
-    }
-
-    function closeImageModal() {
-        document.getElementById('imageModal').classList.add('hidden');
-    }
-
-    // Close modal with ESC key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeImageModal();
-        }
-    });
-
     console.log('✅ Signature pad script loaded!');
     
     // ========== SIGNATURE PAD DOKTER ==========

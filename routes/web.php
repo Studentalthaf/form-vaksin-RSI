@@ -80,11 +80,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('admin/screening/questions', ScreeningQuestionController::class, [
             'as' => 'admin.screening'
         ]);
-        
-        // Vaksin Routes
-        Route::resource('admin/vaksin', \App\Http\Controllers\Admin\VaksinController::class, [
-            'as' => 'admin'
-        ]);
     });
     
     // Dokter routes - hanya untuk dokter

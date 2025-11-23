@@ -122,7 +122,7 @@ class DokterDashboardController extends Controller
         
         $screening = Screening::where('dokter_id', $dokter->id)
             ->where('id', $id)
-            ->with(['pasien', 'vaccineRequest.pasien', 'admin', 'screeningAnswers.question', 'nilaiScreening.admin'])
+            ->with(['pasien', 'vaccineRequest', 'petugas', 'screeningAnswers.question', 'nilaiScreening.admin'])
             ->firstOrFail();
         
         return view('dokter.pasien.show', compact('screening'));

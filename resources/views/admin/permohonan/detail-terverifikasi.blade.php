@@ -148,12 +148,6 @@
                             <span class="text-gray-600 font-medium">Telepon</span>
                             <span class="col-span-2 font-semibold text-blue-600">{{ $permohonan->pasien->no_telp }}</span>
                         </div>
-                        @if($permohonan->pasien->email)
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
-                            <span class="text-gray-600 font-medium">Email</span>
-                            <span class="col-span-2 font-semibold text-blue-600">{{ $permohonan->pasien->email }}</span>
-                        </div>
-                        @endif
 
                         <!-- Data Perjalanan -->
                         <h3 class="font-bold text-lg text-gray-800 border-b pb-2 mt-6">Data Perjalanan</h3>
@@ -169,31 +163,13 @@
                         <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Jenis Vaksin</span>
                             <span class="col-span-2">
-                                <div class="flex flex-wrap gap-2">
-                                    @if(is_array($permohonan->jenis_vaksin) && count($permohonan->jenis_vaksin) > 0)
-                                        @foreach($permohonan->jenis_vaksin as $vaksin)
-                                            @if($vaksin !== 'Lainnya')
-                                                <span class="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full mr-1 mb-1">{{ $vaksin }}</span>
-                                            @endif
-                                        @endforeach
-                                    @elseif($permohonan->jenis_vaksin)
-                                        @if($permohonan->jenis_vaksin !== 'Lainnya')
-                                            <span class="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full mr-1 mb-1">{{ $permohonan->jenis_vaksin }}</span>
-                                        @endif
-                                    @endif
-                                    
-                                    @if($permohonan->vaksin_lainnya)
-                                        <span class="inline-block px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-1 mb-1 border border-yellow-300">
-                                            {{ $permohonan->vaksin_lainnya }}
-                                        </span>
-                                    @elseif(is_array($permohonan->jenis_vaksin) && in_array('Lainnya', $permohonan->jenis_vaksin) && !$permohonan->vaksin_lainnya)
-                                        <span class="inline-block px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full mr-1 mb-1">Lainnya (belum diisi)</span>
-                                    @endif
-                                    
-                                    @if(empty($permohonan->jenis_vaksin) && empty($permohonan->vaksin_lainnya))
-                                        <span class="text-gray-500 text-sm italic">-</span>
-                                    @endif
-                                </div>
+                                @if(is_array($permohonan->jenis_vaksin))
+                                    @foreach($permohonan->jenis_vaksin as $vaksin)
+                                        <span class="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full mr-1 mb-1">{{ $vaksin }}</span>
+                                    @endforeach
+                                @else
+                                    {{ $permohonan->jenis_vaksin ?? '-' }}
+                                @endif
                             </span>
                         </div>
                         <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
@@ -248,28 +224,6 @@
                                  onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}', 'TTD Pasien')">
                                 <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}" 
                                      alt="TTD Pasien" 
-                                     class="w-full h-32 object-contain">
-                            </div>
-                        </div>
-                        @endif
-
-                        @if($permohonan->screening && $permohonan->screening->tanda_tangan_keluarga)
-                        <div class="mt-6">
-                            <h3 class="font-bold text-lg text-gray-800 border-b pb-2 mb-2">Tanda Tangan Keluarga/Pendamping</h3>
-                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-                                <p class="text-xs text-blue-700">
-                                    Keluarga/Pendamping telah menandatangani form persetujuan
-                                </p>
-                                @if($permohonan->pasien->nama_keluarga)
-                                <p class="text-xs text-blue-800 font-semibold mt-1">
-                                    Nama: {{ $permohonan->pasien->nama_keluarga }}
-                                </p>
-                                @endif
-                            </div>
-                            <div class="border-2 border-blue-200 rounded-lg p-3 cursor-pointer hover:border-blue-400 transition"
-                                 onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}', 'TTD Keluarga')">
-                                <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}" 
-                                     alt="TTD Keluarga" 
                                      class="w-full h-32 object-contain">
                             </div>
                         </div>
