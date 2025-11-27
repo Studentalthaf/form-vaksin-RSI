@@ -100,6 +100,8 @@
         }
         .rs-witness-box {
             width: 180px;
+            margin-left: 0;
+            text-align: left;
         }
         .rs-witness-line {
             border-top: 1px solid #000;
@@ -405,6 +407,7 @@
                 <th>Pertanyaan</th>
                 <th class="checkbox-col">Ya</th>
                 <th class="checkbox-col">Tidak</th>
+                <th class="checkbox-col">Tidak Tahu</th>
                 <th class="keterangan-col">Keterangan</th>
             </tr>
         </thead>
@@ -426,9 +429,16 @@
                         $jawabanNormalized = strtolower(trim($answer->jawaban));
                         $isYa = in_array($jawabanNormalized, ['ya', 'y', 'yes', '1']);
                         $isTidak = in_array($jawabanNormalized, ['tidak', 'no', 'n', '0']);
+                        // Check for "Tidak Tahu" - check both normalized and original
+                        $isTidakTahu = false;
+                        if (stripos($answer->jawaban, 'tidak tahu') !== false || 
+                            $jawabanNormalized === 'tidak tahu') {
+                            $isTidakTahu = true;
+                        }
                     } else {
                         $isYa = false;
                         $isTidak = false;
+                        $isTidakTahu = false;
                     }
                     
                     $keterangan = $answer && $answer->keterangan ? trim($answer->keterangan) : '';
@@ -446,11 +456,16 @@
                         <span class="checkbox-mark checked"></span>
                         @endif
                     </td>
+                    <td class="checkbox-col">
+                        @if($isTidakTahu)
+                        <span class="checkbox-mark checked"></span>
+                        @endif
+                    </td>
                     <td>{{ $keterangan }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 20px; font-style: italic;">
+                    <td colspan="6" style="text-align: center; padding: 20px; font-style: italic;">
                         Tidak ada pertanyaan screening
                     </td>
                 </tr>
@@ -660,15 +675,16 @@
         <p class="small italic">Tenaga Ahli</p>
         <div class="rs-witness-box">
             @if($screening->tanda_tangan_admin)
-            <div style="margin: 10px 0; text-align: center;">
+            <div style="margin: 10px 0; text-align: left;">
                 <img src="{{ public_path('storage/' . $screening->tanda_tangan_admin) }}" 
-                     style="max-width: 180px; max-height: 60px; display: inline-block;" />
+                     style="max-width: 180px; max-height: 60px; display: block;" />
             </div>
-            <div style="margin-top: 5px; padding-top: 0;">
-                <p style="margin: 0;"><strong>{{ $screening->nilaiScreening->admin->nama ?? '' }}</strong></p>
+            <div style="margin-top: 5px; padding-top: 0; text-align: left;">
+                <p style="margin: 0;"><strong>{{ $screening->nilaiScreening->admin->nama ?? 'Admin Rumah Sakit' }}</strong></p>
+                <p style="margin: 2px 0 0 0; font-size: 8pt;">Admin Rumah Sakit</p>
             </div>
             @else
-            <div style="margin-top: 70px;">
+            <div style="margin-top: 70px; text-align: left;">
                 <p>(&nbsp;..........................................................&nbsp;)</p>
             </div>
             @endif
@@ -728,14 +744,34 @@
                     <h4 style="margin: 0 0 10px 0; font-size: 11pt; font-weight: bold; border-bottom: 2px solid #333; padding-bottom: 5px;">
                         PASPOR (Jika Ada)
                     </h4>
-                    <div style="text-align: center; padding: 10px; border: 1px solid #ccc; background-color: #fafafa;">
-                        @if($screening->pasien->foto_paspor)
-                            <img src="{{ public_path('storage/' . $screening->pasien->foto_paspor) }}" 
-                                 style="max-width: 100%; max-height: 300px; border: 2px solid #333;" 
-                                 alt="Foto Paspor" />
+                    <div style="text-align: center; padding: 5px; border: 1px solid #ccc; background-color: #fafafa;">
+                        @if($screening->vaccineRequest && $screening->vaccineRequest->is_perjalanan == 1)
+                            @if($screening->pasien->passport_halaman_pertama || $screening->pasien->passport_halaman_kedua)
+                                @if($screening->pasien->passport_halaman_pertama)
+                                <div style="margin-bottom: 10px;">
+                                    <p style="font-size: 9pt; font-weight: bold; margin: 0 0 5px 0;">Halaman Pertama</p>
+                                    <img src="{{ public_path('storage/' . $screening->pasien->passport_halaman_pertama) }}" 
+                                         style="max-width: 100%; max-height: 140px; border: 2px solid #333;" 
+                                         alt="Passport Halaman Pertama" />
+                                </div>
+                                @endif
+                                @if($screening->pasien->passport_halaman_kedua)
+                                <div>
+                                    <p style="font-size: 9pt; font-weight: bold; margin: 0 0 5px 0;">Halaman Kedua</p>
+                                    <img src="{{ public_path('storage/' . $screening->pasien->passport_halaman_kedua) }}" 
+                                         style="max-width: 100%; max-height: 140px; border: 2px solid #333;" 
+                                         alt="Passport Halaman Kedua" />
+                                </div>
+                                @endif
+                            @else
+                                <div style="padding: 40px 20px; background-color: #f0f0f0; border: 2px dashed #999;">
+                                    <p style="color: #666; font-style: italic; margin: 0; font-size: 9pt;">Foto Paspor tidak tersedia</p>
+                                </div>
+                            @endif
                         @else
                             <div style="padding: 40px 20px; background-color: #f0f0f0; border: 2px dashed #999;">
-                                <p style="color: #666; font-style: italic; margin: 0; font-size: 9pt;">Foto Paspor tidak tersedia</p>
+                                <p style="color: #666; font-style: italic; margin: 0; font-size: 9pt;">Tidak Terlampir</p>
+                                <p style="color: #666; font-style: italic; margin: 5px 0 0 0; font-size: 8pt;">(Bukan perjalanan luar negeri)</p>
                             </div>
                         @endif
                     </div>

@@ -69,7 +69,7 @@ class PermohonanController extends Controller
             'nik' => 'required|string|max:20',
             'nama' => 'required|string|max:100',
             'no_telp' => 'required|string|max:20',
-            'email' => 'nullable|email|max:100',
+            'email' => 'required|email|max:100',
             'tempat_lahir' => 'nullable|string|max:100',
             'tanggal_lahir' => 'nullable|date',
             'jenis_kelamin' => 'nullable|in:L,P',
@@ -98,7 +98,8 @@ class PermohonanController extends Controller
         // Jika perjalanan luar negeri - paspor dan foto paspor WAJIB
         if ($request->is_perjalanan == 1) {
             $rules['nomor_paspor'] = 'required|string|max:50';
-            $rules['foto_paspor'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:2048';
+            $rules['passport_halaman_pertama'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:2048';
+            $rules['passport_halaman_kedua'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:2048';
             $rules['negara_tujuan'] = 'required|string|max:100';
             $rules['tanggal_berangkat'] = 'required|date|after:today';
             $rules['nama_travel'] = 'nullable|string|max:100';
@@ -109,13 +110,18 @@ class PermohonanController extends Controller
             'nik.required' => 'NIK wajib diisi',
             'nama.required' => 'Nama lengkap wajib diisi',
             'no_telp.required' => 'Nomor telepon wajib diisi',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
             'status_pasien.required' => 'Status pasien wajib dipilih',
             'foto_ktp.required' => 'Foto KTP wajib diupload',
             'foto_ktp.image' => 'File KTP harus berupa gambar',
             'foto_ktp.max' => 'Ukuran file KTP maksimal 2MB',
-            'foto_paspor.required' => 'Foto paspor wajib diupload untuk perjalanan luar negeri',
-            'foto_paspor.image' => 'File paspor harus berupa gambar',
-            'foto_paspor.max' => 'Ukuran file paspor maksimal 2MB',
+            'passport_halaman_pertama.required' => 'Passport halaman pertama wajib diupload untuk perjalanan luar negeri',
+            'passport_halaman_pertama.image' => 'File passport halaman pertama harus berupa gambar',
+            'passport_halaman_pertama.max' => 'Ukuran file passport halaman pertama maksimal 2MB',
+            'passport_halaman_kedua.required' => 'Passport halaman kedua wajib diupload untuk perjalanan luar negeri',
+            'passport_halaman_kedua.image' => 'File passport halaman kedua harus berupa gambar',
+            'passport_halaman_kedua.max' => 'Ukuran file passport halaman kedua maksimal 2MB',
             'jenis_vaksin.required' => 'Minimal pilih satu jenis vaksin',
             'jenis_vaksin.min' => 'Minimal pilih satu jenis vaksin',
             'vaksin_lainnya_text.required' => 'Sebutkan jenis vaksin lainnya yang dibutuhkan',
@@ -151,10 +157,14 @@ class PermohonanController extends Controller
                 $fotoKtpPath = $request->file('foto_ktp')->store('foto-ktp', 'public');
             }
 
-            // Upload foto Paspor (opsional)
-            $fotoPasporPath = null;
-            if ($request->hasFile('foto_paspor')) {
-                $fotoPasporPath = $request->file('foto_paspor')->store('foto-paspor', 'public');
+            // Upload foto Paspor halaman pertama dan kedua (opsional)
+            $passportHalamanPertamaPath = null;
+            $passportHalamanKeduaPath = null;
+            if ($request->hasFile('passport_halaman_pertama')) {
+                $passportHalamanPertamaPath = $request->file('passport_halaman_pertama')->store('foto-paspor', 'public');
+            }
+            if ($request->hasFile('passport_halaman_kedua')) {
+                $passportHalamanKeduaPath = $request->file('passport_halaman_kedua')->store('foto-paspor', 'public');
             }
 
             // Cek apakah pasien dengan NIK ini sudah ada
@@ -180,8 +190,11 @@ class PermohonanController extends Controller
                 if ($fotoKtpPath) {
                     $updateData['foto_ktp'] = $fotoKtpPath;
                 }
-                if ($fotoPasporPath) {
-                    $updateData['foto_paspor'] = $fotoPasporPath;
+                if ($passportHalamanPertamaPath) {
+                    $updateData['passport_halaman_pertama'] = $passportHalamanPertamaPath;
+                }
+                if ($passportHalamanKeduaPath) {
+                    $updateData['passport_halaman_kedua'] = $passportHalamanKeduaPath;
                 }
                 
                 $pasien->update($updateData);
@@ -200,7 +213,8 @@ class PermohonanController extends Controller
                     'alamat' => $validated['alamat'] ?? null,
                     'no_telp' => $validated['no_telp'],
                     'foto_ktp' => $fotoKtpPath,
-                    'foto_paspor' => $fotoPasporPath,
+                    'passport_halaman_pertama' => $passportHalamanPertamaPath,
+                    'passport_halaman_kedua' => $passportHalamanKeduaPath,
                     'status_pasien' => $validated['status_pasien'],
                 ]);
             }

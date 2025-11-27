@@ -5,6 +5,25 @@
 
 @section('content')
 <div class="space-y-6">
+    @if(session('success'))
+    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span>{{ session('success') }}</span>
+    </div>
+    @endif
+
+    @if($errors->any())
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+        <ul class="list-disc list-inside">
+            @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <div>
         <a href="{{ route('dokter.pasien.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,15 +143,20 @@
             <!-- Informasi Permohonan -->
             @if($screening->vaccineRequest)
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4">
+                <div class="bg-gradient-to-r from-amber-600 to-orange-600 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-white flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         Informasi Permohonan
                     </h2>
+                    <button type="button" onclick="toggleEditMode('vaksin')" id="btn-edit-vaksin" class="px-4 py-2 bg-white text-amber-600 rounded-lg font-semibold hover:bg-amber-50 transition">
+                        ✏️ Edit
+                    </button>
                 </div>
-                <div class="p-6 space-y-4">
+                
+                <!-- View Mode -->
+                <div id="view-vaksin" class="p-6 space-y-4">
                     <!-- Jenis Vaksin -->
                     <div>
                         <p class="text-sm text-gray-500 font-medium mb-2">Jenis Vaksin yang Dimohonkan</p>
@@ -175,18 +199,18 @@
                     </div>
 
                     <!-- Data Keberangkatan -->
-                    @if($screening->vaccineRequest->negara_tujuan || $screening->vaccineRequest->tanggal_berangkat)
-                    <div class="border-t pt-4">
-                        <p class="text-sm text-gray-500 font-medium mb-3">Data Keberangkatan</p>
+                    @if($screening->vaccineRequest->is_perjalanan == 1)
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-xs font-semibold text-blue-800 uppercase mb-2">Informasi Perjalanan Luar Negeri</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @if($screening->vaccineRequest->negara_tujuan)
-                            <div class="border-l-4 border-amber-500 pl-4 py-2">
+                            <div>
                                 <p class="text-xs text-gray-500 font-medium">Negara Tujuan</p>
                                 <p class="text-base font-semibold text-gray-900">{{ $screening->vaccineRequest->negara_tujuan }}</p>
                             </div>
                             @endif
                             @if($screening->vaccineRequest->tanggal_berangkat)
-                            <div class="border-l-4 border-amber-500 pl-4 py-2">
+                            <div>
                                 <p class="text-xs text-gray-500 font-medium">Tanggal Berangkat</p>
                                 <p class="text-base font-semibold text-gray-900">
                                     {{ \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->format('d M Y') }}
@@ -194,14 +218,93 @@
                             </div>
                             @endif
                             @if($screening->vaccineRequest->nama_travel)
-                            <div class="border-l-4 border-amber-500 pl-4 py-2 md:col-span-2">
+                            <div class="md:col-span-2">
                                 <p class="text-xs text-gray-500 font-medium">Nama Travel</p>
                                 <p class="text-base font-semibold text-gray-900">{{ $screening->vaccineRequest->nama_travel }}</p>
                             </div>
                             @endif
                         </div>
+                        <p class="text-xs text-gray-600 mt-2 italic">* Informasi perjalanan tidak dapat diubah</p>
                     </div>
                     @endif
+                </div>
+                
+                <!-- Edit Mode -->
+                <div id="edit-vaksin" class="hidden p-6 border-t border-gray-200">
+                    <form method="POST" action="{{ route('dokter.pasien.vaksin.update', $screening->id) }}">
+                        @csrf
+                        @method('PUT')
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Jenis Vaksin yang Dimohonkan *</label>
+                            <div class="grid md:grid-cols-2 gap-3">
+                                @if(isset($vaksins) && $vaksins->count() > 0)
+                                    @foreach($vaksins as $vaksin)
+                                    <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-amber-50 cursor-pointer transition">
+                                        <input type="checkbox" name="jenis_vaksin[]" value="{{ $vaksin->nama_vaksin }}" 
+                                            {{ in_array($vaksin->nama_vaksin, old('jenis_vaksin', is_array($screening->vaccineRequest->jenis_vaksin) ? $screening->vaccineRequest->jenis_vaksin : [])) ? 'checked' : '' }}
+                                            class="mt-1 w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+                                            onchange="toggleVaksinLainnya()">
+                                        <span class="ml-3 text-gray-700">
+                                            {{ $vaksin->nama_vaksin }}
+                                            @if($vaksin->deskripsi)
+                                                <span class="text-xs text-gray-500 block">{{ $vaksin->deskripsi }}</span>
+                                            @endif
+                                        </span>
+                                    </label>
+                                    @endforeach
+                                @endif
+                                
+                                <label class="flex items-start p-3 border border-gray-300 rounded-lg hover:bg-amber-50 cursor-pointer transition">
+                                    <input type="checkbox" name="jenis_vaksin[]" value="Lainnya" id="vaksinLainnyaCheckbox"
+                                        {{ in_array('Lainnya', old('jenis_vaksin', is_array($screening->vaccineRequest->jenis_vaksin) ? $screening->vaccineRequest->jenis_vaksin : [])) ? 'checked' : '' }}
+                                        class="mt-1 w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+                                        onchange="toggleVaksinLainnya()">
+                                    <span class="ml-3 text-gray-700">Lainnya</span>
+                                </label>
+                            </div>
+                            
+                            <div id="vaksinLainnyaContainer" class="mt-4 {{ in_array('Lainnya', old('jenis_vaksin', is_array($screening->vaccineRequest->jenis_vaksin) ? $screening->vaccineRequest->jenis_vaksin : [])) ? '' : 'hidden' }}">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Sebutkan Jenis Vaksin Lainnya</label>
+                                <input type="text" name="vaksin_lainnya_text" id="vaksinLainnyaText" 
+                                    value="{{ old('vaksin_lainnya_text', $screening->vaccineRequest->vaksin_lainnya) }}"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500" 
+                                    placeholder="Contoh: Vaksin COVID-19, Vaksin Polio, dll">
+                            </div>
+                        </div>
+                        
+                        @if($screening->vaccineRequest->is_perjalanan == 1)
+                        <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p class="text-xs font-semibold text-blue-800 uppercase mb-2">Informasi Perjalanan Luar Negeri</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @if($screening->vaccineRequest->negara_tujuan)
+                                <div>
+                                    <p class="text-xs text-gray-500 font-medium">Negara Tujuan</p>
+                                    <p class="text-base font-semibold text-gray-900">{{ $screening->vaccineRequest->negara_tujuan }}</p>
+                                </div>
+                                @endif
+                                @if($screening->vaccineRequest->tanggal_berangkat)
+                                <div>
+                                    <p class="text-xs text-gray-500 font-medium">Tanggal Berangkat</p>
+                                    <p class="text-base font-semibold text-gray-900">
+                                        {{ \Carbon\Carbon::parse($screening->vaccineRequest->tanggal_berangkat)->format('d M Y') }}
+                                    </p>
+                                </div>
+                                @endif
+                            </div>
+                            <p class="text-xs text-gray-600 mt-2 italic">* Informasi perjalanan tidak dapat diubah</p>
+                        </div>
+                        @endif
+                        
+                        <div class="mt-4 flex justify-end gap-2">
+                            <button type="button" onclick="toggleEditMode('vaksin')" class="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-semibold">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold shadow-lg">
+                                💾 Simpan Perubahan
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
             @endif
@@ -250,25 +353,51 @@
                         @endphp
                         @if($showPaspor)
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Paspor</label>
-                            @if($screening->pasien->foto_paspor)
-                            <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                 onclick="openImageModal('{{ asset('storage/' . $screening->pasien->foto_paspor) }}', 'Foto Paspor - {{ $screening->pasien->nama }}')">
-                                <img src="{{ asset('storage/' . $screening->pasien->foto_paspor) }}" 
-                                     alt="Foto Paspor" 
-                                     class="w-full h-48 object-cover hover:scale-105 transition">
-                                <div class="bg-gray-50 px-3 py-2 text-center">
-                                    <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Passport</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-2">Halaman Pertama</label>
+                                    @if($screening->pasien->passport_halaman_pertama)
+                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                         onclick="openImageModal('{{ asset('storage/' . $screening->pasien->passport_halaman_pertama) }}', 'Passport Halaman Pertama - {{ $screening->pasien->nama }}')">
+                                        <img src="{{ asset('storage/' . $screening->pasien->passport_halaman_pertama) }}" 
+                                             alt="Passport Halaman Pertama" 
+                                             class="w-full h-48 object-cover hover:scale-105 transition">
+                                        <div class="bg-gray-50 px-3 py-2 text-center">
+                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                        </div>
+                                    </div>
+                                    @else
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Tidak ada foto</p>
+                                    </div>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-2">Halaman Kedua</label>
+                                    @if($screening->pasien->passport_halaman_kedua)
+                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                         onclick="openImageModal('{{ asset('storage/' . $screening->pasien->passport_halaman_kedua) }}', 'Passport Halaman Kedua - {{ $screening->pasien->nama }}')">
+                                        <img src="{{ asset('storage/' . $screening->pasien->passport_halaman_kedua) }}" 
+                                             alt="Passport Halaman Kedua" 
+                                             class="w-full h-48 object-cover hover:scale-105 transition">
+                                        <div class="bg-gray-50 px-3 py-2 text-center">
+                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                        </div>
+                                    </div>
+                                    @else
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Tidak ada foto</p>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
-                            @else
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                                <p class="text-sm text-gray-500">Tidak ada foto</p>
-                            </div>
-                            @endif
                         </div>
                         @endif
                     </div>
@@ -339,51 +468,73 @@
         <!-- Kolom Kanan -->
         <div class="space-y-6">
             <div class="bg-white rounded-xl shadow-md overflow-hidden">
-                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-white flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                         </svg>
                         Hasil Screening Admin
                     </h2>
+                    <button type="button" onclick="toggleEditMode('jawaban')" id="btn-edit-jawaban" class="px-4 py-2 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition">
+                        ✏️ Edit
+                    </button>
                 </div>
-                <div class="p-6">
-                    @if($screening->screeningAnswers && $screening->screeningAnswers->count() > 0)
-                        <div class="space-y-4">
-                            @foreach($screening->screeningAnswers as $index => $answer)
-                            <div class="border-l-4 {{ $answer->jawaban == 'ya' ? 'border-red-500 bg-red-50' : 'border-green-500 bg-green-50' }} p-4 rounded-r-lg">
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1">
-                                        <p class="font-semibold text-gray-800 mb-2">
-                                            {{ $index + 1 }}. {{ $answer->question->pertanyaan ?? 'Pertanyaan tidak ditemukan' }}
-                                        </p>
-                                        <div class="flex items-center space-x-2">
-                                            @if($answer->jawaban == 'ya')
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
-                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                                    </svg>
-                                                    Ya
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                                    </svg>
-                                                    Tidak
-                                                </span>
-                                            @endif
+                
+                <!-- View Mode -->
+                <div id="view-jawaban" class="p-6">
+                    @if($screening->answers && $screening->answers->count() > 0)
+                        @php
+                            $groupedAnswers = $screening->answers->groupBy(function($answer) {
+                                return $answer->question->category->nama ?? 'Lainnya';
+                            });
+                        @endphp
+                        
+                        @foreach($groupedAnswers as $categoryName => $answers)
+                        <div class="mb-6">
+                            <h3 class="text-md font-bold text-gray-800 mb-3 pb-2 border-b-2 border-indigo-500">
+                                {{ $categoryName }}
+                            </h3>
+                            <div class="space-y-4">
+                                @foreach($answers as $index => $answer)
+                                <div class="border-l-4 {{ $answer->jawaban == 'Ya' || $answer->jawaban == 'ya' ? 'border-red-500 bg-red-50' : ($answer->jawaban == 'Tidak Tahu' ? 'border-yellow-500 bg-yellow-50' : 'border-green-500 bg-green-50') }} p-4 rounded-r-lg">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <p class="font-semibold text-gray-800 mb-2">
+                                                {{ $answer->question->pertanyaan ?? 'Pertanyaan tidak ditemukan' }}
+                                            </p>
+                                            <div class="flex items-center space-x-2">
+                                                @if($answer->jawaban == 'Ya' || $answer->jawaban == 'ya')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                                        </svg>
+                                                        Ya
+                                                    </span>
+                                                @elseif($answer->jawaban == 'Tidak Tahu')
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
+                                                        Tidak Tahu
+                                                    </span>
+                                                @else
+                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                        </svg>
+                                                        Tidak
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
+                                    @if($answer->keterangan)
+                                    <div class="mt-3 pl-4 border-l-2 border-gray-300">
+                                        <p class="text-sm text-gray-600"><strong>Keterangan:</strong> {{ $answer->keterangan }}</p>
+                                    </div>
+                                    @endif
                                 </div>
-                                @if($answer->keterangan)
-                                <div class="mt-3 pl-4 border-l-2 border-gray-300">
-                                    <p class="text-sm text-gray-600"><strong>Keterangan:</strong> {{ $answer->keterangan }}</p>
-                                </div>
-                                @endif
+                                @endforeach
                             </div>
-                            @endforeach
                         </div>
+                        @endforeach
                     @else
                         <div class="text-center py-8">
                             <svg class="mx-auto w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,6 +543,92 @@
                             <p class="text-gray-500">Belum ada hasil screening</p>
                         </div>
                     @endif
+                </div>
+                
+                <!-- Edit Mode -->
+                <div id="edit-jawaban" class="hidden p-6 max-h-[600px] overflow-y-auto">
+                    <form method="POST" action="{{ route('dokter.pasien.jawaban.update', $screening->id) }}">
+                        @csrf
+                        @method('PUT')
+                        
+                        @if($screening->answers && $screening->answers->count() > 0)
+                            @php
+                                $groupedAnswers = $screening->answers->groupBy(function($answer) {
+                                    return $answer->question->category->nama ?? 'Lainnya';
+                                });
+                            @endphp
+                            
+                            @foreach($groupedAnswers as $categoryName => $answers)
+                            <div class="mb-6">
+                                <h3 class="text-md font-bold text-gray-800 mb-3 pb-2 border-b-2 border-indigo-500">
+                                    {{ $categoryName }}
+                                </h3>
+                                <div class="space-y-4">
+                                    @foreach($answers as $answer)
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <p class="font-semibold text-gray-700 mb-3">{{ $answer->question->pertanyaan }}</p>
+                                        
+                                        @if($answer->question->tipe_jawaban == 'ya_tidak')
+                                            <div class="flex gap-4 mb-3">
+                                                <label class="inline-flex items-center cursor-pointer">
+                                                    <input type="radio" name="jawaban_{{ $answer->question->id }}" value="Ya" 
+                                                        {{ $answer->jawaban == 'Ya' ? 'checked' : '' }}
+                                                        class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                                                        onchange="toggleKeteranganEdit{{ $answer->question->id }}(this.value)">
+                                                    <span class="ml-2 text-gray-700">Ya</span>
+                                                </label>
+                                                <label class="inline-flex items-center cursor-pointer">
+                                                    <input type="radio" name="jawaban_{{ $answer->question->id }}" value="Tidak" 
+                                                        {{ $answer->jawaban == 'Tidak' ? 'checked' : '' }}
+                                                        class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                                                        onchange="toggleKeteranganEdit{{ $answer->question->id }}(this.value)">
+                                                    <span class="ml-2 text-gray-700">Tidak</span>
+                                                </label>
+                                                <label class="inline-flex items-center cursor-pointer">
+                                                    <input type="radio" name="jawaban_{{ $answer->question->id }}" value="Tidak Tahu" 
+                                                        {{ $answer->jawaban == 'Tidak Tahu' ? 'checked' : '' }}
+                                                        class="w-4 h-4 text-indigo-600 focus:ring-indigo-500"
+                                                        onchange="toggleKeteranganEdit{{ $answer->question->id }}(this.value)">
+                                                    <span class="ml-2 text-gray-700">Tidak Tahu</span>
+                                                </label>
+                                            </div>
+                                            
+                                            <div id="keterangan_edit_{{ $answer->question->id }}" class="{{ $answer->jawaban == 'Ya' ? '' : 'hidden' }}">
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                                                <textarea name="keterangan_{{ $answer->question->id }}" rows="2"
+                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                                    placeholder="Jelaskan lebih detail...">{{ $answer->keterangan }}</textarea>
+                                            </div>
+                                            
+                                            <script>
+                                                function toggleKeteranganEdit{{ $answer->question->id }}(value) {
+                                                    const container = document.getElementById('keterangan_edit_{{ $answer->question->id }}');
+                                                    if (value === 'Ya') {
+                                                        container.classList.remove('hidden');
+                                                    } else {
+                                                        container.classList.add('hidden');
+                                                    }
+                                                }
+                                            </script>
+                                        @endif
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endforeach
+                        @endif
+                        
+                        @if($screening->answers && $screening->answers->count() > 0)
+                        <div class="sticky bottom-0 bg-white border-t border-gray-200 pt-4 flex justify-end gap-2">
+                            <button type="button" onclick="toggleEditMode('jawaban')" class="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-semibold">
+                                Batal
+                            </button>
+                            <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold shadow-lg">
+                                💾 Simpan Perubahan
+                            </button>
+                        </div>
+                        @endif
+                    </form>
                 </div>
             </div>
 
@@ -556,8 +793,8 @@
                 </div>
                 <div class="p-6">
                     @php
-                        $jawabanYa = $screening->screeningAnswers->where('jawaban', 'ya')->count();
-                        $totalPertanyaan = $screening->screeningAnswers->count();
+                        $jawabanYa = $screening->answers->whereIn('jawaban', ['Ya', 'ya'])->count();
+                        $totalPertanyaan = $screening->answers->count();
                     @endphp
                     
                     @if($jawabanYa > 0)
@@ -643,16 +880,15 @@
                         <!-- Catatan Dokter -->
                         <div class="mb-6">
                             <label for="catatan_dokter" class="block text-sm font-bold text-gray-700 mb-2">
-                                Catatan Dokter <span class="text-red-500">*</span>
+                                Catatan Dokter (Opsional)
                             </label>
                             <textarea 
                                 id="catatan_dokter" 
                                 name="catatan_dokter" 
                                 rows="5" 
-                                required
                                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-                                placeholder="Tuliskan catatan, rekomendasi, atau instruksi terkait kondisi pasien..."></textarea>
-                            <p class="text-xs text-gray-500 mt-1">Minimal 10 karakter</p>
+                                placeholder="Tuliskan catatan, rekomendasi, atau instruksi terkait kondisi pasien (opsional)..."></textarea>
+                            <p class="text-xs text-gray-500 mt-1">Catatan ini bersifat opsional</p>
                         </div>
 
                         <!-- Button Submit -->
@@ -710,6 +946,27 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             closeImageModal();
+        }
+    });
+
+
+    // Form submission
+    document.getElementById('formKonfirmasi').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validate signature dokter
+        if (isCanvasBlank()) {
+            alert('Silakan buat tanda tangan dokter terlebih dahulu!');
+            return false;
+        }
+
+        // Save signature dokter as base64
+        const signatureData = canvas.toDataURL('image/png');
+        document.getElementById('tandaTanganInput').value = signatureData;
+
+        // Show confirmation
+        if (confirm('Apakah Anda yakin ingin menyimpan konfirmasi ini?\n\nPastikan:\n✓ Dokter sudah menandatangani\n\nData tidak dapat diubah setelah disimpan.')) {
+            this.submit();
         }
     });
 
@@ -815,32 +1072,39 @@
         return canvas.toDataURL() === blank.toDataURL();
     }
 
-    // Form submission
-    document.getElementById('formKonfirmasi').addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Toggle Edit Mode Functions
+    function toggleEditMode(section) {
+        const viewSection = document.getElementById('view-' + section);
+        const editSection = document.getElementById('edit-' + section);
+        const btnEdit = document.getElementById('btn-edit-' + section);
         
-        // Validate signature dokter
-        if (isCanvasBlank()) {
-            alert('Silakan buat tanda tangan dokter terlebih dahulu!');
-            return false;
+        if (editSection.classList.contains('hidden')) {
+            // Show edit, hide view
+            viewSection.classList.add('hidden');
+            editSection.classList.remove('hidden');
+            if (btnEdit) btnEdit.classList.add('hidden');
+        } else {
+            // Show view, hide edit
+            viewSection.classList.remove('hidden');
+            editSection.classList.add('hidden');
+            if (btnEdit) btnEdit.classList.remove('hidden');
         }
+    }
 
-        // Validate catatan
-        const catatan = document.getElementById('catatan_dokter').value.trim();
-        if (catatan.length < 10) {
-            alert('Catatan dokter minimal 10 karakter!');
-            return false;
+    function toggleVaksinLainnya() {
+        const checkbox = document.getElementById('vaksinLainnyaCheckbox');
+        const container = document.getElementById('vaksinLainnyaContainer');
+        
+        if (checkbox && container) {
+            if (checkbox.checked) {
+                container.classList.remove('hidden');
+            } else {
+                container.classList.add('hidden');
+                const textInput = document.getElementById('vaksinLainnyaText');
+                if (textInput) textInput.value = '';
+            }
         }
-
-        // Save signature dokter as base64
-        const signatureData = canvas.toDataURL('image/png');
-        document.getElementById('tandaTanganInput').value = signatureData;
-
-        // Show confirmation
-        if (confirm('Apakah Anda yakin ingin menyimpan konfirmasi ini?\n\nPastikan:\n✓ Dokter sudah menandatangani\n✓ Catatan sudah lengkap\n\nData tidak dapat diubah setelah disimpan.')) {
-            this.submit();
-        }
-    });
+    }
 </script>
 @endpush
 

@@ -120,10 +120,12 @@
                                 @endif
                             </span>
                         </div>
+                        @if($permohonan->is_perjalanan == 1)
                         <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Paspor</span>
                             <span class="col-span-2">{{ $permohonan->pasien->nomor_paspor ?? '-' }}</span>
                         </div>
+                        @endif
                         <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">TTL</span>
                             <span class="col-span-2">{{ $permohonan->pasien->tempat_lahir ?? '-' }}{{ $permohonan->pasien->tanggal_lahir ? ', ' . \Carbon\Carbon::parse($permohonan->pasien->tanggal_lahir)->format('d/m/Y') : '' }}</span>
@@ -221,18 +223,36 @@
                         </div>
                         @endif
 
-                        @if($permohonan->pasien->foto_paspor)
-                        <div>
-                            <label class="block text-xs font-semibold text-gray-700 mb-2">Foto Paspor</label>
-                            <div class="border rounded-lg overflow-hidden hover:border-blue-500 transition cursor-pointer" 
-                                 onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->foto_paspor) }}', 'Paspor')">
-                                <img src="{{ asset('storage/' . $permohonan->pasien->foto_paspor) }}" 
-                                     alt="Paspor" 
-                                     class="w-full h-32 object-cover">
-                                <div class="bg-gray-50 px-2 py-1 text-center">
-                                    <span class="text-xs text-gray-600">Klik untuk perbesar</span>
+                        @if($permohonan->is_perjalanan == 1 && ($permohonan->pasien->passport_halaman_pertama || $permohonan->pasien->passport_halaman_kedua))
+                        <div class="grid grid-cols-2 gap-2">
+                            @if($permohonan->pasien->passport_halaman_pertama)
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-2">Passport Halaman Pertama</label>
+                                <div class="border rounded-lg overflow-hidden hover:border-blue-500 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->passport_halaman_pertama) }}', 'Passport Halaman Pertama')">
+                                    <img src="{{ asset('storage/' . $permohonan->pasien->passport_halaman_pertama) }}" 
+                                         alt="Passport Halaman Pertama" 
+                                         class="w-full h-32 object-cover">
+                                    <div class="bg-gray-50 px-2 py-1 text-center">
+                                        <span class="text-xs text-gray-600">Klik untuk perbesar</span>
+                                    </div>
                                 </div>
                             </div>
+                            @endif
+                            @if($permohonan->pasien->passport_halaman_kedua)
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-2">Passport Halaman Kedua</label>
+                                <div class="border rounded-lg overflow-hidden hover:border-blue-500 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->passport_halaman_kedua) }}', 'Passport Halaman Kedua')">
+                                    <img src="{{ asset('storage/' . $permohonan->pasien->passport_halaman_kedua) }}" 
+                                         alt="Passport Halaman Kedua" 
+                                         class="w-full h-32 object-cover">
+                                    <div class="bg-gray-50 px-2 py-1 text-center">
+                                        <span class="text-xs text-gray-600">Klik untuk perbesar</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                         </div>
                         @endif
 

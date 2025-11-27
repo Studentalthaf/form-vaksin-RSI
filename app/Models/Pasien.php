@@ -25,7 +25,8 @@ class Pasien extends Model
         'alamat',
         'no_telp',
         'foto_ktp',
-        'foto_paspor',
+        'passport_halaman_pertama',
+        'passport_halaman_kedua',
         'status_pasien',
     ];
 

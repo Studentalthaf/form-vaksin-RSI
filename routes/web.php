@@ -65,6 +65,9 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/screening/{permohonan}/nilai/edit', [ScreeningPasienController::class, 'editNilai'])->name('admin.screening.nilai.edit');
         Route::put('admin/screening/{permohonan}/nilai', [ScreeningPasienController::class, 'updateNilai'])->name('admin.screening.nilai.update');
         Route::post('admin/screening/{permohonan}/assign-dokter', [ScreeningPasienController::class, 'assignDokter'])->name('admin.screening.assign-dokter');
+        Route::put('admin/screening/{permohonan}/pasien', [ScreeningPasienController::class, 'updatePasien'])->name('admin.screening.pasien.update');
+        Route::put('admin/screening/{permohonan}/vaksin', [ScreeningPasienController::class, 'updateVaksin'])->name('admin.screening.vaksin.update');
+        Route::put('admin/screening/{permohonan}/jawaban', [ScreeningPasienController::class, 'updateJawaban'])->name('admin.screening.jawaban.update');
         
         // Data Pasien Routes
         Route::get('admin/pasien', [PasienController::class, 'index'])->name('admin.pasien.index');
@@ -96,6 +99,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/dokter/pasien', [DokterDashboardController::class, 'daftarPasien'])->name('dokter.pasien.index');
         Route::get('/dokter/pasien/{id}/detail', [DokterDashboardController::class, 'detailPasien'])->name('dokter.pasien.show');
         Route::post('/dokter/pasien/{id}/konfirmasi', [DokterDashboardController::class, 'konfirmasiPasien'])->name('dokter.pasien.konfirmasi');
+        Route::put('/dokter/pasien/{id}/jawaban', [DokterDashboardController::class, 'updateJawaban'])->name('dokter.pasien.jawaban.update');
+        Route::put('/dokter/pasien/{id}/vaksin', [DokterDashboardController::class, 'updateVaksin'])->name('dokter.pasien.vaksin.update');
     });
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

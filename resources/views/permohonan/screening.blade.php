@@ -100,6 +100,12 @@
                                                     onchange="toggleKeterangan{{ $question->id }}(this.value)">
                                                 <span class="ml-2 text-gray-700">Tidak</span>
                                             </label>
+                                            <label class="inline-flex items-center cursor-pointer">
+                                                <input type="radio" name="jawaban_{{ $question->id }}" value="Tidak Tahu" 
+                                                    class="w-4 h-4 text-green-600 focus:ring-green-500"
+                                                    onchange="toggleKeterangan{{ $question->id }}(this.value)">
+                                                <span class="ml-2 text-gray-700">Tidak Tahu</span>
+                                            </label>
                                         </div>
 
                                         <!-- Keterangan (muncul jika jawaban Ya) -->

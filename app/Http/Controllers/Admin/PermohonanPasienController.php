@@ -258,8 +258,11 @@ class PermohonanPasienController extends Controller
             }
             
             // Hapus file foto Paspor jika ada
-            if ($permohonan->pasien->foto_paspor && Storage::disk('public')->exists($permohonan->pasien->foto_paspor)) {
-                Storage::disk('public')->delete($permohonan->pasien->foto_paspor);
+            if ($permohonan->pasien->passport_halaman_pertama && Storage::disk('public')->exists($permohonan->pasien->passport_halaman_pertama)) {
+                Storage::disk('public')->delete($permohonan->pasien->passport_halaman_pertama);
+            }
+            if ($permohonan->pasien->passport_halaman_kedua && Storage::disk('public')->exists($permohonan->pasien->passport_halaman_kedua)) {
+                Storage::disk('public')->delete($permohonan->pasien->passport_halaman_kedua);
             }
             
             // Hapus tanda tangan pasien jika ada

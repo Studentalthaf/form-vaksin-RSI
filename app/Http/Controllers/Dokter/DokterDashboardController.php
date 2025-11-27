@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Dokter;
 
 use App\Http\Controllers\Controller;
 use App\Models\Screening;
+use App\Models\VaccineRequest;
+use App\Models\Vaksin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class DokterDashboardController extends Controller
@@ -122,10 +125,16 @@ class DokterDashboardController extends Controller
         
         $screening = Screening::where('dokter_id', $dokter->id)
             ->where('id', $id)
-            ->with(['pasien', 'vaccineRequest.pasien', 'admin', 'screeningAnswers.question', 'nilaiScreening.admin'])
+            ->with(['pasien', 'vaccineRequest.pasien', 'admin', 'answers.question.category', 'nilaiScreening.admin'])
             ->firstOrFail();
         
-        return view('dokter.pasien.show', compact('screening'));
+        // Ambil daftar vaksin aktif untuk dropdown
+        $vaksins = Vaksin::where('aktif', true)
+            ->orderBy('urutan')
+            ->orderBy('nama_vaksin')
+            ->get();
+        
+        return view('dokter.pasien.show', compact('screening', 'vaksins'));
     }
     
     /**
@@ -138,11 +147,9 @@ class DokterDashboardController extends Controller
         // Validasi
         $request->validate([
             'tanda_tangan' => 'required|string',
-            'catatan_dokter' => 'required|string|min:10',
+            'catatan_dokter' => 'nullable|string',
         ], [
             'tanda_tangan.required' => 'Tanda tangan dokter wajib diisi',
-            'catatan_dokter.required' => 'Catatan dokter wajib diisi',
-            'catatan_dokter.min' => 'Catatan dokter minimal 10 karakter',
         ]);
         
         // Cari screening
@@ -157,7 +164,7 @@ class DokterDashboardController extends Controller
                 ->with('error', 'Pasien belum menandatangani form persetujuan!');
         }
         
-        // Simpan tanda tangan dokter
+        // Simpan tanda tangan dokter dari signature pad
         $signatureData = $request->tanda_tangan;
         $signatureData = str_replace('data:image/png;base64,', '', $signatureData);
         $signatureData = str_replace(' ', '+', $signatureData);
@@ -178,5 +185,118 @@ class DokterDashboardController extends Controller
         return redirect()
             ->route('dokter.pasien.index')
             ->with('success', 'Konfirmasi berhasil disimpan! Pasien telah diverifikasi dan data dikirim ke admin.');
+    }
+
+    /**
+     * Update jawaban screening pasien
+     */
+    public function updateJawaban(Request $request, $id)
+    {
+        $dokter = Auth::user();
+        
+        DB::beginTransaction();
+        try {
+            $screening = Screening::where('dokter_id', $dokter->id)
+                ->where('id', $id)
+                ->with('answers')
+                ->firstOrFail();
+
+            // Get all questions
+            $questions = \App\Models\ScreeningQuestion::where('aktif', true)->get();
+            
+            foreach ($questions as $question) {
+                $jawaban = $request->input('jawaban_' . $question->id);
+                $keterangan = $request->input('keterangan_' . $question->id);
+                
+                if ($jawaban) {
+                    // Find existing answer
+                    $answer = $screening->answers()->where('question_id', $question->id)->first();
+                    
+                    if ($answer) {
+                        // Update existing answer
+                        $answer->update([
+                            'jawaban' => $jawaban,
+                            'keterangan' => $keterangan,
+                        ]);
+                    } else {
+                        // Create new answer if not exist
+                        \App\Models\ScreeningAnswer::create([
+                            'screening_id' => $screening->id,
+                            'question_id' => $question->id,
+                            'jawaban' => $jawaban,
+                            'keterangan' => $keterangan,
+                        ]);
+                    }
+                }
+            }
+            
+            DB::commit();
+            
+            return back()->with('success', 'Jawaban screening berhasil diupdate!');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Update informasi vaksin
+     */
+    public function updateVaksin(Request $request, $id)
+    {
+        $dokter = Auth::user();
+        
+        $request->validate([
+            'jenis_vaksin' => 'required|array|min:1',
+            'jenis_vaksin.*' => 'required|string|max:100',
+            'vaksin_lainnya_text' => 'nullable|string|max:200',
+        ]);
+
+        try {
+            $screening = Screening::where('dokter_id', $dokter->id)
+                ->where('id', $id)
+                ->with('vaccineRequest')
+                ->firstOrFail();
+
+            if (!$screening->vaccineRequest) {
+                return back()->withErrors(['error' => 'Permohonan vaksin tidak ditemukan']);
+            }
+
+            $jenisVaksin = $request->jenis_vaksin;
+            $vaksinLainnyaText = null;
+
+            // Jika ada "Lainnya", pisahkan
+            if (in_array('Lainnya', $jenisVaksin)) {
+                $jenisVaksin = array_filter($jenisVaksin, function($item) {
+                    return $item !== 'Lainnya';
+                });
+                $jenisVaksin = array_values($jenisVaksin);
+                
+                if (!empty($request->vaksin_lainnya_text)) {
+                    $vaksinLainnyaText = trim($request->vaksin_lainnya_text);
+                }
+            }
+
+            // Hanya update jenis vaksin
+            $screening->vaccineRequest->update([
+                'jenis_vaksin' => $jenisVaksin,
+                'vaksin_lainnya' => $vaksinLainnyaText,
+            ]);
+
+            // Update juga di nilai screening jika ada
+            if ($screening->nilaiScreening) {
+                $screening->nilaiScreening->update([
+                    'jenis_vaksin' => is_array($jenisVaksin) 
+                        ? implode(', ', $jenisVaksin) 
+                        : ($jenisVaksin ?: ''),
+                    'negara_tujuan' => $screening->vaccineRequest->negara_tujuan,
+                ]);
+            }
+
+            return back()->with('success', 'Informasi vaksin berhasil diupdate!');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+        }
     }
 }

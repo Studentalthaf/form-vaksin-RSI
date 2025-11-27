@@ -113,10 +113,10 @@
 
                         <!-- Email -->
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                             <input type="email" name="email" id="email" value="{{ old('email') }}" 
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                placeholder="Contoh: nama@email.com">
+                                placeholder="Contoh: nama@email.com" required>
                             <p class="text-sm text-gray-500 mt-1">Isi email anda dengan benar</p>
                         </div>
 
@@ -329,10 +329,18 @@
                                 placeholder="Alamat lengkap travel">
                         </div>
 
-                        <!-- Upload Foto Paspor -->
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Foto Paspor *</label>
-                            <input type="file" name="foto_paspor" id="foto_paspor" accept="image/*"
+                        <!-- Upload Foto Paspor Halaman Pertama -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Pertama *</label>
+                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/*"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 2MB</p>
+                        </div>
+
+                        <!-- Upload Foto Paspor Halaman Kedua -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Kedua *</label>
+                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/*"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
                             <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 2MB</p>
                         </div>
@@ -405,7 +413,8 @@
                     if (field) field.required = true;
                 });
                 document.getElementById('nomor_paspor').required = true;
-                document.getElementById('foto_paspor').required = true;
+                document.getElementById('passport_halaman_pertama').required = true;
+                document.getElementById('passport_halaman_kedua').required = true;
             } else {
                 container.classList.add('hidden');
                 // Remove required dari field perjalanan, paspor, dan foto paspor
@@ -414,7 +423,8 @@
                     if (field) field.required = false;
                 });
                 document.getElementById('nomor_paspor').required = false;
-                document.getElementById('foto_paspor').required = false;
+                document.getElementById('passport_halaman_pertama').required = false;
+                document.getElementById('passport_halaman_kedua').required = false;
             }
         }
 

@@ -74,7 +74,8 @@ class PasienSeeder extends Seeder
                 'no_telp' => $faker->numerify('08##########'),
                 'status_pasien' => $faker->randomElement(['baru', 'lama']),
                 'foto_ktp' => null, // Akan diisi saat upload
-                'foto_paspor' => null, // Akan diisi saat upload
+                'passport_halaman_pertama' => null, // Akan diisi saat upload
+                'passport_halaman_kedua' => null, // Akan diisi saat upload
             ]);
         }
 
