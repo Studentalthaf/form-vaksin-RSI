@@ -13,6 +13,7 @@ class Screening extends Model
         'pasien_id',
         'vaccine_request_id',
         'tanggal_screening',
+        'petugas_id',
         'admin_id',
         'dokter_id',
         'hasil_screening',
@@ -29,9 +30,7 @@ class Screening extends Model
         'catatan_pemeriksaan',
         'catatan_dokter',
         'tanda_tangan_pasien',
-        'tanda_tangan_keluarga',
         'tanda_tangan_dokter',
-        'tanda_tangan_admin',
         'tanggal_konfirmasi',
         'status_konfirmasi',
     ];
@@ -50,6 +49,11 @@ class Screening extends Model
     public function vaccineRequest()
     {
         return $this->belongsTo(VaccineRequest::class, 'vaccine_request_id');
+    }
+
+    public function petugas()
+    {
+        return $this->belongsTo(User::class, 'petugas_id');
     }
 
     public function admin()

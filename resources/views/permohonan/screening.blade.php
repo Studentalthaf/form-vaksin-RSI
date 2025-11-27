@@ -204,65 +204,6 @@
                         <input type="hidden" name="tanda_tangan" id="tandaTanganInput" required>
                     </div>
 
-                    <!-- Tanda Tangan Keluarga (Optional) -->
-                    <div class="mt-6 p-6 border-2 border-blue-300 rounded-lg bg-blue-50">
-                        <div class="mb-4">
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" id="adaTandaTanganKeluarga" name="ada_tanda_tangan_keluarga" value="1" 
-                                    onchange="toggleTandaTanganKeluarga()"
-                                    class="w-5 h-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                <span class="ml-2 text-sm font-semibold text-blue-900">
-                                    Ada tanda tangan keluarga/pendamping
-                                </span>
-                            </label>
-                            <p class="text-xs text-blue-700 mt-1 ml-7">
-                                Centang jika ada keluarga/pendamping yang ikut menandatangani
-                            </p>
-                        </div>
-
-                        <div id="tandaTanganKeluargaContainer" class="hidden">
-                            <div class="mb-4">
-                                <h3 class="text-lg font-bold text-blue-900 flex items-center mb-2">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                                    </svg>
-                                    Tanda Tangan Keluarga/Pendamping
-                                </h3>
-                                <p class="text-sm text-blue-700">
-                                    Tanda tangan keluarga/pendamping pasien (opsional)
-                                </p>
-                            </div>
-
-                            <div class="bg-white border-2 border-blue-300 rounded-lg overflow-hidden">
-                                <canvas id="signaturePadKeluarga" width="700" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
-                            </div>
-
-                            <div class="flex items-center justify-between mt-3">
-                                <p class="text-xs text-gray-600">Silakan tanda tangan di kotak putih di atas</p>
-                                <button type="button" onclick="clearSignatureKeluarga()" class="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center px-3 py-1 border border-red-300 rounded hover:bg-red-50 transition">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                    Hapus Tanda Tangan
-                                </button>
-                            </div>
-
-                            <input type="hidden" name="tanda_tangan_keluarga" id="tandaTanganKeluargaInput">
-
-                            <!-- Nama Keluarga (di bawah tanda tangan) -->
-                            <div class="mt-4">
-                                <label class="block text-sm font-semibold text-blue-900 mb-2">
-                                    Nama Keluarga/Pendamping
-                                </label>
-                                <input type="text" name="nama_keluarga" id="namaKeluargaInput" 
-                                    placeholder="Masukkan nama keluarga/pendamping"
-                                    maxlength="100"
-                                    class="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <p class="text-xs text-blue-600 mt-1">Nama orang yang menandatangani di atas</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Submit Button -->
                     <div class="flex justify-end gap-4 pt-6 border-t mt-8">
                         <button type="submit" 
@@ -393,27 +334,6 @@
                 const signatureData = canvas.toDataURL('image/png');
                 document.getElementById('tandaTanganInput').value = signatureData;
 
-                // Handle family signature if checked
-                const adaTandaTanganKeluarga = document.getElementById('adaTandaTanganKeluarga').checked;
-                if (adaTandaTanganKeluarga) {
-                    const canvasKeluarga = document.getElementById('signaturePadKeluarga');
-                    if (canvasKeluarga) {
-                        const ctxKeluarga = canvasKeluarga.getContext('2d');
-                        const blank = document.createElement('canvas');
-                        blank.width = canvasKeluarga.width;
-                        blank.height = canvasKeluarga.height;
-                        
-                        if (canvasKeluarga.toDataURL() === blank.toDataURL()) {
-                            alert('❌ Tanda tangan keluarga belum dibuat!\n\nSilakan tanda tangan keluarga di kotak yang tersedia atau hapus centang jika tidak ada.');
-                            canvasKeluarga.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            return false;
-                        }
-                        
-                        const signatureKeluargaData = canvasKeluarga.toDataURL('image/png');
-                        document.getElementById('tandaTanganKeluargaInput').value = signatureKeluargaData;
-                    }
-                }
-
                 // Confirm before submit
                 if (confirm('Apakah Anda yakin data yang Anda isi sudah benar?\n\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan sudah dibuat\n\nData tidak dapat diubah setelah dikirim.')) {
                     // Clear localStorage
@@ -422,102 +342,6 @@
                 }
             });
         }
-
-        // ========== SIGNATURE PAD KELUARGA ==========
-        let canvasKeluarga = null;
-        let ctxKeluarga = null;
-        let isDrawingKeluarga = false;
-
-        function initCanvasKeluarga() {
-            canvasKeluarga = document.getElementById('signaturePadKeluarga');
-            if (!canvasKeluarga) return;
-            
-            ctxKeluarga = canvasKeluarga.getContext('2d');
-            ctxKeluarga.strokeStyle = '#000000';
-            ctxKeluarga.lineWidth = 3;
-            ctxKeluarga.lineCap = 'round';
-            ctxKeluarga.lineJoin = 'round';
-
-            function getPositionKeluarga(e) {
-                const rect = canvasKeluarga.getBoundingClientRect();
-                const scaleX = canvasKeluarga.width / rect.width;
-                const scaleY = canvasKeluarga.height / rect.height;
-                
-                if (e.touches && e.touches[0]) {
-                    return {
-                        x: (e.touches[0].clientX - rect.left) * scaleX,
-                        y: (e.touches[0].clientY - rect.top) * scaleY
-                    };
-                }
-                
-                return {
-                    x: (e.clientX - rect.left) * scaleX,
-                    y: (e.clientY - rect.top) * scaleY
-                };
-            }
-
-            function startDrawingKeluarga(e) {
-                isDrawingKeluarga = true;
-                const pos = getPositionKeluarga(e);
-                ctxKeluarga.beginPath();
-                ctxKeluarga.moveTo(pos.x, pos.y);
-            }
-
-            function drawKeluarga(e) {
-                if (!isDrawingKeluarga) return;
-                e.preventDefault();
-                const pos = getPositionKeluarga(e);
-                ctxKeluarga.lineTo(pos.x, pos.y);
-                ctxKeluarga.stroke();
-            }
-
-            function stopDrawingKeluarga() {
-                isDrawingKeluarga = false;
-                ctxKeluarga.beginPath();
-            }
-
-            // Mouse events
-            canvasKeluarga.addEventListener('mousedown', startDrawingKeluarga);
-            canvasKeluarga.addEventListener('mousemove', drawKeluarga);
-            canvasKeluarga.addEventListener('mouseup', stopDrawingKeluarga);
-            canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
-
-            // Touch events
-            canvasKeluarga.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                startDrawingKeluarga(e);
-            });
-            canvasKeluarga.addEventListener('touchmove', drawKeluarga);
-            canvasKeluarga.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                stopDrawingKeluarga();
-            });
-        }
-
-        function toggleTandaTanganKeluarga() {
-            const checkbox = document.getElementById('adaTandaTanganKeluarga');
-            const container = document.getElementById('tandaTanganKeluargaContainer');
-            
-            if (checkbox.checked) {
-                container.classList.remove('hidden');
-                if (!canvasKeluarga) {
-                    initCanvasKeluarga();
-                }
-            } else {
-                container.classList.add('hidden');
-                clearSignatureKeluarga();
-                document.getElementById('namaKeluargaInput').value = '';
-            }
-        }
-
-        function clearSignatureKeluarga() {
-            if (ctxKeluarga && canvasKeluarga) {
-                ctxKeluarga.clearRect(0, 0, canvasKeluarga.width, canvasKeluarga.height);
-                document.getElementById('tandaTanganKeluargaInput').value = '';
-            }
-        }
-
-        window.clearSignatureKeluarga = clearSignatureKeluarga;
 
         // Auto-refresh CSRF token setiap 10 menit untuk mencegah 419 Page Expired
         setInterval(function() {
