@@ -70,7 +70,10 @@ class PasienController extends Controller
     public function show(Pasien $pasien)
     {
         // Load relasi vaccine requests dengan screening
-        $pasien->load(['vaccineRequests.screening.dokter', 'vaccineRequests.screening.penilaian']);
+        $pasien->load([
+            'vaccineRequests.screening.dokter', 
+            'vaccineRequests.screening.penilaian'
+        ]);
 
         return view('admin.pasien.show', compact('pasien'));
     }

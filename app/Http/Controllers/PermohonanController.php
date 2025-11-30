@@ -282,13 +282,25 @@ class PermohonanController extends Controller
             ->get();
         
         // Validasi tanda tangan
-        $request->validate([
+        $rules = [
             'tanda_tangan' => 'required|string',
             'tanda_tangan_keluarga' => 'nullable|string',
             'nama_keluarga' => 'nullable|string|max:100',
-        ], [
+        ];
+        
+        $messages = [
             'tanda_tangan.required' => 'Tanda tangan persetujuan wajib diisi',
-        ]);
+        ];
+        
+        // Jika checkbox perlu_tanda_tangan_keluarga dicentang, maka nama_keluarga dan tanda_tangan_keluarga wajib
+        if ($request->has('perlu_tanda_tangan_keluarga') && $request->perlu_tanda_tangan_keluarga == '1') {
+            $rules['nama_keluarga'] = 'required|string|max:100';
+            $rules['tanda_tangan_keluarga'] = 'required|string';
+            $messages['nama_keluarga.required'] = 'Nama keluarga/pendamping wajib diisi jika memilih tanda tangan keluarga';
+            $messages['tanda_tangan_keluarga.required'] = 'Tanda tangan keluarga wajib dibuat jika memilih opsi ini';
+        }
+        
+        $request->validate($rules, $messages);
         
         foreach ($questions as $question) {
             if (!$request->has('jawaban_' . $question->id)) {

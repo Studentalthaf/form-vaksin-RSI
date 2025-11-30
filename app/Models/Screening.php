@@ -30,6 +30,8 @@ class Screening extends Model
         'catatan_pemeriksaan',
         'catatan_dokter',
         'tanda_tangan_pasien',
+        'tanda_tangan_keluarga',
+        'tanda_tangan_admin',
         'tanda_tangan_dokter',
         'tanggal_konfirmasi',
         'status_konfirmasi',

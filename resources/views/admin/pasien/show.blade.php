@@ -181,6 +181,98 @@
             </div>
         </div>
 
+        <!-- Tanda Tangan Pasien & Keluarga -->
+        @php
+            // Ambil semua screening yang memiliki tanda tangan (pasien atau keluarga)
+            $screeningsWithSignature = $pasien->vaccineRequests
+                ->filter(function($request) {
+                    return $request->screening && 
+                           ($request->screening->tanda_tangan_pasien || $request->screening->tanda_tangan_keluarga);
+                })
+                ->sortByDesc('created_at');
+            
+            // Ambil screening terbaru untuk ditampilkan
+            $latestScreening = $screeningsWithSignature->first();
+        @endphp
+
+        @if($latestScreening && $latestScreening->screening && ($latestScreening->screening->tanda_tangan_pasien || $latestScreening->screening->tanda_tangan_keluarga))
+        <div class="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                    </svg>
+                    Tanda Tangan Persetujuan
+                </h2>
+            </div>
+            <div class="p-6">
+                @php
+                    $hasPasien = $latestScreening->screening->tanda_tangan_pasien ? true : false;
+                    $hasKeluarga = $latestScreening->screening->tanda_tangan_keluarga ? true : false;
+                    $gridCols = ($hasPasien && $hasKeluarga) ? 'md:grid-cols-2' : 'md:grid-cols-1';
+                @endphp
+                <div class="grid grid-cols-1 {{ $gridCols }} gap-6">
+                    <!-- Tanda Tangan Pasien -->
+                    @if($latestScreening->screening->tanda_tangan_pasien)
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            Tanda Tangan Pasien
+                        </h3>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 mb-3">
+                            <p class="text-xs text-purple-700">
+                                Ditandatangani: {{ $latestScreening->screening->tanggal_screening ? \Carbon\Carbon::parse($latestScreening->screening->tanggal_screening)->format('d/m/Y H:i') : '-' }}
+                            </p>
+                        </div>
+                        <div class="border-2 border-purple-200 rounded-lg p-4 cursor-pointer hover:border-purple-400 transition"
+                             onclick="openImageModal('{{ asset('storage/' . $latestScreening->screening->tanda_tangan_pasien) }}', 'Tanda Tangan Pasien - {{ $pasien->nama }}')">
+                            <img src="{{ asset('storage/' . $latestScreening->screening->tanda_tangan_pasien) }}" 
+                                 alt="Tanda Tangan Pasien" 
+                                 class="w-full h-48 object-contain">
+                            <div class="bg-purple-50 px-3 py-2 text-center mt-3 rounded">
+                                <span class="text-xs text-purple-700 font-medium">Klik untuk memperbesar</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Tanda Tangan Keluarga -->
+                    @if($latestScreening->screening->tanda_tangan_keluarga)
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            Tanda Tangan Keluarga/Pendamping
+                        </h3>
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                            <p class="text-xs text-blue-700">
+                                Ditandatangani: {{ $latestScreening->screening->tanggal_screening ? \Carbon\Carbon::parse($latestScreening->screening->tanggal_screening)->format('d/m/Y H:i') : '-' }}
+                            </p>
+                            @if($pasien->nama_keluarga)
+                            <p class="text-sm text-blue-800 font-semibold mt-1">
+                                Nama: {{ $pasien->nama_keluarga }}
+                            </p>
+                            @endif
+                        </div>
+                        <div class="border-2 border-blue-200 rounded-lg p-4 cursor-pointer hover:border-blue-400 transition"
+                             onclick="openImageModal('{{ asset('storage/' . $latestScreening->screening->tanda_tangan_keluarga) }}', 'Tanda Tangan Keluarga - {{ $pasien->nama_keluarga ?? $pasien->nama }}')">
+                            <img src="{{ asset('storage/' . $latestScreening->screening->tanda_tangan_keluarga) }}" 
+                                 alt="Tanda Tangan Keluarga" 
+                                 class="w-full h-48 object-contain">
+                            <div class="bg-blue-50 px-3 py-2 text-center mt-3 rounded">
+                                <span class="text-xs text-blue-700 font-medium">Klik untuk memperbesar</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+        @endif
+
         <!-- Riwayat Permohonan Vaksin -->
         <div class="bg-white rounded-xl shadow-md overflow-hidden">
             <div class="bg-gradient-to-r from-green-500 to-teal-500 px-6 py-4">
@@ -343,4 +435,38 @@
             </div>
             @endif
         </div>
+
+    <!-- Image Modal -->
+    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4" onclick="closeImageModal()">
+        <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white hover:text-gray-300 z-10 bg-black bg-opacity-50 rounded-full p-2">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl">
+            <p id="modalTitle" class="text-white text-center mt-4 font-semibold"></p>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+    function openImageModal(imageSrc, title) {
+        document.getElementById('modalImage').src = imageSrc;
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('imageModal').classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.add('hidden');
+    }
+
+    // Close modal with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageModal();
+        }
+    });
+</script>
+@endpush

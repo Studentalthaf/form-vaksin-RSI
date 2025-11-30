@@ -248,6 +248,28 @@
                             </div>
                         </div>
                         @endif
+
+                        @if($permohonan->screening && $permohonan->screening->tanda_tangan_keluarga)
+                        <div class="mt-6">
+                            <h3 class="font-bold text-lg text-gray-800 border-b pb-2 mb-2">Tanda Tangan Keluarga/Pendamping</h3>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+                                <p class="text-xs text-blue-700">
+                                    Ditandatangani: {{ $permohonan->screening->tanggal_screening ? \Carbon\Carbon::parse($permohonan->screening->tanggal_screening)->format('d/m/Y H:i') : '-' }}
+                                </p>
+                                @if($permohonan->pasien->nama_keluarga)
+                                <p class="text-sm text-blue-800 font-semibold mt-1">
+                                    Nama: {{ $permohonan->pasien->nama_keluarga }}
+                                </p>
+                                @endif
+                            </div>
+                            <div class="border-2 border-blue-200 rounded-lg p-3 cursor-pointer hover:border-blue-400 transition"
+                                 onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}', 'TTD Keluarga - {{ $permohonan->pasien->nama_keluarga ?? $permohonan->pasien->nama }}')">
+                                <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}" 
+                                     alt="TTD Keluarga" 
+                                     class="w-full h-32 object-contain">
+                            </div>
+                        </div>
+                        @endif
                     </div>
                 </div>
             </div>

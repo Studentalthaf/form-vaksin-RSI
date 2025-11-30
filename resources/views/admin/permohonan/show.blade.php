@@ -221,78 +221,105 @@
                     </div>
                 </div>
 
-                <!-- Tanda Tangan Pasien -->
-                @if($permohonan->screening && $permohonan->screening->tanda_tangan_pasien)
+                <!-- Tanda Tangan Persetujuan Pasien -->
+                @if($permohonan->screening)
                 <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                     <div class="bg-purple-600 text-white px-6 py-4">
                         <h2 class="text-xl font-bold flex items-center">
                             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                             </svg>
-                            Tanda Tangan Persetujuan Pasien
+                            Tanda Tangan Persetujuan
                         </h2>
                     </div>
                     <div class="p-6">
-                        <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-4 mb-3">
-                            <p class="text-sm text-purple-700 mb-2">
-                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Pasien telah menandatangani form persetujuan saat pengisian screening
-                            </p>
-                            <p class="text-xs text-purple-600">
-                                Ditandatangani pada: {{ $permohonan->screening->tanggal_screening ? $permohonan->screening->tanggal_screening->format('d/m/Y H:i') : '-' }}
-                            </p>
-                        </div>
-                        
-                        <div class="border-2 border-purple-200 rounded-lg bg-white p-4 hover:border-purple-400 transition cursor-pointer" 
-                             onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}', 'Tanda Tangan Persetujuan - {{ $permohonan->pasien->nama }}')">
-                            <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}" 
-                                 alt="Tanda Tangan Pasien" 
-                                 class="w-full max-h-48 object-contain hover:scale-105 transition">
-                            <div class="bg-purple-50 px-3 py-2 text-center mt-3 rounded">
-                                <span class="text-xs text-purple-700 font-medium">Klik untuk memperbesar</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
+                        @php
+                            $hasTtdPasien = !empty($permohonan->screening->tanda_tangan_pasien);
+                            $hasTtdKeluarga = !empty($permohonan->screening->tanda_tangan_keluarga);
+                            $gridCols = ($hasTtdPasien && $hasTtdKeluarga) ? 'md:grid-cols-2' : 'md:grid-cols-1';
+                        @endphp
 
-                <!-- Tanda Tangan Keluarga -->
-                @if($permohonan->screening && $permohonan->screening->tanda_tangan_keluarga)
-                <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                    <div class="bg-blue-600 text-white px-6 py-4">
-                        <h2 class="text-xl font-bold flex items-center">
-                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                            </svg>
-                            Tanda Tangan Keluarga/Pendamping
-                        </h2>
-                    </div>
-                    <div class="p-6">
-                        <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-3">
-                            <p class="text-sm text-blue-700 mb-2">
-                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Keluarga/Pendamping telah menandatangani form persetujuan saat pengisian screening
-                            </p>
-                            @if($permohonan->pasien->nama_keluarga)
-                            <p class="text-sm text-blue-800 font-semibold">
-                                Nama: {{ $permohonan->pasien->nama_keluarga }}
-                            </p>
+                        @if($hasTtdPasien || $hasTtdKeluarga)
+                        <div class="grid grid-cols-1 {{ $gridCols }} gap-6">
+                            <!-- Tanda Tangan Pasien -->
+                            @if($hasTtdPasien)
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                    </svg>
+                                    Tanda Tangan Pasien
+                                </h3>
+                                <div class="bg-purple-50 border-2 border-purple-300 rounded-lg p-4 mb-3">
+                                    <p class="text-sm text-purple-700 mb-2">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Pasien telah menandatangani form persetujuan saat pengisian screening
+                                    </p>
+                                    <p class="text-xs text-purple-600">
+                                        Ditandatangani pada: {{ $permohonan->screening->tanggal_screening ? $permohonan->screening->tanggal_screening->format('d/m/Y H:i') : '-' }}
+                                    </p>
+                                </div>
+                                
+                                <div class="border-2 border-purple-200 rounded-lg bg-white p-4 hover:border-purple-400 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}', 'Tanda Tangan Pasien - {{ $permohonan->pasien->nama }}')">
+                                    <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_pasien) }}" 
+                                         alt="Tanda Tangan Pasien" 
+                                         class="w-full max-h-48 object-contain hover:scale-105 transition">
+                                    <div class="bg-purple-50 px-3 py-2 text-center mt-3 rounded">
+                                        <span class="text-xs text-purple-700 font-medium">Klik untuk memperbesar</span>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            <!-- Tanda Tangan Keluarga -->
+                            @if($hasTtdKeluarga)
+                            <div>
+                                <h3 class="text-lg font-bold text-gray-800 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                    </svg>
+                                    Tanda Tangan Keluarga/Pendamping
+                                </h3>
+                                <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-4 mb-3">
+                                    <p class="text-sm text-blue-700 mb-2">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Keluarga/Pendamping telah menandatangani form persetujuan saat pengisian screening
+                                    </p>
+                                    @if($permohonan->pasien->nama_keluarga)
+                                    <p class="text-sm text-blue-800 font-semibold">
+                                        Nama: {{ $permohonan->pasien->nama_keluarga }}
+                                    </p>
+                                    @endif
+                                    <p class="text-xs text-blue-600 mt-1">
+                                        Ditandatangani pada: {{ $permohonan->screening->tanggal_screening ? $permohonan->screening->tanggal_screening->format('d/m/Y H:i') : '-' }}
+                                    </p>
+                                </div>
+                                
+                                <div class="border-2 border-blue-200 rounded-lg bg-white p-4 hover:border-blue-400 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}', 'Tanda Tangan Keluarga - {{ $permohonan->pasien->nama_keluarga ?? $permohonan->pasien->nama }}')">
+                                    <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}" 
+                                         alt="Tanda Tangan Keluarga" 
+                                         class="w-full max-h-48 object-contain hover:scale-105 transition">
+                                    <div class="bg-blue-50 px-3 py-2 text-center mt-3 rounded">
+                                        <span class="text-xs text-blue-700 font-medium">Klik untuk memperbesar</span>
+                                    </div>
+                                </div>
+                            </div>
                             @endif
                         </div>
-                        
-                        <div class="border-2 border-blue-200 rounded-lg bg-white p-4 hover:border-blue-400 transition cursor-pointer" 
-                             onclick="openImageModal('{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}', 'Tanda Tangan Keluarga - {{ $permohonan->pasien->nama_keluarga ?? $permohonan->pasien->nama }}')">
-                            <img src="{{ asset('storage/' . $permohonan->screening->tanda_tangan_keluarga) }}" 
-                                 alt="Tanda Tangan Keluarga" 
-                                 class="w-full max-h-48 object-contain hover:scale-105 transition">
-                            <div class="bg-blue-50 px-3 py-2 text-center mt-3 rounded">
-                                <span class="text-xs text-blue-700 font-medium">Klik untuk memperbesar</span>
-                            </div>
+                        @else
+                        <div class="text-center py-8 text-gray-500">
+                            <svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                            <p>Belum ada tanda tangan persetujuan</p>
                         </div>
+                        @endif
                     </div>
                 </div>
                 @endif

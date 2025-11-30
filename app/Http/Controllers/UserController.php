@@ -36,7 +36,7 @@ class UserController extends Controller
             'nama' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:100', 'unique:users,email'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
-            'role' => ['required', 'in:admin_rumah_sakit,dokter'],
+            'role' => ['required', 'in:dokter'], // Hanya menerima role dokter
             'no_telp' => ['nullable', 'string', 'max:20'],
         ], [
             'nama.required' => 'Nama wajib diisi.',
@@ -47,18 +47,19 @@ class UserController extends Controller
             'password.min' => 'Password minimal 6 karakter.',
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
             'role.required' => 'Role wajib dipilih.',
+            'role.in' => 'Hanya dapat membuat user dengan role dokter.',
         ]);
 
         User::create([
             'nama' => $validated['nama'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => $validated['role'],
+            'role' => 'dokter', // Force role dokter
             'no_telp' => $validated['no_telp'],
         ]);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil ditambahkan!');
+            ->with('success', 'Dokter berhasil ditambahkan!');
     }
 
     /**
@@ -100,7 +101,8 @@ class UserController extends Controller
 
         $user->nama = $validated['nama'];
         $user->email = $validated['email'];
-        $user->role = $validated['role'];
+        // Role tetap tidak diubah, menggunakan role yang sudah ada
+        // $user->role = $validated['role']; 
         $user->no_telp = $validated['no_telp'];
         
         // Update password jika diisi
@@ -111,7 +113,7 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil diupdate!');
+            ->with('success', 'Data user berhasil diupdate!');
     }
 
     /**
