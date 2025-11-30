@@ -1,0 +1,46 @@
+{
+    // Auto-save settings - mencegah kehilangan code
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 1000,
+    
+    // Backup files sebelum dihapus
+    "files.enableTrash": true,
+    
+    // Restore previous session
+    "window.restoreWindows": "all",
+    
+    // File watcher untuk detect perubahan
+    "files.watcherExclude": {
+        "**/node_modules/**": true,
+        "**/vendor/**": true,
+        "**/storage/**": true,
+        "**/.git/**": true
+    },
+    
+    // Exclude dari search tapi tetap track di git
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/vendor": true,
+        "**/storage": true
+    },
+    
+    // PHP settings
+    "php.validate.executablePath": "",
+    "php.suggest.basic": false,
+    
+    // Editor settings
+    "editor.formatOnSave": false,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": false
+    },
+    
+    // Prevent accidental file deletion
+    "explorer.confirmDelete": true,
+    "explorer.confirmDragAndDrop": true,
+    
+    // Git settings
+    "git.enableSmartCommit": false,
+    "git.confirmSync": true,
+    "git.autofetch": true
+}
+
