@@ -16,6 +16,8 @@
 /public/build
 /public/hot
 /public/storage
+!/public/storage/ttd_admin/
+!/public/storage/ttd_admin/ttd_kikik.jpg
 /storage/*.key
 /storage/pail
 /vendor
