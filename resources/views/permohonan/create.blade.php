@@ -408,11 +408,11 @@
         const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
         const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024;
 
-        // Format bytes to readable size
+        // Format bytes to readable size (Bahasa Indonesia)
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
+            if (bytes === 0) return '0 Byte';
             const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const sizes = ['Byte', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
@@ -443,13 +443,13 @@
                         errorElement.textContent = `❌ File terlalu besar! Ukuran: ${formatFileSize(file.size)}, Maksimal: ${maxSizeMB}MB`;
                         errorElement.classList.remove('hidden');
                     }
-                    alert(`⚠️ File "${file.name}" terlalu besar!\n\nUkuran file: ${formatFileSize(file.size)}\nMaksimal yang diizinkan: ${maxSizeMB}MB\n\nSilakan pilih file yang lebih kecil atau kompres file terlebih dahulu.`);
+                    alert(`⚠️ File "${file.name}" Terlalu Besar!\n\nUkuran file: ${formatFileSize(file.size)}\nMaksimal yang diizinkan: ${maxSizeMB}MB\n\nSilakan pilih file yang lebih kecil atau kompres file terlebih dahulu.`);
                     updateTotalSize();
                     return false;
                 } else {
                     // File OK
                     if (infoElement) {
-                        infoElement.textContent = `✅ File valid: ${formatFileSize(file.size)}`;
+                        infoElement.textContent = `✅ File sesuai: ${formatFileSize(file.size)}`;
                         infoElement.classList.remove('hidden');
                     }
                     updateTotalSize();
@@ -657,7 +657,7 @@
 
                 if (hasError) {
                     e.preventDefault();
-                    const errorMsg = '⚠️ Terdapat kesalahan pada file upload:\n\n' + errorMessages.join('\n') + '\n\nSilakan perbaiki file yang bermasalah sebelum mengirim form.';
+                    const errorMsg = '⚠️ Terdapat Kesalahan pada File Upload\n\n' + errorMessages.join('\n') + '\n\nSilakan perbaiki file yang bermasalah sebelum mengirim formulir.';
                     alert(errorMsg);
                     
                     // Scroll to first error
