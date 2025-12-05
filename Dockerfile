@@ -44,6 +44,9 @@ RUN composer dump-autoload --optimize --no-dev
 RUN rm -rf /etc/nginx/http.d/default.conf
 COPY docker/nginx/nginx.conf /etc/nginx/http.d/default.conf
 
+# Copy PHP configuration untuk upload file besar
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/upload.ini
+
 # Copy Supervisor configuration
 COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

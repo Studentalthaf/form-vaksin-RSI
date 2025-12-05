@@ -165,10 +165,13 @@
                         <!-- Upload Foto KTP -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Foto KTP *</label>
-                            <input type="file" name="foto_ktp" id="foto_ktp" accept="image/*"
+                            <input type="file" name="foto_ktp" id="foto_ktp" accept="image/*,.pdf"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
-                                required>
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 2MB</p>
+                                required
+                                onchange="validateFileSize(this, 5, 'foto_ktp')">
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 5MB</p>
+                            <p class="text-sm text-red-600 mt-1 hidden" id="error_foto_ktp"></p>
+                            <p class="text-sm text-green-600 mt-1 hidden" id="info_foto_ktp"></p>
                         </div>
                     </div>
                 </div>
@@ -332,17 +335,23 @@
                         <!-- Upload Foto Paspor Halaman Pertama -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Pertama *</label>
-                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/*"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 2MB</p>
+                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/*,.pdf"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                onchange="validateFileSize(this, 5, 'passport_halaman_pertama')">
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 5MB</p>
+                            <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_pertama"></p>
+                            <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_pertama"></p>
                         </div>
 
                         <!-- Upload Foto Paspor Halaman Kedua -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Kedua *</label>
-                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/*"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 2MB</p>
+                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/*,.pdf"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                onchange="validateFileSize(this, 5, 'passport_halaman_kedua')">
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 5MB</p>
+                            <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_kedua"></p>
+                            <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_kedua"></p>
                         </div>
                     </div>
                 </div>
@@ -368,9 +377,17 @@
                 </div>
                 @endif
 
+                <!-- Total File Size Info -->
+                <div id="totalSizeInfo" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg hidden">
+                    <p class="text-sm text-blue-800">
+                        <strong>Total ukuran file:</strong> <span id="totalSizeText">0 MB</span>
+                        <span class="text-xs text-blue-600 ml-2">(Maksimal 20MB untuk semua file)</span>
+                    </p>
+                </div>
+
                 <!-- Submit Button -->
                 <div class="flex justify-end gap-4 pt-6 border-t">
-                    <button type="submit" 
+                    <button type="submit" id="submitBtn"
                         class="px-8 py-3 bg-gradient-to-r from-blue-600 to-green-600 text-white font-bold rounded-lg hover:from-blue-700 hover:to-green-700 transition duration-200 shadow-lg">
                         Kirim Permohonan
                     </button>
@@ -385,6 +402,132 @@
     </div>
 
     <script>
+        // File size validation
+        const MAX_FILE_SIZE_MB = 5; // Per file maksimal 5MB
+        const MAX_TOTAL_SIZE_MB = 20; // Total maksimal 20MB
+        const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+        const MAX_TOTAL_SIZE_BYTES = MAX_TOTAL_SIZE_MB * 1024 * 1024;
+
+        // Format bytes to readable size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // Validate individual file size
+        function validateFileSize(input, maxSizeMB, fieldId) {
+            const file = input.files[0];
+            const errorElement = document.getElementById('error_' + fieldId);
+            const infoElement = document.getElementById('info_' + fieldId);
+            
+            // Hide previous messages
+            if (errorElement) {
+                errorElement.classList.add('hidden');
+                errorElement.textContent = '';
+            }
+            if (infoElement) {
+                infoElement.classList.add('hidden');
+                infoElement.textContent = '';
+            }
+
+            if (file) {
+                const fileSizeMB = file.size / (1024 * 1024);
+                
+                if (file.size > maxSizeMB * 1024 * 1024) {
+                    // File too large
+                    input.value = ''; // Clear the input
+                    if (errorElement) {
+                        errorElement.textContent = `❌ File terlalu besar! Ukuran: ${formatFileSize(file.size)}, Maksimal: ${maxSizeMB}MB`;
+                        errorElement.classList.remove('hidden');
+                    }
+                    alert(`⚠️ File "${file.name}" terlalu besar!\n\nUkuran file: ${formatFileSize(file.size)}\nMaksimal yang diizinkan: ${maxSizeMB}MB\n\nSilakan pilih file yang lebih kecil atau kompres file terlebih dahulu.`);
+                    updateTotalSize();
+                    return false;
+                } else {
+                    // File OK
+                    if (infoElement) {
+                        infoElement.textContent = `✅ File valid: ${formatFileSize(file.size)}`;
+                        infoElement.classList.remove('hidden');
+                    }
+                    updateTotalSize();
+                    return true;
+                }
+            }
+            
+            updateTotalSize();
+            return true;
+        }
+
+        // Calculate and display total file size
+        function updateTotalSize() {
+            const files = [
+                document.getElementById('foto_ktp'),
+                document.getElementById('passport_halaman_pertama'),
+                document.getElementById('passport_halaman_kedua')
+            ];
+
+            let totalSize = 0;
+            let fileCount = 0;
+
+            files.forEach(input => {
+                if (input && input.files[0]) {
+                    totalSize += input.files[0].size;
+                    fileCount++;
+                }
+            });
+
+            const totalSizeInfo = document.getElementById('totalSizeInfo');
+            const totalSizeText = document.getElementById('totalSizeText');
+            const submitBtn = document.getElementById('submitBtn');
+
+            if (totalSize > 0) {
+                const totalSizeMB = totalSize / (1024 * 1024);
+                
+                if (totalSizeInfo) {
+                    totalSizeInfo.classList.remove('hidden');
+                }
+                
+                if (totalSizeText) {
+                    totalSizeText.textContent = formatFileSize(totalSize);
+                    
+                    // Change color based on size
+                    if (totalSizeMB > MAX_TOTAL_SIZE_MB) {
+                        totalSizeText.className = 'text-red-600 font-bold';
+                        totalSizeInfo.className = 'mb-4 p-3 bg-red-50 border border-red-300 rounded-lg';
+                        if (submitBtn) {
+                            submitBtn.disabled = true;
+                            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        }
+                    } else if (totalSizeMB > MAX_TOTAL_SIZE_MB * 0.8) {
+                        totalSizeText.className = 'text-yellow-600 font-bold';
+                        totalSizeInfo.className = 'mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg';
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
+                    } else {
+                        totalSizeText.className = 'text-blue-600 font-bold';
+                        totalSizeInfo.className = 'mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg';
+                        if (submitBtn) {
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        }
+                    }
+                }
+            } else {
+                if (totalSizeInfo) {
+                    totalSizeInfo.classList.add('hidden');
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        }
+
         // Toggle Nomor RM based on status pasien
         function toggleNomorRM() {
             const statusPasien = document.querySelector('input[name="status_pasien"]:checked');
@@ -449,9 +592,10 @@
             toggleNomorRM();
             toggleVaksinLainnyaInput(); // Initialize vaksin lainnya state
             
-            // Validate vaccine selection on form submit
+            // Validate vaccine selection and file sizes on form submit
             const form = document.getElementById('formPermohonan');
             form.addEventListener('submit', function(e) {
+                // Validate vaccine selection
                 const checkedVaccines = document.querySelectorAll('input[name="jenis_vaksin[]"]:checked');
                 const errorMsg = document.getElementById('vaksinError');
                 const vaksinLainnya = document.getElementById('vaksinLainnya');
@@ -462,6 +606,7 @@
                     e.preventDefault();
                     vaksinLainnyaText.focus();
                     vaksinLainnyaText.classList.add('border-red-500');
+                    alert('⚠️ Silakan sebutkan jenis vaksin lainnya yang Anda butuhkan.');
                     return false;
                 } else {
                     vaksinLainnyaText.classList.remove('border-red-500');
@@ -471,9 +616,65 @@
                     e.preventDefault();
                     errorMsg.style.display = 'block';
                     errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    alert('⚠️ Minimal pilih satu jenis vaksin yang dibutuhkan.');
                     return false;
                 } else {
                     errorMsg.style.display = 'none';
+                }
+
+                // Validate file sizes before submit
+                const files = [
+                    { input: document.getElementById('foto_ktp'), name: 'Foto KTP', maxSize: 5 },
+                    { input: document.getElementById('passport_halaman_pertama'), name: 'Passport Halaman Pertama', maxSize: 5, required: document.getElementById('isPerjalanan')?.checked },
+                    { input: document.getElementById('passport_halaman_kedua'), name: 'Passport Halaman Kedua', maxSize: 5, required: document.getElementById('isPerjalanan')?.checked }
+                ];
+
+                let totalSize = 0;
+                let hasError = false;
+                let errorMessages = [];
+
+                files.forEach(({ input, name, maxSize, required }) => {
+                    if (input && input.files[0]) {
+                        const file = input.files[0];
+                        const fileSizeMB = file.size / (1024 * 1024);
+                        totalSize += file.size;
+
+                        if (file.size > maxSize * 1024 * 1024) {
+                            hasError = true;
+                            errorMessages.push(`❌ ${name}: ${formatFileSize(file.size)} (Maksimal: ${maxSize}MB)`);
+                        }
+                    } else if (required) {
+                        hasError = true;
+                        errorMessages.push(`❌ ${name}: File wajib diupload untuk perjalanan luar negeri`);
+                    }
+                });
+
+                // Check total size
+                if (totalSize > MAX_TOTAL_SIZE_BYTES) {
+                    hasError = true;
+                    errorMessages.push(`❌ Total ukuran semua file: ${formatFileSize(totalSize)} (Maksimal: ${MAX_TOTAL_SIZE_MB}MB)`);
+                }
+
+                if (hasError) {
+                    e.preventDefault();
+                    const errorMsg = '⚠️ Terdapat kesalahan pada file upload:\n\n' + errorMessages.join('\n') + '\n\nSilakan perbaiki file yang bermasalah sebelum mengirim form.';
+                    alert(errorMsg);
+                    
+                    // Scroll to first error
+                    const firstErrorInput = files.find(f => f.input && f.input.files[0] && f.input.files[0].size > (f.maxSize * 1024 * 1024));
+                    if (firstErrorInput) {
+                        firstErrorInput.input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstErrorInput.input.focus();
+                    }
+                    
+                    return false;
+                }
+
+                // Show loading/confirmation
+                const submitBtn = document.getElementById('submitBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Mengirim...';
                 }
             });
             

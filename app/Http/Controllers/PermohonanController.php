@@ -79,7 +79,7 @@ class PermohonanController extends Controller
             'nomor_rm' => 'nullable|string|max:50',
             
             // Upload Files
-            'foto_ktp' => 'required|image|mimes:jpeg,jpg,png,pdf|max:2048',
+            'foto_ktp' => 'required|image|mimes:jpeg,jpg,png,pdf|max:5120',
             
             // Jenis Vaksin (WAJIB) - bisa lebih dari satu
             'jenis_vaksin' => 'required|array|min:1',
@@ -98,8 +98,8 @@ class PermohonanController extends Controller
         // Jika perjalanan luar negeri - paspor dan foto paspor WAJIB
         if ($request->is_perjalanan == 1) {
             $rules['nomor_paspor'] = 'required|string|max:50';
-            $rules['passport_halaman_pertama'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:2048';
-            $rules['passport_halaman_kedua'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:2048';
+            $rules['passport_halaman_pertama'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:5120';
+            $rules['passport_halaman_kedua'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:5120';
             $rules['negara_tujuan'] = 'required|string|max:100';
             $rules['tanggal_berangkat'] = 'required|date|after:today';
             $rules['nama_travel'] = 'nullable|string|max:100';
@@ -115,13 +115,13 @@ class PermohonanController extends Controller
             'status_pasien.required' => 'Status pasien wajib dipilih',
             'foto_ktp.required' => 'Foto KTP wajib diupload',
             'foto_ktp.image' => 'File KTP harus berupa gambar',
-            'foto_ktp.max' => 'Ukuran file KTP maksimal 2MB',
+            'foto_ktp.max' => 'Ukuran file KTP maksimal 5MB',
             'passport_halaman_pertama.required' => 'Passport halaman pertama wajib diupload untuk perjalanan luar negeri',
             'passport_halaman_pertama.image' => 'File passport halaman pertama harus berupa gambar',
-            'passport_halaman_pertama.max' => 'Ukuran file passport halaman pertama maksimal 2MB',
+            'passport_halaman_pertama.max' => 'Ukuran file passport halaman pertama maksimal 5MB',
             'passport_halaman_kedua.required' => 'Passport halaman kedua wajib diupload untuk perjalanan luar negeri',
             'passport_halaman_kedua.image' => 'File passport halaman kedua harus berupa gambar',
-            'passport_halaman_kedua.max' => 'Ukuran file passport halaman kedua maksimal 2MB',
+            'passport_halaman_kedua.max' => 'Ukuran file passport halaman kedua maksimal 5MB',
             'jenis_vaksin.required' => 'Minimal pilih satu jenis vaksin',
             'jenis_vaksin.min' => 'Minimal pilih satu jenis vaksin',
             'vaksin_lainnya_text.required' => 'Sebutkan jenis vaksin lainnya yang dibutuhkan',
