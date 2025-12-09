@@ -1048,15 +1048,30 @@
     console.log('Mouse events attached');
 
     // Touch events
+    // Touch events - Fixed for iPhone/iOS
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         startDrawing(e);
-    });
-    canvas.addEventListener('touchmove', draw);
+    }, { passive: false });
+    
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        draw(e);
+    }, { passive: false });
+    
     canvas.addEventListener('touchend', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         stopDrawing();
-    });
+    }, { passive: false });
+    
+    canvas.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        stopDrawing();
+    }, { passive: false });
 
     // Clear signature
     function clearSignature() {

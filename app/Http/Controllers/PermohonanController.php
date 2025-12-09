@@ -79,7 +79,7 @@ class PermohonanController extends Controller
             'nomor_rm' => 'nullable|string|max:50',
             
             // Upload Files
-            'foto_ktp' => 'required|image|mimes:jpeg,jpg,png,pdf|max:5120',
+            'foto_ktp' => 'required|image|mimes:jpeg,jpg,png,pdf,heic,heif|max:5120',
             
             // Jenis Vaksin (WAJIB) - bisa lebih dari satu
             'jenis_vaksin' => 'required|array|min:1',
@@ -98,8 +98,8 @@ class PermohonanController extends Controller
         // Jika perjalanan luar negeri - paspor dan foto paspor WAJIB
         if ($request->is_perjalanan == 1) {
             $rules['nomor_paspor'] = 'required|string|max:50';
-            $rules['passport_halaman_pertama'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:5120';
-            $rules['passport_halaman_kedua'] = 'required|image|mimes:jpeg,jpg,png,pdf|max:5120';
+            $rules['passport_halaman_pertama'] = 'required|image|mimes:jpeg,jpg,png,pdf,heic,heif|max:5120';
+            $rules['passport_halaman_kedua'] = 'required|image|mimes:jpeg,jpg,png,pdf,heic,heif|max:5120';
             $rules['negara_tujuan'] = 'required|string|max:100';
             $rules['tanggal_berangkat'] = 'required|date|after:today';
             $rules['nama_travel'] = 'nullable|string|max:100';
@@ -107,28 +107,105 @@ class PermohonanController extends Controller
         }
 
         $validated = $request->validate($rules, [
+            // NIK
             'nik.required' => 'NIK wajib diisi',
+            'nik.max' => 'NIK tidak boleh lebih dari 20 karakter',
+            'nik.string' => 'NIK harus berupa teks',
+            
+            // Nama
             'nama.required' => 'Nama lengkap wajib diisi',
+            'nama.max' => 'Nama tidak boleh lebih dari 100 karakter',
+            'nama.string' => 'Nama harus berupa teks',
+            
+            // Nomor Telepon
             'no_telp.required' => 'Nomor telepon wajib diisi',
+            'no_telp.max' => 'Nomor telepon tidak boleh lebih dari 20 karakter',
+            'no_telp.string' => 'Nomor telepon harus berupa teks',
+            
+            // Email
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
+            'email.max' => 'Email tidak boleh lebih dari 100 karakter',
+            
+            // Tempat Lahir
+            'tempat_lahir.max' => 'Tempat lahir tidak boleh lebih dari 100 karakter',
+            'tempat_lahir.string' => 'Tempat lahir harus berupa teks',
+            
+            // Tanggal Lahir
+            'tanggal_lahir.date' => 'Format tanggal lahir tidak valid',
+            
+            // Jenis Kelamin
+            'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki atau Perempuan',
+            
+            // Pekerjaan
+            'pekerjaan.max' => 'Pekerjaan tidak boleh lebih dari 100 karakter',
+            'pekerjaan.string' => 'Pekerjaan harus berupa teks',
+            
+            // Alamat
+            'alamat.max' => 'Alamat tidak boleh lebih dari 255 karakter',
+            'alamat.string' => 'Alamat harus berupa teks',
+            
+            // Status Pasien
             'status_pasien.required' => 'Status pasien wajib dipilih',
+            'status_pasien.in' => 'Status pasien harus Pasien Baru atau Pasien Lama',
+            
+            // Nomor RM
+            'nomor_rm.max' => 'Nomor RM tidak boleh lebih dari 50 karakter',
+            'nomor_rm.string' => 'Nomor RM harus berupa teks',
+            
+            // Foto KTP
             'foto_ktp.required' => 'Foto KTP wajib diupload',
             'foto_ktp.image' => 'File KTP harus berupa gambar',
+            'foto_ktp.mimes' => 'File KTP harus berformat: JPEG, JPG, PNG, PDF, atau HEIC',
             'foto_ktp.max' => 'Ukuran file KTP maksimal 5MB',
-            'passport_halaman_pertama.required' => 'Passport halaman pertama wajib diupload untuk perjalanan luar negeri',
-            'passport_halaman_pertama.image' => 'File passport halaman pertama harus berupa gambar',
-            'passport_halaman_pertama.max' => 'Ukuran file passport halaman pertama maksimal 5MB',
-            'passport_halaman_kedua.required' => 'Passport halaman kedua wajib diupload untuk perjalanan luar negeri',
-            'passport_halaman_kedua.image' => 'File passport halaman kedua harus berupa gambar',
-            'passport_halaman_kedua.max' => 'Ukuran file passport halaman kedua maksimal 5MB',
+            
+            // Jenis Vaksin
             'jenis_vaksin.required' => 'Minimal pilih satu jenis vaksin',
             'jenis_vaksin.min' => 'Minimal pilih satu jenis vaksin',
+            'jenis_vaksin.array' => 'Jenis vaksin harus berupa pilihan',
+            'jenis_vaksin.*.required' => 'Jenis vaksin tidak boleh kosong',
+            'jenis_vaksin.*.max' => 'Jenis vaksin tidak boleh lebih dari 100 karakter',
+            'jenis_vaksin.*.string' => 'Jenis vaksin harus berupa teks',
+            
+            // Vaksin Lainnya
             'vaksin_lainnya_text.required' => 'Sebutkan jenis vaksin lainnya yang dibutuhkan',
+            'vaksin_lainnya_text.max' => 'Jenis vaksin lainnya tidak boleh lebih dari 200 karakter',
+            'vaksin_lainnya_text.string' => 'Jenis vaksin lainnya harus berupa teks',
+            
+            // Nomor Paspor
             'nomor_paspor.required' => 'Nomor paspor wajib diisi untuk perjalanan luar negeri',
+            'nomor_paspor.max' => 'Nomor paspor tidak boleh lebih dari 50 karakter',
+            'nomor_paspor.string' => 'Nomor paspor harus berupa teks',
+            
+            // Passport Halaman Pertama
+            'passport_halaman_pertama.required' => 'Passport halaman pertama wajib diupload untuk perjalanan luar negeri',
+            'passport_halaman_pertama.image' => 'File passport halaman pertama harus berupa gambar',
+            'passport_halaman_pertama.mimes' => 'File passport halaman pertama harus berformat: JPEG, JPG, PNG, PDF, atau HEIC',
+            'passport_halaman_pertama.max' => 'Ukuran file passport halaman pertama maksimal 5MB',
+            
+            // Passport Halaman Kedua
+            'passport_halaman_kedua.required' => 'Passport halaman kedua wajib diupload untuk perjalanan luar negeri',
+            'passport_halaman_kedua.image' => 'File passport halaman kedua harus berupa gambar',
+            'passport_halaman_kedua.mimes' => 'File passport halaman kedua harus berformat: JPEG, JPG, PNG, PDF, atau HEIC',
+            'passport_halaman_kedua.max' => 'Ukuran file passport halaman kedua maksimal 5MB',
+            
+            // Negara Tujuan
             'negara_tujuan.required' => 'Negara tujuan wajib diisi',
+            'negara_tujuan.max' => 'Negara tujuan tidak boleh lebih dari 100 karakter',
+            'negara_tujuan.string' => 'Negara tujuan harus berupa teks',
+            
+            // Tanggal Berangkat
             'tanggal_berangkat.required' => 'Tanggal keberangkatan wajib diisi',
+            'tanggal_berangkat.date' => 'Format tanggal keberangkatan tidak valid',
             'tanggal_berangkat.after' => 'Tanggal berangkat harus setelah hari ini',
+            
+            // Nama Travel
+            'nama_travel.max' => 'Nama biro perjalanan tidak boleh lebih dari 100 karakter',
+            'nama_travel.string' => 'Nama biro perjalanan harus berupa teks',
+            
+            // Alamat Travel
+            'alamat_travel.max' => 'Alamat biro perjalanan tidak boleh lebih dari 255 karakter',
+            'alamat_travel.string' => 'Alamat biro perjalanan harus berupa teks',
         ]);
 
         DB::beginTransaction();

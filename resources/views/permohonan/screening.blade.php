@@ -347,16 +347,30 @@
             canvas.addEventListener('mouseup', stopDrawing);
             canvas.addEventListener('mouseout', stopDrawing);
 
-            // Touch events
+            // Touch events - Fixed for iPhone/iOS
             canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 startDrawing(e);
-            });
-            canvas.addEventListener('touchmove', draw);
+            }, { passive: false });
+            
+            canvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                draw(e);
+            }, { passive: false });
+            
             canvas.addEventListener('touchend', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 stopDrawing();
-            });
+            }, { passive: false });
+            
+            canvas.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                stopDrawing();
+            }, { passive: false });
 
             // Clear signature
             window.clearSignature = function() {
@@ -495,15 +509,30 @@
             canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
 
             // Touch events
+            // Touch events - Fixed for iPhone/iOS
             canvasKeluarga.addEventListener('touchstart', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 startDrawingKeluarga(e);
-            });
-            canvasKeluarga.addEventListener('touchmove', drawKeluarga);
+            }, { passive: false });
+            
+            canvasKeluarga.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                drawKeluarga(e);
+            }, { passive: false });
+            
             canvasKeluarga.addEventListener('touchend', (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 stopDrawingKeluarga();
-            });
+            }, { passive: false });
+            
+            canvasKeluarga.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                stopDrawingKeluarga();
+            }, { passive: false });
 
             // Clear signature
             window.clearSignatureKeluarga = function() {

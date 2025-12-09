@@ -165,11 +165,11 @@
                         <!-- Upload Foto KTP -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Foto KTP *</label>
-                            <input type="file" name="foto_ktp" id="foto_ktp" accept="image/*,.pdf"
+                            <input type="file" name="foto_ktp" id="foto_ktp" accept="image/*,.pdf,.heic,.heif"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
                                 required
                                 onchange="validateFileSize(this, 5, 'foto_ktp')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 5MB</p>
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC (iPhone). Maksimal 5MB</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_foto_ktp"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_foto_ktp"></p>
                         </div>
@@ -335,10 +335,10 @@
                         <!-- Upload Foto Paspor Halaman Pertama -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Pertama *</label>
-                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/*,.pdf"
+                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/*,.pdf,.heic,.heif"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                                 onchange="validateFileSize(this, 5, 'passport_halaman_pertama')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 5MB</p>
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC (iPhone). Maksimal 5MB</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_pertama"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_pertama"></p>
                         </div>
@@ -346,10 +346,10 @@
                         <!-- Upload Foto Paspor Halaman Kedua -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Kedua *</label>
-                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/*,.pdf"
+                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/*,.pdf,.heic,.heif"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                                 onchange="validateFileSize(this, 5, 'passport_halaman_kedua')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, atau PDF. Maksimal 5MB</p>
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC (iPhone). Maksimal 5MB</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_kedua"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_kedua"></p>
                         </div>
@@ -595,7 +595,110 @@
             // Validate vaccine selection and file sizes on form submit
             const form = document.getElementById('formPermohonan');
             form.addEventListener('submit', function(e) {
-                // Validate vaccine selection
+                let hasError = false;
+                let errorMessages = [];
+                
+                // Validasi NIK
+                const nik = document.getElementById('nik');
+                if (!nik.value.trim()) {
+                    hasError = true;
+                    errorMessages.push('❌ NIK wajib diisi');
+                    nik.classList.add('border-red-500');
+                } else if (nik.value.length > 20) {
+                    hasError = true;
+                    errorMessages.push('❌ NIK tidak boleh lebih dari 20 karakter');
+                    nik.classList.add('border-red-500');
+                } else {
+                    nik.classList.remove('border-red-500');
+                }
+                
+                // Validasi Nama
+                const nama = document.getElementById('nama');
+                if (!nama.value.trim()) {
+                    hasError = true;
+                    errorMessages.push('❌ Nama lengkap wajib diisi');
+                    nama.classList.add('border-red-500');
+                } else if (nama.value.length > 100) {
+                    hasError = true;
+                    errorMessages.push('❌ Nama tidak boleh lebih dari 100 karakter');
+                    nama.classList.add('border-red-500');
+                } else {
+                    nama.classList.remove('border-red-500');
+                }
+                
+                // Validasi Nomor Telepon
+                const noTelp = document.getElementById('no_telp');
+                if (!noTelp.value.trim()) {
+                    hasError = true;
+                    errorMessages.push('❌ Nomor telepon wajib diisi');
+                    noTelp.classList.add('border-red-500');
+                } else if (noTelp.value.length > 20) {
+                    hasError = true;
+                    errorMessages.push('❌ Nomor telepon tidak boleh lebih dari 20 karakter');
+                    noTelp.classList.add('border-red-500');
+                } else {
+                    noTelp.classList.remove('border-red-500');
+                }
+                
+                // Validasi Email
+                const email = document.getElementById('email');
+                if (!email.value.trim()) {
+                    hasError = true;
+                    errorMessages.push('❌ Email wajib diisi');
+                    email.classList.add('border-red-500');
+                } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+                    hasError = true;
+                    errorMessages.push('❌ Format email tidak valid');
+                    email.classList.add('border-red-500');
+                } else if (email.value.length > 100) {
+                    hasError = true;
+                    errorMessages.push('❌ Email tidak boleh lebih dari 100 karakter');
+                    email.classList.add('border-red-500');
+                } else {
+                    email.classList.remove('border-red-500');
+                }
+                
+                // Validasi Foto KTP
+                const fotoKtp = document.getElementById('foto_ktp');
+                if (!fotoKtp.files[0]) {
+                    hasError = true;
+                    errorMessages.push('❌ Foto KTP wajib diupload');
+                    fotoKtp.classList.add('border-red-500');
+                } else {
+                    const file = fotoKtp.files[0];
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf', 'image/heic', 'image/heif'];
+                    const fileExtension = file.name.split('.').pop().toLowerCase();
+                    const allowedExtensions = ['jpeg', 'jpg', 'png', 'pdf', 'heic', 'heif'];
+                    
+                    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                        hasError = true;
+                        errorMessages.push('❌ File KTP harus berformat: JPEG, JPG, PNG, PDF, atau HEIC');
+                        fotoKtp.classList.add('border-red-500');
+                    } else {
+                        fotoKtp.classList.remove('border-red-500');
+                    }
+                }
+                
+                // Validasi Status Pasien
+                const statusPasien = document.querySelector('input[name="status_pasien"]:checked');
+                if (!statusPasien) {
+                    hasError = true;
+                    errorMessages.push('❌ Status pasien wajib dipilih');
+                }
+                
+                // Validasi Nomor RM jika Pasien Lama
+                if (statusPasien && statusPasien.value === 'lama') {
+                    const nomorRM = document.getElementById('nomor_rm');
+                    if (nomorRM && nomorRM.value.trim() && nomorRM.value.length > 50) {
+                        hasError = true;
+                        errorMessages.push('❌ Nomor RM tidak boleh lebih dari 50 karakter');
+                        nomorRM.classList.add('border-red-500');
+                    } else if (nomorRM) {
+                        nomorRM.classList.remove('border-red-500');
+                    }
+                }
+                
+                // Validasi Vaksin
                 const checkedVaccines = document.querySelectorAll('input[name="jenis_vaksin[]"]:checked');
                 const errorMsg = document.getElementById('vaksinError');
                 const vaksinLainnya = document.getElementById('vaksinLainnya');
@@ -603,25 +706,107 @@
                 
                 // Check if "Lainnya" is selected but text is empty
                 if (vaksinLainnya.checked && vaksinLainnyaText.value.trim() === '') {
-                    e.preventDefault();
-                    vaksinLainnyaText.focus();
+                    hasError = true;
+                    errorMessages.push('❌ Silakan sebutkan jenis vaksin lainnya yang Anda butuhkan');
                     vaksinLainnyaText.classList.add('border-red-500');
-                    alert('⚠️ Silakan sebutkan jenis vaksin lainnya yang Anda butuhkan.');
-                    return false;
                 } else {
                     vaksinLainnyaText.classList.remove('border-red-500');
                 }
                 
                 if (checkedVaccines.length === 0) {
-                    e.preventDefault();
-                    errorMsg.style.display = 'block';
-                    errorMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    alert('⚠️ Minimal pilih satu jenis vaksin yang dibutuhkan.');
-                    return false;
+                    hasError = true;
+                    errorMessages.push('❌ Minimal pilih satu jenis vaksin yang dibutuhkan');
+                    if (errorMsg) errorMsg.style.display = 'block';
                 } else {
-                    errorMsg.style.display = 'none';
+                    if (errorMsg) errorMsg.style.display = 'none';
                 }
-
+                
+                // Validasi Perjalanan Luar Negeri
+                const isPerjalanan = document.getElementById('isPerjalanan');
+                if (isPerjalanan && isPerjalanan.checked) {
+                    const nomorPaspor = document.getElementById('nomor_paspor');
+                    const negaraTujuan = document.getElementById('negara_tujuan');
+                    const tanggalBerangkat = document.getElementById('tanggal_berangkat');
+                    const passportPertama = document.getElementById('passport_halaman_pertama');
+                    const passportKedua = document.getElementById('passport_halaman_kedua');
+                    
+                    if (!nomorPaspor.value.trim()) {
+                        hasError = true;
+                        errorMessages.push('❌ Nomor paspor wajib diisi untuk perjalanan luar negeri');
+                        nomorPaspor.classList.add('border-red-500');
+                    } else if (nomorPaspor.value.length > 50) {
+                        hasError = true;
+                        errorMessages.push('❌ Nomor paspor tidak boleh lebih dari 50 karakter');
+                        nomorPaspor.classList.add('border-red-500');
+                    } else {
+                        nomorPaspor.classList.remove('border-red-500');
+                    }
+                    
+                    if (!negaraTujuan.value.trim()) {
+                        hasError = true;
+                        errorMessages.push('❌ Negara tujuan wajib diisi');
+                        negaraTujuan.classList.add('border-red-500');
+                    } else if (negaraTujuan.value.length > 100) {
+                        hasError = true;
+                        errorMessages.push('❌ Negara tujuan tidak boleh lebih dari 100 karakter');
+                        negaraTujuan.classList.add('border-red-500');
+                    } else {
+                        negaraTujuan.classList.remove('border-red-500');
+                    }
+                    
+                    if (!tanggalBerangkat.value) {
+                        hasError = true;
+                        errorMessages.push('❌ Tanggal keberangkatan wajib diisi');
+                        tanggalBerangkat.classList.add('border-red-500');
+                    } else {
+                        const tanggal = new Date(tanggalBerangkat.value);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        if (tanggal <= today) {
+                            hasError = true;
+                            errorMessages.push('❌ Tanggal berangkat harus setelah hari ini');
+                            tanggalBerangkat.classList.add('border-red-500');
+                        } else {
+                            tanggalBerangkat.classList.remove('border-red-500');
+                        }
+                    }
+                    
+                    // Validasi Passport files
+                    if (passportPertama && passportPertama.files[0]) {
+                        const file = passportPertama.files[0];
+                        const allowedExtensions = ['jpeg', 'jpg', 'png', 'pdf', 'heic', 'heif'];
+                        const fileExtension = file.name.split('.').pop().toLowerCase();
+                        if (!allowedExtensions.includes(fileExtension)) {
+                            hasError = true;
+                            errorMessages.push('❌ File passport halaman pertama harus berformat: JPEG, JPG, PNG, PDF, atau HEIC');
+                            passportPertama.classList.add('border-red-500');
+                        } else {
+                            passportPertama.classList.remove('border-red-500');
+                        }
+                    } else if (passportPertama) {
+                        hasError = true;
+                        errorMessages.push('❌ Passport halaman pertama wajib diupload untuk perjalanan luar negeri');
+                        passportPertama.classList.add('border-red-500');
+                    }
+                    
+                    if (passportKedua && passportKedua.files[0]) {
+                        const file = passportKedua.files[0];
+                        const allowedExtensions = ['jpeg', 'jpg', 'png', 'pdf', 'heic', 'heif'];
+                        const fileExtension = file.name.split('.').pop().toLowerCase();
+                        if (!allowedExtensions.includes(fileExtension)) {
+                            hasError = true;
+                            errorMessages.push('❌ File passport halaman kedua harus berformat: JPEG, JPG, PNG, PDF, atau HEIC');
+                            passportKedua.classList.add('border-red-500');
+                        } else {
+                            passportKedua.classList.remove('border-red-500');
+                        }
+                    } else if (passportKedua) {
+                        hasError = true;
+                        errorMessages.push('❌ Passport halaman kedua wajib diupload untuk perjalanan luar negeri');
+                        passportKedua.classList.add('border-red-500');
+                    }
+                }
+                
                 // Validate file sizes before submit
                 const files = [
                     { input: document.getElementById('foto_ktp'), name: 'Foto KTP', maxSize: 5 },
@@ -630,22 +815,23 @@
                 ];
 
                 let totalSize = 0;
-                let hasError = false;
-                let errorMessages = [];
 
                 files.forEach(({ input, name, maxSize, required }) => {
                     if (input && input.files[0]) {
                         const file = input.files[0];
-                        const fileSizeMB = file.size / (1024 * 1024);
                         totalSize += file.size;
 
                         if (file.size > maxSize * 1024 * 1024) {
                             hasError = true;
                             errorMessages.push(`❌ ${name}: ${formatFileSize(file.size)} (Maksimal: ${maxSize}MB)`);
+                            input.classList.add('border-red-500');
+                        } else {
+                            input.classList.remove('border-red-500');
                         }
                     } else if (required) {
                         hasError = true;
                         errorMessages.push(`❌ ${name}: File wajib diupload untuk perjalanan luar negeri`);
+                        if (input) input.classList.add('border-red-500');
                     }
                 });
 
@@ -655,16 +841,17 @@
                     errorMessages.push(`❌ Total ukuran semua file: ${formatFileSize(totalSize)} (Maksimal: ${MAX_TOTAL_SIZE_MB}MB)`);
                 }
 
+                // Jika ada error, tampilkan alert dan stop submit
                 if (hasError) {
                     e.preventDefault();
-                    const errorMsg = '⚠️ Terdapat Kesalahan pada File Upload\n\n' + errorMessages.join('\n') + '\n\nSilakan perbaiki file yang bermasalah sebelum mengirim formulir.';
+                    const errorMsg = '⚠️ Terdapat Kesalahan pada Formulir\n\n' + errorMessages.join('\n') + '\n\nSilakan perbaiki data yang bermasalah sebelum mengirim formulir.';
                     alert(errorMsg);
                     
-                    // Scroll to first error
-                    const firstErrorInput = files.find(f => f.input && f.input.files[0] && f.input.files[0].size > (f.maxSize * 1024 * 1024));
-                    if (firstErrorInput) {
-                        firstErrorInput.input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        firstErrorInput.input.focus();
+                    // Scroll to first error field
+                    const firstErrorField = document.querySelector('.border-red-500');
+                    if (firstErrorField) {
+                        firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        firstErrorField.focus();
                     }
                     
                     return false;
