@@ -56,7 +56,7 @@ phpunit.xml
 
 # Build files
 package-lock.json
-composer.lock
+# composer.lock - DIPERLUKAN untuk production build (jangan ignore)
 
 # Docker compose untuk development
 docker-compose.yml

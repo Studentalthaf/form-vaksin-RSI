@@ -27,11 +27,18 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copy hanya composer files dulu untuk caching layer
-COPY composer.json composer.lock ./
+COPY composer.json ./
+# Copy composer.lock jika ada (optional untuk backward compatibility)
+COPY composer.lock* ./
 
 # Install Composer dependencies (production mode)
 # Jalankan SEBELUM copy semua files untuk optimize Docker cache
-RUN composer install --no-dev --no-scripts --no-autoloader --no-interaction
+# Gunakan --ignore-platform-reqs jika ada masalah dengan platform requirements
+RUN if [ -f composer.lock ]; then \
+        composer install --no-dev --no-scripts --no-autoloader --no-interaction --ignore-platform-reqs; \
+    else \
+        composer install --no-dev --no-scripts --no-autoloader --no-interaction --ignore-platform-reqs; \
+    fi
 
 # Copy application files (setelah composer install)
 COPY . /var/www
