@@ -23,15 +23,38 @@ class DokterDashboardController extends Controller
         
         // Statistik
         $totalPasien = Screening::where('dokter_id', $dokter->id)->count();
-        $belumDivaksin = Screening::where('dokter_id', $dokter->id)
-            ->where('status_vaksinasi', 'belum_divaksin')->count();
-        $sudahDivaksin = Screening::where('dokter_id', $dokter->id)
-            ->where('status_vaksinasi', 'sudah_divaksin')->count();
-        $pasienHariIni = Screening::where('dokter_id', $dokter->id)
-            ->whereDate('tanggal_vaksinasi', today())->count();
         
-        // Ambil 5 pasien terbaru yang ditugaskan
+        // Belum Divaksin = Pasien yang baru (belum ditandatangani dokter atau belum dikonfirmasi)
+        // Yaitu: belum ada tanda_tangan_dokter ATAU (ada tanda_tangan_dokter tapi status_konfirmasi != 'dikonfirmasi')
+        $belumDivaksin = Screening::where('dokter_id', $dokter->id)
+            ->where(function($query) {
+                $query->whereNull('tanda_tangan_dokter')
+                      ->orWhere('status_konfirmasi', '!=', 'dikonfirmasi')
+                      ->orWhereNull('status_konfirmasi');
+            })
+            ->count();
+        
+        // Sudah Divaksin = Pasien yang sudah ditandatangani dokter DAN status_konfirmasi = 'dikonfirmasi'
+        $sudahDivaksin = Screening::where('dokter_id', $dokter->id)
+            ->whereNotNull('tanda_tangan_dokter')
+            ->where('status_konfirmasi', 'dikonfirmasi')
+            ->count();
+        
+        // Pasien hari ini = pasien yang dikonfirmasi hari ini
+        $pasienHariIni = Screening::where('dokter_id', $dokter->id)
+            ->whereDate('tanggal_konfirmasi', today())
+            ->where('status_konfirmasi', 'dikonfirmasi')
+            ->count();
+        
+        // Ambil 5 pasien terbaru yang ditugaskan (belum dikonfirmasi dokter)
+        // Pasien yang baru dari penilaian admin dan belum dikonfirmasi dokter
         $pasienTerbaru = Screening::where('dokter_id', $dokter->id)
+            ->where(function($query) {
+                // Belum ditandatangani dokter ATAU belum dikonfirmasi
+                $query->whereNull('tanda_tangan_dokter')
+                      ->orWhere('status_konfirmasi', '!=', 'dikonfirmasi')
+                      ->orWhereNull('status_konfirmasi');
+            })
             ->with(['pasien', 'vaccineRequest'])
             ->orderBy('created_at', 'desc')
             ->limit(5)
@@ -97,9 +120,20 @@ class DokterDashboardController extends Controller
         $query = Screening::where('dokter_id', $dokter->id)
             ->with(['pasien', 'vaccineRequest']);
         
-        // Filter berdasarkan status
+        // Filter berdasarkan status konfirmasi
         if ($request->has('status') && $request->status != '') {
-            $query->where('status_vaksinasi', $request->status);
+            if ($request->status == 'belum_dikonfirmasi') {
+                // Belum Dikonfirmasi = belum ditandatangani atau belum dikonfirmasi
+                $query->where(function($q) {
+                    $q->whereNull('tanda_tangan_dokter')
+                      ->orWhere('status_konfirmasi', '!=', 'dikonfirmasi')
+                      ->orWhereNull('status_konfirmasi');
+                });
+            } elseif ($request->status == 'sudah_dikonfirmasi') {
+                // Sudah Dikonfirmasi = sudah ditandatangani dan dikonfirmasi
+                $query->whereNotNull('tanda_tangan_dokter')
+                      ->where('status_konfirmasi', 'dikonfirmasi');
+            }
         }
         
         // Search berdasarkan nama atau NIK

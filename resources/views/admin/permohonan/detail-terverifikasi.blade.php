@@ -28,12 +28,19 @@
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
     }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
 </style>
 @endpush
 
 @section('content')
     <!-- Header -->
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <a href="{{ route('admin.permohonan.terverifikasi') }}" class="inline-flex items-center text-green-600 hover:text-green-700 font-semibold transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -41,25 +48,26 @@
             Kembali
         </a>
         
-        <div class="flex items-center space-x-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <!-- Tombol Cetak PDF -->
             <a href="{{ route('admin.permohonan.terverifikasi.cetak-pdf', $permohonan) }}" 
                target="_blank"
-               class="inline-flex items-center px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow transition">
+               class="inline-flex items-center justify-center px-4 sm:px-5 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow transition text-sm sm:text-base">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
-                Cetak PDF
+                <span class="hidden sm:inline">Cetak PDF</span>
+                <span class="sm:hidden">PDF</span>
             </a>
             
             <!-- Status Badge -->
-            <div class="flex items-center space-x-3 bg-green-50 border-2 border-green-500 rounded-lg px-5 py-2 shadow">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center space-x-2 sm:space-x-3 bg-green-50 border-2 border-green-500 rounded-lg px-3 sm:px-5 py-2 shadow">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <div>
-                    <p class="font-bold text-green-900">TERVERIFIKASI</p>
-                    <p class="text-xs text-green-600">{{ $permohonan->screening->tanggal_konfirmasi ? \Carbon\Carbon::parse($permohonan->screening->tanggal_konfirmasi)->format('d/m/Y H:i') : '-' }}</p>
+                <div class="min-w-0">
+                    <p class="font-bold text-green-900 text-xs sm:text-sm">TERVERIFIKASI</p>
+                    <p class="text-xs text-green-600 truncate">{{ $permohonan->screening->tanggal_konfirmasi ? \Carbon\Carbon::parse($permohonan->screening->tanggal_konfirmasi)->format('d/m/Y H:i') : '-' }}</p>
                 </div>
             </div>
         </div>
@@ -68,41 +76,41 @@
     <!-- Tabs -->
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
         <div class="border-b border-gray-200 bg-gray-50">
-            <nav class="flex space-x-1 px-4" aria-label="Tabs">
-                <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-button active py-3 px-4 text-sm font-semibold border-b-2 transition">
-                    📋 Data Pasien
+            <nav class="flex space-x-1 px-2 sm:px-4 overflow-x-auto scrollbar-hide" aria-label="Tabs" style="-webkit-overflow-scrolling: touch;">
+                <button onclick="switchTab('tab1')" id="btn-tab1" class="tab-button active py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0">
+                    📋 <span class="hidden sm:inline">Data Pasien</span><span class="sm:hidden">Pasien</span>
                 </button>
-                <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-button py-3 px-4 text-sm font-semibold border-b-2 transition">
+                <button onclick="switchTab('tab2')" id="btn-tab2" class="tab-button py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0">
                     ✍️ Screening
                 </button>
-                <button onclick="switchTab('tab3')" id="btn-tab3" class="tab-button py-3 px-4 text-sm font-semibold border-b-2 transition">
-                    🩺 Pemeriksaan
+                <button onclick="switchTab('tab3')" id="btn-tab3" class="tab-button py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0">
+                    🩺 <span class="hidden sm:inline">Pemeriksaan</span><span class="sm:hidden">Periksa</span>
                 </button>
-                <button onclick="switchTab('tab4')" id="btn-tab4" class="tab-button py-3 px-4 text-sm font-semibold border-b-2 transition">
+                <button onclick="switchTab('tab4')" id="btn-tab4" class="tab-button py-3 px-2 sm:px-4 text-xs sm:text-sm font-semibold border-b-2 transition whitespace-nowrap flex-shrink-0">
                     ✅ Verifikasi
                 </button>
             </nav>
         </div>
 
-        <div class="p-6">
+        <div class="p-4 sm:p-6">
             <!-- TAB 1: DATA PASIEN -->
             <div id="tab1" class="tab-content active">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <!-- Data Pribadi -->
                     <div class="space-y-4">
                         <h3 class="font-bold text-lg text-gray-800 border-b pb-2">Data Pribadi</h3>
                         
-                        <div class="grid grid-cols-3 gap-2 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                             <span class="text-gray-600 font-medium">Nama</span>
-                            <span class="col-span-2 font-semibold">{{ $permohonan->pasien->nama }}</span>
+                            <span class="sm:col-span-2 font-semibold">{{ $permohonan->pasien->nama }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">NIK</span>
-                            <span class="col-span-2">{{ $permohonan->pasien->nik ?? '-' }}</span>
+                            <span class="sm:col-span-2 break-words">{{ $permohonan->pasien->nik ?? '-' }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">No. RM</span>
-                            <span class="col-span-2">
+                            <span class="sm:col-span-2">
                                 @if($permohonan->pasien->nomor_rm)
                                     <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded">{{ $permohonan->pasien->nomor_rm }}</span>
                                 @else
@@ -110,9 +118,9 @@
                                 @endif
                             </span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Status</span>
-                            <span class="col-span-2">
+                            <span class="sm:col-span-2">
                                 @if($permohonan->pasien->status_pasien === 'baru')
                                     <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">Pasien Baru</span>
                                 @else
@@ -121,50 +129,50 @@
                             </span>
                         </div>
                         @if($permohonan->is_perjalanan == 1)
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Paspor</span>
-                            <span class="col-span-2">{{ $permohonan->pasien->nomor_paspor ?? '-' }}</span>
+                            <span class="sm:col-span-2 break-words">{{ $permohonan->pasien->nomor_paspor ?? '-' }}</span>
                         </div>
                         @endif
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">TTL</span>
-                            <span class="col-span-2">{{ $permohonan->pasien->tempat_lahir ?? '-' }}{{ $permohonan->pasien->tanggal_lahir ? ', ' . \Carbon\Carbon::parse($permohonan->pasien->tanggal_lahir)->format('d/m/Y') : '' }}</span>
+                            <span class="sm:col-span-2 break-words">{{ $permohonan->pasien->tempat_lahir ?? '-' }}{{ $permohonan->pasien->tanggal_lahir ? ', ' . \Carbon\Carbon::parse($permohonan->pasien->tanggal_lahir)->format('d/m/Y') : '' }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Jenis Kelamin</span>
-                            <span class="col-span-2">
+                            <span class="sm:col-span-2">
                                 @if($permohonan->pasien->jenis_kelamin == 'L') Laki-laki
                                 @elseif($permohonan->pasien->jenis_kelamin == 'P') Perempuan
                                 @else - @endif
                             </span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Pekerjaan</span>
-                            <span class="col-span-2">{{ $permohonan->pasien->pekerjaan ?? '-' }}</span>
+                            <span class="sm:col-span-2 break-words">{{ $permohonan->pasien->pekerjaan ?? '-' }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Alamat</span>
-                            <span class="col-span-2">{{ $permohonan->pasien->alamat ?? '-' }}</span>
+                            <span class="sm:col-span-2 break-words">{{ $permohonan->pasien->alamat ?? '-' }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Telepon</span>
-                            <span class="col-span-2 font-semibold text-blue-600">{{ $permohonan->pasien->no_telp }}</span>
+                            <span class="sm:col-span-2 font-semibold text-blue-600 break-words">{{ $permohonan->pasien->no_telp }}</span>
                         </div>
 
                         <!-- Data Perjalanan -->
                         <h3 class="font-bold text-lg text-gray-800 border-b pb-2 mt-6">Data Perjalanan</h3>
                         
-                        <div class="grid grid-cols-3 gap-2 text-sm">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                             <span class="text-gray-600 font-medium">Negara Tujuan</span>
-                            <span class="col-span-2 font-semibold">{{ $permohonan->negara_tujuan ?? '-' }}</span>
+                            <span class="sm:col-span-2 font-semibold break-words">{{ $permohonan->negara_tujuan ?? '-' }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Tgl Berangkat</span>
-                            <span class="col-span-2">{{ $permohonan->tanggal_berangkat ? \Carbon\Carbon::parse($permohonan->tanggal_berangkat)->format('d/m/Y') : '-' }}</span>
+                            <span class="sm:col-span-2">{{ $permohonan->tanggal_berangkat ? \Carbon\Carbon::parse($permohonan->tanggal_berangkat)->format('d/m/Y') : '-' }}</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Jenis Vaksin</span>
-                            <span class="col-span-2">
+                            <span class="sm:col-span-2">
                                 @if(is_array($permohonan->jenis_vaksin))
                                     @foreach($permohonan->jenis_vaksin as $vaksin)
                                         <span class="inline-block px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full mr-1 mb-1">{{ $vaksin }}</span>
@@ -174,9 +182,9 @@
                                 @endif
                             </span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 text-sm border-t pt-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm border-t pt-2">
                             <span class="text-gray-600 font-medium">Travel</span>
-                            <span class="col-span-2">{{ $permohonan->nama_travel ?? '-' }}</span>
+                            <span class="sm:col-span-2 break-words">{{ $permohonan->nama_travel ?? '-' }}</span>
                         </div>
                     </div>
 
@@ -200,7 +208,7 @@
                         @endif
 
                         @if($permohonan->is_perjalanan == 1 && ($permohonan->pasien->passport_halaman_pertama || $permohonan->pasien->passport_halaman_kedua))
-                        <div class="grid grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             @if($permohonan->pasien->passport_halaman_pertama)
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-2">Passport Halaman Pertama</label>
@@ -338,7 +346,7 @@
                     </div>
 
                     <!-- Data Vital dalam Grid -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                         <div class="bg-red-50 border border-red-200 p-3 rounded-lg text-center">
                             <p class="text-xs text-red-600 font-semibold">Tekanan Darah</p>
                             <p class="text-2xl font-bold text-red-900 mt-1">{{ $permohonan->screening->nilaiScreening->td ?? '-' }}</p>
@@ -398,7 +406,7 @@
             <!-- TAB 4: VERIFIKASI DOKTER -->
             <div id="tab4" class="tab-content">
                 @if($permohonan->screening && $permohonan->screening->status_konfirmasi === 'dikonfirmasi')
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                     <!-- Info Verifikasi -->
                     <div class="space-y-4">
                         <div class="bg-green-50 border-2 border-green-300 rounded-lg p-4">
@@ -410,7 +418,7 @@
                                 <span class="px-3 py-1 bg-green-500 text-white rounded-full font-bold text-xs">✓ VERIFIED</span>
                             </div>
                             
-                            <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                                 <div>
                                     <p class="text-green-600 font-medium text-xs">Tanggal Konfirmasi</p>
                                     <p class="font-semibold text-green-900">{{ $permohonan->screening->tanggal_konfirmasi ? \Carbon\Carbon::parse($permohonan->screening->tanggal_konfirmasi)->format('d/m/Y H:i') : '-' }}</p>
@@ -463,15 +471,15 @@
     </div>
 
     <!-- Image Modal -->
-    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 items-center justify-center p-4 hidden" onclick="closeImageModal()">
-        <div class="relative max-w-4xl max-h-full" onclick="event.stopPropagation()">
-            <button onclick="closeImageModal()" class="absolute -top-10 right-0 text-white hover:text-gray-300">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 z-50 items-center justify-center p-2 sm:p-4 hidden" onclick="closeImageModal()">
+        <div class="relative max-w-4xl w-full max-h-full" onclick="event.stopPropagation()">
+            <button onclick="closeImageModal()" class="absolute -top-8 sm:-top-10 right-0 text-white hover:text-gray-300 z-10">
+                <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
             </button>
-            <img id="modalImage" src="" alt="" class="max-w-full max-h-[80vh] rounded-lg shadow-2xl">
-            <p id="modalTitle" class="text-white text-center mt-4 font-semibold text-lg"></p>
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[85vh] sm:max-h-[80vh] rounded-lg shadow-2xl mx-auto">
+            <p id="modalTitle" class="text-white text-center mt-2 sm:mt-4 font-semibold text-sm sm:text-lg"></p>
         </div>
     </div>
 
