@@ -58,8 +58,8 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/upload.ini
 COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Create storage directories jika belum ada
-RUN mkdir -p /var/www/storage/app/public/ktp \
-    && mkdir -p /var/www/storage/app/public/paspor \
+RUN mkdir -p /var/www/storage/app/public/foto-ktp \
+    && mkdir -p /var/www/storage/app/public/foto-paspor \
     && mkdir -p /var/www/storage/app/public/photos \
     && mkdir -p /var/www/storage/app/public/signatures \
     && mkdir -p /var/www/storage/framework/cache \
@@ -76,7 +76,11 @@ RUN chown -R www-data:www-data /var/www/storage \
     && chmod -R 775 /var/www/bootstrap/cache
 
 # Create symbolic link for storage (relative path)
-RUN cd /var/www/public && ln -sf ../storage/app/public storage
+# Hapus symlink lama jika ada, lalu buat yang baru
+RUN cd /var/www/public && \
+    rm -f storage && \
+    ln -sf ../storage/app/public storage && \
+    chown -h www-data:www-data storage
 
 # Expose Nginx port (bukan PHP-FPM)
 EXPOSE 80
