@@ -32,15 +32,17 @@ sleep 10
 docker compose ps
 ```
 
-## 4. Reload Nginx
+## 4. Restart Container (Nginx akan reload otomatis)
 
 ```bash
-# Reload nginx untuk apply config baru
-docker compose exec app supervisorctl restart nginx
+# Restart container untuk apply config baru
+docker compose restart app
 
-# Atau restart semua service
-docker compose exec app supervisorctl restart all
+# Tunggu beberapa detik
+sleep 10
 ```
+
+**Catatan:** Jika supervisor tidak running, gunakan `docker compose restart app` untuk restart container (akan restart nginx juga).
 
 ## 5. Verifikasi Nginx Config
 
@@ -52,7 +54,7 @@ docker compose exec app cat /etc/nginx/http.d/default.conf | grep -B 2 -A 5 "loc
 **Harusnya urutan:**
 1. `location ~ /\.` (deny hidden files)
 2. `location ~ ^/bootstrap/cache` (deny bootstrap cache)
-3. `location ~ ^/storage/(.*)$` (allow storage) ← **HARUS SEBELUM location /**
+3. `location /storage` (allow storage) ← **HARUS SEBELUM location /**
 4. `location ~ \.php$` (PHP-FPM)
 5. `location /` (catch-all) ← **HARUS DI AKHIR**
 
@@ -136,22 +138,24 @@ Jalankan semua perintah ini secara berurutan:
 ```bash
 cd /var/www/form-vaksin-RSI
 
-# 1. Rebuild
+# 1. Pull perubahan terbaru
+git pull
+
+# 2. Rebuild container
 docker compose build --no-cache app
 
-# 2. Restart
+# 3. Restart container
 docker compose restart app
 
-# 3. Tunggu
+# 4. Tunggu container ready
 sleep 10
-
-# 4. Reload nginx
-docker compose exec app supervisorctl restart nginx
 
 # 5. Test
 docker compose exec app curl -I http://localhost/storage/foto-ktp/UOItznB135jpGJQa3hnm1lzN4IjzXgOPe9dsHD6D.jpg
 
-# 6. Clear cache
+# Harusnya return: HTTP/1.1 200 OK
+
+# 6. Clear cache (opsional)
 docker compose exec app php artisan config:clear
 docker compose exec app php artisan cache:clear
 ```
