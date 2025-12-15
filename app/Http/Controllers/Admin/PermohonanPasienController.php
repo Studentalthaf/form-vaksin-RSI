@@ -51,6 +51,15 @@ class PermohonanPasienController extends Controller
             }
         }
 
+        // Filter berdasarkan tanggal permohonan (created_at)
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('created_at', '>=', $request->tanggal_dari);
+        }
+
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('created_at', '<=', $request->tanggal_sampai);
+        }
+
         // Ambil data - DATA TERBARU DI ATAS
         $permohonan = $query->orderBy('created_at', 'desc')->paginate(15);
 

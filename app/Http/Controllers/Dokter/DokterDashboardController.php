@@ -144,8 +144,17 @@ class DokterDashboardController extends Controller
                   ->orWhere('nik', 'like', '%' . $search . '%');
             });
         }
+
+        // Filter berdasarkan rentang tanggal (tanggal konfirmasi atau tanggal vaksinasi)
+        if ($request->filled('tanggal_mulai')) {
+            $query->whereDate('tanggal_konfirmasi', '>=', $request->tanggal_mulai);
+        }
+
+        if ($request->filled('tanggal_selesai')) {
+            $query->whereDate('tanggal_konfirmasi', '<=', $request->tanggal_selesai);
+        }
         
-        $pasiens = $query->orderBy('created_at', 'desc')->paginate(15);
+        $pasiens = $query->orderBy('created_at', 'desc')->paginate(15)->appends($request->query());
         
         return view('dokter.pasien.index', compact('pasiens'));
     }

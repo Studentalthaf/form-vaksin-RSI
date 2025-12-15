@@ -165,11 +165,11 @@
                         <!-- Upload Foto KTP -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Foto KTP *</label>
-                            <input type="file" name="foto_ktp" id="foto_ktp" accept="image/*,.pdf,.heic,.heif"
+                            <input type="file" name="foto_ktp" id="foto_ktp" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100" 
                                 required
                                 onchange="validateFileSize(this, 5, 'foto_ktp')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC (iPhone). Maksimal 5MB</p>
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_foto_ktp"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_foto_ktp"></p>
                         </div>
@@ -335,10 +335,10 @@
                         <!-- Upload Foto Paspor Halaman Pertama -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Pertama *</label>
-                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/*,.pdf,.heic,.heif"
+                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                                 onchange="validateFileSize(this, 5, 'passport_halaman_pertama')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC (iPhone). Maksimal 5MB</p>
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_pertama"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_pertama"></p>
                         </div>
@@ -346,10 +346,10 @@
                         <!-- Upload Foto Paspor Halaman Kedua -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Kedua *</label>
-                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/*,.pdf,.heic,.heif"
+                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
                                 onchange="validateFileSize(this, 5, 'passport_halaman_kedua')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC (iPhone). Maksimal 5MB</p>
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_kedua"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_kedua"></p>
                         </div>
@@ -417,7 +417,7 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        // Validate individual file size
+        // Validate individual file size and type
         function validateFileSize(input, maxSizeMB, fieldId) {
             const file = input.files[0];
             const errorElement = document.getElementById('error_' + fieldId);
@@ -434,6 +434,27 @@
             }
 
             if (file) {
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif', 'application/pdf'];
+                const allowedExtensions = ['.jpg', '.jpeg', '.png', '.heic', '.heif', '.pdf'];
+                const fileName = file.name.toLowerCase();
+                const fileType = file.type.toLowerCase();
+                
+                // Check by MIME type or extension (for HEIC/HEIF which might not have MIME type)
+                const isValidType = allowedTypes.includes(fileType) || 
+                                   allowedExtensions.some(ext => fileName.endsWith(ext));
+                
+                if (!isValidType) {
+                    input.value = '';
+                    if (errorElement) {
+                        errorElement.textContent = `❌ Format file tidak didukung! Format yang diizinkan: JPG, PNG, PDF, HEIC, atau HEIF`;
+                        errorElement.classList.remove('hidden');
+                    }
+                    alert(`⚠️ Format File Tidak Didukung!\n\nFile "${file.name}" tidak dalam format yang diizinkan.\n\nFormat yang diizinkan:\n- JPG/JPEG\n- PNG\n- PDF\n- HEIC/HEIF (iPhone)\n\nSilakan pilih file dengan format yang benar.`);
+                    updateTotalSize();
+                    return false;
+                }
+                
                 const fileSizeMB = file.size / (1024 * 1024);
                 
                 if (file.size > maxSizeMB * 1024 * 1024) {
@@ -449,7 +470,9 @@
                 } else {
                     // File OK
                     if (infoElement) {
-                        infoElement.textContent = `✅ File sesuai: ${formatFileSize(file.size)}`;
+                        const fileTypeText = fileName.endsWith('.heic') || fileName.endsWith('.heif') ? 'HEIC/HEIF' : 
+                                            fileName.endsWith('.pdf') ? 'PDF' : 'Gambar';
+                        infoElement.textContent = `✅ File ${fileTypeText} sesuai: ${formatFileSize(file.size)}`;
                         infoElement.classList.remove('hidden');
                     }
                     updateTotalSize();

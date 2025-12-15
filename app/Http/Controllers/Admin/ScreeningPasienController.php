@@ -30,7 +30,28 @@ class ScreeningPasienController extends Controller
                 'answers.question.category',
                 'nilaiScreening.admin'
             ])
-            ->firstOrFail();
+            ->first();
+
+        // Jika pasien belum mengisi screening, JANGAN 404.
+        // Buat record screening kosong agar admin tetap bisa menilai screening.
+        if (!$screening) {
+            $screening = Screening::create([
+                'pasien_id' => $permohonan->pasien_id,
+                'vaccine_request_id' => $permohonan->id,
+                'tanggal_screening' => now(),
+                'hasil_screening' => 'pending',
+                'status_vaksinasi' => 'belum_divaksin',
+                'catatan' => 'Screening dibuat oleh admin karena pasien belum mengisi pertanyaan screening.',
+            ]);
+
+            // Reload relasi yang diperlukan
+            $screening->load(['answers.question.category', 'nilaiScreening.admin']);
+
+            session()->flash(
+                'warning',
+                'Pasien belum mengisi formulir screening. Anda tetap dapat melakukan pemeriksaan dan memberi nilai screening.'
+            );
+        }
 
         // Ambil daftar vaksin aktif untuk dropdown
         $vaksins = Vaksin::where('aktif', true)
@@ -38,7 +59,12 @@ class ScreeningPasienController extends Controller
             ->orderBy('nama_vaksin')
             ->get();
 
-        return view('admin.screening.show', compact('permohonan', 'screening', 'vaksins'));
+        // Ambil semua pertanyaan screening aktif (untuk kasus belum ada jawaban sama sekali)
+        $questions = \App\Models\ScreeningQuestion::where('aktif', true)
+            ->orderBy('urutan')
+            ->get();
+
+        return view('admin.screening.show', compact('permohonan', 'screening', 'vaksins', 'questions'));
     }
 
     /**

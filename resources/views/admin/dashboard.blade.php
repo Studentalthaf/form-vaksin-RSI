@@ -20,7 +20,7 @@
     </div>
 
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
                 <a href="{{ route('admin.users.index') }}" class="block group">
                     <div class="bg-white rounded-xl shadow-md hover:shadow-2xl p-6 border-l-4 border-blue-500 transform hover:-translate-y-1 transition-all duration-300">
                         <div class="flex items-center justify-between">
@@ -70,15 +70,59 @@
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                    </div>
+                        </div>
                 </div>
+                </a>
+
+                <!-- Card Permohonan Belum Dicek -->
+                <a href="{{ route('admin.permohonan.index', ['status' => 'belum_screening']) }}" class="block group">
+                    <div class="bg-white rounded-xl shadow-md hover:shadow-2xl p-6 border-l-4 border-red-500 transform hover:-translate-y-1 transition-all duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <p class="text-gray-500 text-sm font-semibold uppercase tracking-wide">Permohonan Belum Dicek</p>
+                                <p class="text-4xl font-extrabold text-gray-900 mt-2">{{ $pendingPermohonan }}</p>
+                                <p class="text-xs text-red-600 mt-2 font-medium group-hover:underline">Lihat yang Belum Dicek →</p>
+                            </div>
+                            <div class="w-16 h-16 bg-gradient-to-br from-red-400 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M12 8v4m0 4h.01M21 12A9 9 0 113 12a9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                    </div>
+                    </div>
                 </a>
             </div>
 
-            <!-- Quick Actions & Rekap -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Tabel Permohonan Belum Dicek (tepat di bawah kotak info) -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                            <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0119 9v8a2 2 0 01-2 2z" />
+                            </svg>
+                            Permohonan Belum Dicek
+                        </h2>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Menampilkan maksimal 10 permohonan yang <span class="font-semibold">Belum Dicek Admin</span>. Jika sudah dicek, permohonan akan hilang dari daftar ini dan hanya muncul di menu Daftar Permohonan.
+                        </p>
+                    </div>
+                    <a href="{{ route('admin.permohonan.index', ['status' => 'belum_screening']) }}"
+                       class="inline-flex items-center px-3 py-2 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-semibold rounded-lg border border-red-100 transition">
+                        Lihat Semua yang Belum Dicek
+                    </a>
+                </div>
+                <div class="overflow-x-auto">
+                    @include('admin.permohonan.partials.all-table', ['permohonan' => $permohonanDashboard])
+                </div>
+            </div>
+
+            <!-- Quick Actions & Rekap Permohonan -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
                 <!-- Quick Actions -->
-                <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="bg-white rounded-xl shadow-md p-6 lg:col-span-1">
                     <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
                         <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -128,7 +172,7 @@
                 </div>
 
                 <!-- Rekap Permohonan -->
-                <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
                     <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -258,10 +302,9 @@
                                     <p class="text-gray-500 text-sm">Belum ada permohonan dalam 3 bulan terakhir</p>
                                 </div>
                             @endforelse
-                        </div>
                     </div>
-                </div>
             </div>
+
 
             <script>
                 function switchTab(tabName) {

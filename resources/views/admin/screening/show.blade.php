@@ -5,7 +5,7 @@
 
 @section('content')
     <!-- Back Button -->
-    <div class="mb-6">
+    <div class="mb-4">
         <a href="{{ route('admin.permohonan.show', $permohonan) }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-semibold transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -13,6 +13,24 @@
             Kembali ke Detail
         </a>
     </div>
+
+    @if(session('warning'))
+        <div class="mb-4 bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l6.518 11.59C19.022 16.92 18.266 18 17.004 18H2.996c-1.262 0-2.018-1.08-1.257-2.31l6.518-11.59zM11 14a1 1 0 10-2 0 1 1 0 002 0zm-1-2a1 1 0 01-1-1V7a1 1 0 112 0v4a1 1 0 01-1 1z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-semibold text-yellow-800">Peringatan</h3>
+                    <p class="mt-1 text-sm text-yellow-700">
+                        {{ session('warning') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
 
         @if(session('success'))
         <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center">
@@ -154,11 +172,89 @@
                                 </div>
                             </div>
                             @endforeach
-                        @else
-                            <p class="text-gray-500 text-center py-8">Tidak ada jawaban screening</p>
+                        @elseif(isset($questions) && $questions->count() > 0)
+                            {{-- Pasien belum mengisi, tapi admin boleh mengisi jawaban baru --}}
+                            @php
+                                $groupedQuestions = $questions->groupBy(function($q) {
+                                    return optional($q->category)->nama ?? 'Lainnya';
+                                });
+                            @endphp
+
+                            @foreach($groupedQuestions as $categoryName => $qs)
+                                <div class="mb-6">
+                                    <h3 class="text-lg font-bold text-gray-800 mb-3 pb-2 border-b-2 border-blue-500">
+                                        {{ $categoryName }}
+                                    </h3>
+                                    <div class="space-y-4">
+                                        @foreach($qs as $q)
+                                            <div class="bg-gray-50 p-4 rounded-lg">
+                                                <p class="font-semibold text-gray-700 mb-3">{{ $q->pertanyaan }}</p>
+
+                                                @if($q->tipe_jawaban == 'ya_tidak')
+                                                    <div class="flex gap-4 mb-3">
+                                                        <label class="inline-flex items-center cursor-pointer">
+                                                            <input type="radio" name="jawaban_{{ $q->id }}" value="Ya"
+                                                                   class="w-4 h-4 text-green-600 focus:ring-green-500"
+                                                                   onchange="toggleKeteranganEdit{{ $q->id }}(this.value)">
+                                                            <span class="ml-2 text-gray-700">Ya</span>
+                                                        </label>
+                                                        <label class="inline-flex items-center cursor-pointer">
+                                                            <input type="radio" name="jawaban_{{ $q->id }}" value="Tidak"
+                                                                   class="w-4 h-4 text-green-600 focus:ring-green-500"
+                                                                   onchange="toggleKeteranganEdit{{ $q->id }}(this.value)">
+                                                            <span class="ml-2 text-gray-700">Tidak</span>
+                                                        </label>
+                                                        <label class="inline-flex items-center cursor-pointer">
+                                                            <input type="radio" name="jawaban_{{ $q->id }}" value="Tidak Tahu"
+                                                                   class="w-4 h-4 text-green-600 focus:ring-green-500"
+                                                                   onchange="toggleKeteranganEdit{{ $q->id }}(this.value)">
+                                                            <span class="ml-2 text-gray-700">Tidak Tahu</span>
+                                                        </label>
+                                                    </div>
+
+                                                    <div id="keterangan_edit_{{ $q->id }}" class="hidden">
+                                                        <label class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                                                        <textarea name="keterangan_{{ $q->id }}" rows="2"
+                                                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                                                  placeholder="Jelaskan lebih detail..."></textarea>
+                                                    </div>
+
+                                                    <script>
+                                                        function toggleKeteranganEdit{{ $q->id }}(value) {
+                                                            const container = document.getElementById('keterangan_edit_{{ $q->id }}');
+                                                            if (value === 'Ya') {
+                                                                container.classList.remove('hidden');
+                                                            } else {
+                                                                container.classList.add('hidden');
+                                                            }
+                                                        }
+                                                    </script>
+                                                @elseif($q->tipe_jawaban == 'pilihan_ganda')
+                                                    @php
+                                                        $pilihanBaru = json_decode($q->pilihan_jawaban, true) ?? [];
+                                                    @endphp
+                                                    <div class="space-y-2">
+                                                        @foreach($pilihanBaru as $p)
+                                                            <label class="flex items-center cursor-pointer">
+                                                                <input type="radio" name="jawaban_{{ $q->id }}" value="{{ $p }}"
+                                                                       class="w-4 h-4 text-green-600 focus:ring-green-500">
+                                                                <span class="ml-2 text-gray-700">{{ $p }}</span>
+                                                            </label>
+                                                        @endforeach
+                                                    </div>
+                                                @elseif($q->tipe_jawaban == 'text')
+                                                    <textarea name="jawaban_{{ $q->id }}" rows="3"
+                                                              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                                                              placeholder="Tuliskan jawaban ..."></textarea>
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endforeach
                         @endif
                         
-                        @if($screening->answers->count() > 0)
+                        @if(($screening->answers->count() > 0) || (isset($questions) && $questions->count() > 0))
                         <div class="sticky bottom-0 bg-white border-t border-gray-200 pt-4 flex justify-end gap-2">
                             <button type="button" onclick="toggleEditMode('jawaban')" class="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-semibold">
                                 Batal

@@ -49,6 +49,19 @@ class DashboardController extends Controller
             ->orderBy('tahun', 'desc')
             ->orderBy('bulan', 'desc')
             ->get();
+
+        // Daftar permohonan BELUM DICEK (untuk tabel di dashboard)
+        // Kriteria sama seperti filter \"Belum Dicek\" di menu Daftar Permohonan:
+        // tidak punya screening ATAU screening belum punya nilaiScreening (belum direview admin)
+        $permohonanDashboard = VaccineRequest::with(['pasien', 'screening.nilaiScreening'])
+            ->where(function ($q) {
+                $q->doesntHave('screening')
+                    ->orWhereHas('screening', function ($subQ) {
+                        $subQ->doesntHave('nilaiScreening');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
         
         // Kirim data ke view
         return view('admin.dashboard', compact(
@@ -60,7 +73,8 @@ class DashboardController extends Controller
             'permohonanHariIni',
             'rekapHarian',
             'permohonanBulanIni',
-            'rekapBulanan'
+            'rekapBulanan',
+            'permohonanDashboard'
         ));
     }
 }

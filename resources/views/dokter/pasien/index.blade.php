@@ -15,7 +15,7 @@
         </div>
 
         <!-- Form Filter & Search -->
-        <form method="GET" action="{{ route('dokter.pasien.index') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <form method="GET" action="{{ route('dokter.pasien.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Search -->
             <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cari Pasien</label>
@@ -39,8 +39,22 @@
                 </select>
             </div>
 
+            <!-- Filter Tanggal -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Konfirmasi</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" name="tanggal_mulai" value="{{ request('tanggal_mulai') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="Mulai">
+                    <input type="date" name="tanggal_selesai" value="{{ request('tanggal_selesai') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                           placeholder="Sampai">
+                </div>
+                <p class="mt-1 text-[11px] text-gray-400">Kosongkan jika ingin melihat semua tanggal.</p>
+            </div>
+
             <!-- Button Group -->
-            <div class="md:col-span-3 flex gap-2">
+            <div class="md:col-span-4 flex gap-2">
                 <button type="submit" class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition">
                     <svg class="w-5 h-5 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
@@ -65,6 +79,7 @@
                         <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">NIK</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Nama Pasien</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Jenis Kelamin</th>
+                        <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Dikirim Admin</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Status Vaksinasi</th>
                         <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">Status Konfirmasi</th>
                         <th class="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">Aksi</th>
@@ -109,6 +124,19 @@
                                 </span>
                             @else
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">-</span>
+                            @endif
+                        </td>
+                        <!-- Tanggal dikirim admin / dijadwalkan -->
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            @if($screening->tanggal_vaksinasi)
+                                <div class="text-xs font-semibold text-gray-800">
+                                    {{ \Carbon\Carbon::parse($screening->tanggal_vaksinasi)->format('d/m/Y') }}
+                                </div>
+                                <div class="text-[11px] text-gray-500">
+                                    Jadwal dari admin
+                                </div>
+                            @else
+                                <span class="text-xs text-gray-400">Belum dijadwalkan</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -184,7 +212,7 @@
         </svg>
         <h3 class="text-xl font-semibold text-gray-700 mb-2">Tidak Ada Data Pasien</h3>
         <p class="text-gray-500">
-            @if(request()->has('search') || request()->has('status') || request()->has('tanggal'))
+            @if(request()->has('search') || request()->has('status') || request()->has('tanggal_mulai') || request()->has('tanggal_selesai'))
                 Tidak ada pasien yang sesuai dengan filter pencarian Anda.
             @else
                 Belum ada pasien yang ditugaskan kepada Anda.

@@ -5,7 +5,7 @@
 
 @section('content')
     <!-- Back Button -->
-    <div class="mb-6">
+    <div class="mb-4">
         <a href="{{ route('admin.permohonan.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-700 font-semibold transition">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
@@ -13,6 +13,27 @@
             Kembali ke Daftar
         </a>
     </div>
+
+    {{-- Alert Error / Peringatan --}}
+    @if($errors->any())
+        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-11.75a.75.75 0 00-1.5 0v4.5a.75.75 0 001.5 0v-4.5zM10 13.5a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-semibold text-red-800">Peringatan</h3>
+                    <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Main Content -->
