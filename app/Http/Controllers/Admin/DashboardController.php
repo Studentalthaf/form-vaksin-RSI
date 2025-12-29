@@ -54,11 +54,10 @@ class DashboardController extends Controller
         // Kriteria sama seperti filter \"Belum Dicek\" di menu Daftar Permohonan:
         // tidak punya screening ATAU screening belum punya nilaiScreening (belum direview admin)
         $permohonanDashboard = VaccineRequest::with(['pasien', 'screening.nilaiScreening'])
-            ->where(function ($q) {
-                $q->doesntHave('screening')
-                    ->orWhereHas('screening', function ($subQ) {
-                        $subQ->doesntHave('nilaiScreening');
-                    });
+            ->whereHas('screening', function ($subQ) {
+                // Hanya ambil yang screeningnya SUDAH ADA (pasien sudah isi)
+                // TAPI belum dinilai oleh admin
+                $subQ->doesntHave('nilaiScreening');
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
