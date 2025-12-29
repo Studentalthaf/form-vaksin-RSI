@@ -22,6 +22,15 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Fix untuk iPhone/Safari - Signature Pad */
+        #signaturePad {
+            touch-action: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            pointer-events: auto !important;
+        }
         /* Smooth transitions */
         .sidebar-transition {
             transition: all 0.3s ease-in-out;

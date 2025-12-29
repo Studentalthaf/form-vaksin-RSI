@@ -862,8 +862,8 @@
                             <label class="block text-sm font-bold text-gray-700 mb-2">
                                 Tanda Tangan Dokter <span class="text-red-500">*</span>
                             </label>
-                            <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white">
-                                <canvas id="signaturePad" width="600" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
+                            <div class="border-2 border-gray-300 rounded-lg overflow-hidden bg-white" style="touch-action: none; -webkit-touch-callout: none;">
+                                <canvas id="signaturePad" style="width: 100%; height: 200px; touch-action: none !important; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; cursor: crosshair; display: block; position: relative; background: white;"></canvas>
                             </div>
                             <div class="flex items-center justify-between mt-2">
                                 <p class="text-xs text-gray-500">Silakan tanda tangan di kotak di atas</p>
@@ -950,142 +950,227 @@
     });
 
 
-    // Form submission
-    document.getElementById('formKonfirmasi').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Validate signature dokter
-        if (isCanvasBlank()) {
-            alert('Silakan buat tanda tangan dokter terlebih dahulu!');
-            return false;
-        }
+        // Form submission
+        const formKonfirmasi = document.getElementById('formKonfirmasi');
+        if (formKonfirmasi) {
+            formKonfirmasi.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate signature dokter
+                if (window.isCanvasBlank && window.isCanvasBlank(canvas)) {
+                    alert('Silakan buat tanda tangan dokter terlebih dahulu!');
+                    return false;
+                }
 
-        // Save signature dokter as base64
-        const signatureData = canvas.toDataURL('image/png');
-        document.getElementById('tandaTanganInput').value = signatureData;
+                // Save signature dokter as base64
+                const signatureData = canvas.toDataURL('image/png');
+                document.getElementById('tandaTanganInput').value = signatureData;
 
-        // Show confirmation
-        if (confirm('Apakah Anda yakin ingin menyimpan konfirmasi ini?\n\nPastikan:\n✓ Dokter sudah menandatangani\n\nData tidak dapat diubah setelah disimpan.')) {
-            this.submit();
+                // Show confirmation
+                if (confirm('Apakah Anda yakin ingin menyimpan konfirmasi ini?\n\nPastikan:\n✓ Dokter sudah menandatangani\n\nData tidak dapat diubah setelah disimpan.')) {
+                    this.submit();
+                }
+            });
         }
-    });
 
     console.log('✅ Signature pad script loaded!');
     
-    // ========== SIGNATURE PAD DOKTER ==========
+    // Wait for DOM to be fully loaded
+    document.addEventListener('DOMContentLoaded', function() {
+    // ========== SIGNATURE PAD DOKTER - Fixed for iPhone/Safari ==========
     const canvas = document.getElementById('signaturePad');
     console.log('Canvas element:', canvas);
     
     if (!canvas) {
         console.error('Canvas element not found!');
+        return;
     }
     
-    const ctx = canvas.getContext('2d');
-    console.log('Canvas context:', ctx);
-    
-    let isDrawing = false;
-
-    // Setup canvas context
-    ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 3;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    
-    console.log('Canvas setup complete');
-
-    // Get mouse/touch position relative to canvas
-    function getPosition(e) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
+    // Fix canvas size for high DPI displays (iPhone/Safari)
+    function setupCanvas(canvasElement) {
+        const rect = canvasElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
         
-        if (e.touches && e.touches[0]) {
+        // Set actual size in memory (scaled for DPI)
+        canvasElement.width = rect.width * dpr;
+        canvasElement.height = rect.height * dpr;
+        
+        // Scale the drawing context so everything draws at the correct size
+        const ctx = canvasElement.getContext('2d');
+        ctx.scale(dpr, dpr);
+        
+        // Set CSS size to maintain visual size
+        canvasElement.style.width = rect.width + 'px';
+        canvasElement.style.height = rect.height + 'px';
+        
+        return ctx;
+    }
+    
+    // Setup canvas after a small delay to ensure layout is complete
+    setTimeout(function() {
+        const ctx = setupCanvas(canvas);
+        let isDrawing = false;
+        let lastPos = { x: 0, y: 0 };
+
+        // Setup canvas context
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        console.log('Canvas setup complete');
+
+        // Get mouse/touch position relative to canvas
+        function getPosition(e) {
+            const rect = canvas.getBoundingClientRect();
+            
+            let clientX, clientY;
+            
+            // Priority: pointer events > touches > changedTouches > mouse
+            if (e.pointerType !== undefined) {
+                // Pointer Events API (modern, works on iPhone)
+                clientX = e.clientX;
+                clientY = e.clientY;
+            } else if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
             return {
-                x: (e.touches[0].clientX - rect.left) * scaleX,
-                y: (e.touches[0].clientY - rect.top) * scaleY
+                x: clientX - rect.left,
+                y: clientY - rect.top
             };
         }
+
+        // Start drawing
+        function startDrawing(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Start drawing at:', getPosition(e));
+            isDrawing = true;
+            lastPos = getPosition(e);
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
+        }
+
+        // Draw
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const pos = getPosition(e);
+            console.log('Drawing to:', pos);
+            
+            // Draw smooth line
+            ctx.beginPath();
+            ctx.moveTo(lastPos.x, lastPos.y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            
+            lastPos = pos;
+        }
+
+        // Stop drawing
+        function stopDrawing(e) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            console.log('Stop drawing');
+            isDrawing = false;
+            ctx.beginPath();
+        }
+
+        // Pointer Events API - Modern approach, works better on iPhone/Safari
+        if (canvas.setPointerCapture) {
+            canvas.addEventListener('pointerdown', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                canvas.setPointerCapture(e.pointerId);
+                startDrawing(e);
+            });
+            
+            canvas.addEventListener('pointermove', function(e) {
+                if (isDrawing) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    draw(e);
+                }
+            });
+            
+            canvas.addEventListener('pointerup', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                canvas.releasePointerCapture(e.pointerId);
+                stopDrawing(e);
+            });
+            
+            canvas.addEventListener('pointercancel', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                canvas.releasePointerCapture(e.pointerId);
+                stopDrawing(e);
+            });
+        }
+
+        // Mouse events (fallback for desktop)
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
         
-        return {
-            x: (e.clientX - rect.left) * scaleX,
-            y: (e.clientY - rect.top) * scaleY
-        };
-    }
+        console.log('Mouse events attached');
 
-    // Start drawing
-    function startDrawing(e) {
-        console.log('Start drawing at:', getPosition(e));
-        isDrawing = true;
-        const pos = getPosition(e);
-        ctx.beginPath();
-        ctx.moveTo(pos.x, pos.y);
-    }
-
-    // Draw
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
+        // Touch events - Enhanced for iPhone/iOS/Safari (fallback)
+        canvas.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startDrawing(e);
+        }, { passive: false });
         
-        const pos = getPosition(e);
-        console.log('Drawing to:', pos);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-    }
+        canvas.addEventListener('touchmove', function(e) {
+            if (isDrawing) {
+                e.preventDefault();
+                e.stopPropagation();
+                draw(e);
+            }
+        }, { passive: false });
+        
+        canvas.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            stopDrawing(e);
+        }, { passive: false });
+        
+        canvas.addEventListener('touchcancel', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            stopDrawing(e);
+        }, { passive: false });
 
-    // Stop drawing
-    function stopDrawing() {
-        console.log('Stop drawing');
-        isDrawing = false;
-        ctx.beginPath();
-    }
+        // Clear signature
+        window.clearSignature = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.getElementById('tandaTanganInput').value = '';
+        }
 
-    // Mouse events
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-    
-    console.log('Mouse events attached');
-
-    // Touch events
-    // Touch events - Fixed for iPhone/iOS
-    canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        startDrawing(e);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        draw(e);
-    }, { passive: false });
-    
-    canvas.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        stopDrawing();
-    }, { passive: false });
-    
-    canvas.addEventListener('touchcancel', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        stopDrawing();
-    }, { passive: false });
-
-    // Clear signature
-    function clearSignature() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        document.getElementById('tandaTanganInput').value = '';
-    }
-
-    // Check if canvas is blank
-    function isCanvasBlank() {
-        const blank = document.createElement('canvas');
-        blank.width = canvas.width;
-        blank.height = canvas.height;
-        return canvas.toDataURL() === blank.toDataURL();
-    }
+        // Check if canvas is blank
+        window.isCanvasBlank = function() {
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width;
+            blank.height = canvas.height;
+            return canvas.toDataURL() === blank.toDataURL();
+        }
+    }, 100); // Small delay to ensure layout is complete
+    }); // End DOMContentLoaded
 
     // Toggle Edit Mode Functions
     function toggleEditMode(section) {

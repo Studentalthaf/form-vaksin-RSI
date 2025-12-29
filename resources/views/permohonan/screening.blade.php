@@ -2,10 +2,25 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Screening Kesehatan - Form Vaksinasi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        /* Fix untuk iPhone/Safari - Signature Pad */
+        #signaturePad, #signaturePadKeluarga {
+            touch-action: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            pointer-events: auto !important;
+        }
+        /* Prevent iOS Safari from zooming on double tap */
+        body {
+            touch-action: pan-x pan-y;
+        }
+    </style>
 </head>
 <body class="bg-gradient-to-br from-green-50 via-white to-blue-50 min-h-screen">
     <div class="container mx-auto px-4 py-8">
@@ -187,8 +202,8 @@
                             </p>
                         </div>
 
-                        <div class="bg-white border-2 border-green-300 rounded-lg overflow-hidden">
-                            <canvas id="signaturePad" width="700" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
+                        <div class="bg-white border-2 border-green-300 rounded-lg overflow-hidden" style="touch-action: none; -webkit-touch-callout: none;">
+                            <canvas id="signaturePad" style="width: 100%; height: 200px; touch-action: none !important; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; cursor: crosshair; display: block; position: relative; background: white;"></canvas>
                         </div>
 
                         <div class="flex items-center justify-between mt-3">
@@ -241,8 +256,8 @@
                                 placeholder="Nama lengkap keluarga/pendamping">
                         </div>
 
-                        <div class="bg-white border-2 border-blue-300 rounded-lg overflow-hidden">
-                            <canvas id="signaturePadKeluarga" width="700" height="200" style="width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block;"></canvas>
+                        <div class="bg-white border-2 border-blue-300 rounded-lg overflow-hidden" style="touch-action: none; -webkit-touch-callout: none;">
+                            <canvas id="signaturePadKeluarga" style="width: 100%; height: 200px; touch-action: none !important; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; cursor: crosshair; display: block; position: relative; background: white;"></canvas>
                         </div>
 
                         <div class="flex items-center justify-between mt-3">
@@ -291,108 +306,192 @@
     </div>
 
     <script>
-        // ========== SIGNATURE PAD ==========
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+        // ========== SIGNATURE PAD - Fixed for iPhone/Safari ==========
         const canvas = document.getElementById('signaturePad');
         if (canvas) {
-            const ctx = canvas.getContext('2d');
-            let isDrawing = false;
-
-            // Setup canvas
-            ctx.strokeStyle = '#000000'; // Black
-            ctx.lineWidth = 3;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-
-            function getPosition(e) {
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
+            // Fix canvas size for high DPI displays (iPhone/Safari)
+            function setupCanvas(canvasElement) {
+                const rect = canvasElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
                 
-                if (e.touches && e.touches[0]) {
+                // Set actual size in memory (scaled for DPI)
+                canvasElement.width = rect.width * dpr;
+                canvasElement.height = rect.height * dpr;
+                
+                // Scale the drawing context so everything draws at the correct size
+                const ctx = canvasElement.getContext('2d');
+                ctx.scale(dpr, dpr);
+                
+                // Set CSS size to maintain visual size
+                canvasElement.style.width = rect.width + 'px';
+                canvasElement.style.height = rect.height + 'px';
+                
+                return ctx;
+            }
+            
+            // Setup canvas after a small delay to ensure layout is complete
+            setTimeout(function() {
+                const ctx = setupCanvas(canvas);
+                let isDrawing = false;
+                let lastPos = { x: 0, y: 0 };
+
+                // Setup canvas context
+                ctx.strokeStyle = '#000000'; // Black
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                function getPosition(e) {
+                    const rect = canvas.getBoundingClientRect();
+                    
+                    let clientX, clientY;
+                    
+                    // Priority: pointer events > touches > changedTouches > mouse
+                    if (e.pointerType !== undefined) {
+                        // Pointer Events API (modern, works on iPhone)
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    } else if (e.touches && e.touches.length > 0) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else if (e.changedTouches && e.changedTouches.length > 0) {
+                        clientX = e.changedTouches[0].clientX;
+                        clientY = e.changedTouches[0].clientY;
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    
                     return {
-                        x: (e.touches[0].clientX - rect.left) * scaleX,
-                        y: (e.touches[0].clientY - rect.top) * scaleY
+                        x: clientX - rect.left,
+                        y: clientY - rect.top
                     };
                 }
+
+                function startDrawing(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    isDrawing = true;
+                    lastPos = getPosition(e);
+                    ctx.beginPath();
+                    ctx.moveTo(lastPos.x, lastPos.y);
+                }
+
+                function draw(e) {
+                    if (!isDrawing) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const pos = getPosition(e);
+                    
+                    // Draw smooth line
+                    ctx.beginPath();
+                    ctx.moveTo(lastPos.x, lastPos.y);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                    
+                    lastPos = pos;
+                }
+
+                function stopDrawing(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    isDrawing = false;
+                    ctx.beginPath();
+                }
+
+                // Pointer Events API - Modern approach, works better on iPhone/Safari
+                if (canvas.setPointerCapture) {
+                    canvas.addEventListener('pointerdown', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvas.setPointerCapture(e.pointerId);
+                        startDrawing(e);
+                    });
+                    
+                    canvas.addEventListener('pointermove', function(e) {
+                        if (isDrawing) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            draw(e);
+                        }
+                    });
+                    
+                    canvas.addEventListener('pointerup', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvas.releasePointerCapture(e.pointerId);
+                        stopDrawing(e);
+                    });
+                    
+                    canvas.addEventListener('pointercancel', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvas.releasePointerCapture(e.pointerId);
+                        stopDrawing(e);
+                    });
+                }
+
+                // Mouse events (fallback for desktop)
+                canvas.addEventListener('mousedown', startDrawing);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', stopDrawing);
+                canvas.addEventListener('mouseout', stopDrawing);
+                canvas.addEventListener('mouseleave', stopDrawing);
+
+                // Touch events - Enhanced for iPhone/iOS/Safari (fallback)
+                canvas.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startDrawing(e);
+                }, { passive: false });
                 
-                return {
-                    x: (e.clientX - rect.left) * scaleX,
-                    y: (e.clientY - rect.top) * scaleY
-                };
-            }
+                canvas.addEventListener('touchmove', function(e) {
+                    if (isDrawing) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        draw(e);
+                    }
+                }, { passive: false });
+                
+                canvas.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stopDrawing(e);
+                }, { passive: false });
+                
+                canvas.addEventListener('touchcancel', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stopDrawing(e);
+                }, { passive: false });
 
-            function startDrawing(e) {
-                isDrawing = true;
-                const pos = getPosition(e);
-                ctx.beginPath();
-                ctx.moveTo(pos.x, pos.y);
-            }
+                // Clear signature
+                window.clearSignature = function() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    document.getElementById('tandaTanganInput').value = '';
+                }
 
-            function draw(e) {
-                if (!isDrawing) return;
-                e.preventDefault();
-                const pos = getPosition(e);
-                ctx.lineTo(pos.x, pos.y);
-                ctx.stroke();
-            }
+                // Check if canvas is blank
+                window.isCanvasBlank = function(canvasElement) {
+                    const blank = document.createElement('canvas');
+                    blank.width = canvasElement.width;
+                    blank.height = canvasElement.height;
+                    return canvasElement.toDataURL() === blank.toDataURL();
+                }
 
-            function stopDrawing() {
-                isDrawing = false;
-                ctx.beginPath();
-            }
+                // Form submission validation
+                const form = document.getElementById('screeningForm');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
 
-            // Mouse events
-            canvas.addEventListener('mousedown', startDrawing);
-            canvas.addEventListener('mousemove', draw);
-            canvas.addEventListener('mouseup', stopDrawing);
-            canvas.addEventListener('mouseout', stopDrawing);
-
-            // Touch events - Fixed for iPhone/iOS
-            canvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startDrawing(e);
-            }, { passive: false });
-            
-            canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                draw(e);
-            }, { passive: false });
-            
-            canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                stopDrawing();
-            }, { passive: false });
-            
-            canvas.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                stopDrawing();
-            }, { passive: false });
-
-            // Clear signature
-            window.clearSignature = function() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                document.getElementById('tandaTanganInput').value = '';
-            }
-
-            // Check if canvas is blank
-            function isCanvasBlank(canvasElement) {
-                const blank = document.createElement('canvas');
-                blank.width = canvasElement.width;
-                blank.height = canvasElement.height;
-                return canvasElement.toDataURL() === blank.toDataURL();
-            }
-
-            // Form submission validation
-            const form = document.getElementById('screeningForm');
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                // Validate signature
-                if (isCanvasBlank(canvas)) {
+                        // Validate signature
+                        if (window.isCanvasBlank && window.isCanvasBlank(canvas)) {
                     alert('❌ Tanda tangan belum dibuat!\n\nSilakan tanda tangan terlebih dahulu di kotak yang tersedia sebagai tanda persetujuan Anda.');
                     canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     return false;
@@ -402,9 +501,9 @@
                 const signatureData = canvas.toDataURL('image/png');
                 document.getElementById('tandaTanganInput').value = signatureData;
 
-                // Save family signature if checkbox is checked and signature exists
-                const perluTandaTanganKeluarga = document.getElementById('perluTandaTanganKeluarga').checked;
-                if (perluTandaTanganKeluarga && canvasKeluarga && !isCanvasBlank(canvasKeluarga)) {
+                        // Save family signature if checkbox is checked and signature exists
+                        const perluTandaTanganKeluarga = document.getElementById('perluTandaTanganKeluarga').checked;
+                        if (perluTandaTanganKeluarga && canvasKeluarga && window.isCanvasBlank && !window.isCanvasBlank(canvasKeluarga)) {
                     const signatureDataKeluarga = canvasKeluarga.toDataURL('image/png');
                     document.getElementById('tandaTanganKeluargaInput').value = signatureDataKeluarga;
                     
@@ -415,7 +514,7 @@
                         document.getElementById('namaKeluargaInput').focus();
                         return false;
                     }
-                } else if (perluTandaTanganKeluarga && (!canvasKeluarga || isCanvasBlank(canvasKeluarga))) {
+                        } else if (perluTandaTanganKeluarga && (!canvasKeluarga || (window.isCanvasBlank && window.isCanvasBlank(canvasKeluarga)))) {
                     alert('❌ Tanda tangan keluarga wajib dibuat jika memilih opsi ini!');
                     if (canvasKeluarga) {
                         canvasKeluarga.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -423,13 +522,15 @@
                     return false;
                 }
 
-                // Confirm before submit
-                if (confirm('Apakah Anda yakin data yang Anda isi sudah benar?\n\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan sudah dibuat\n\nData tidak dapat diubah setelah dikirim.')) {
-                    // Clear localStorage
-                    localStorage.clear();
-                    this.submit();
+                        // Confirm before submit
+                        if (confirm('Apakah Anda yakin data yang Anda isi sudah benar?\n\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan sudah dibuat\n\nData tidak dapat diubah setelah dikirim.')) {
+                            // Clear localStorage
+                            localStorage.clear();
+                            this.submit();
+                        }
+                    });
                 }
-            });
+            }, 100); // Small delay to ensure layout is complete
         }
 
         // Toggle tanda tangan keluarga
@@ -452,93 +553,173 @@
             }
         }
 
-        // ========== SIGNATURE PAD KELUARGA ==========
+        // ========== SIGNATURE PAD KELUARGA - Fixed for iPhone/Safari ==========
         const canvasKeluarga = document.getElementById('signaturePadKeluarga');
         if (canvasKeluarga) {
-            const ctxKeluarga = canvasKeluarga.getContext('2d');
-            let isDrawingKeluarga = false;
-
-            // Setup canvas
-            ctxKeluarga.strokeStyle = '#000000'; // Black
-            ctxKeluarga.lineWidth = 3;
-            ctxKeluarga.lineCap = 'round';
-            ctxKeluarga.lineJoin = 'round';
-
-            function getPositionKeluarga(e) {
-                const rect = canvasKeluarga.getBoundingClientRect();
-                const scaleX = canvasKeluarga.width / rect.width;
-                const scaleY = canvasKeluarga.height / rect.height;
+            // Fix canvas size for high DPI displays (iPhone/Safari)
+            function setupCanvasKeluarga(canvasElement) {
+                const rect = canvasElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
                 
-                if (e.touches && e.touches[0]) {
+                // Set actual size in memory (scaled for DPI)
+                canvasElement.width = rect.width * dpr;
+                canvasElement.height = rect.height * dpr;
+                
+                // Scale the drawing context so everything draws at the correct size
+                const ctx = canvasElement.getContext('2d');
+                ctx.scale(dpr, dpr);
+                
+                // Set CSS size to maintain visual size
+                canvasElement.style.width = rect.width + 'px';
+                canvasElement.style.height = rect.height + 'px';
+                
+                return ctx;
+            }
+            
+            // Setup canvas after a small delay to ensure layout is complete
+            setTimeout(function() {
+                const ctxKeluarga = setupCanvasKeluarga(canvasKeluarga);
+                let isDrawingKeluarga = false;
+                let lastPosKeluarga = { x: 0, y: 0 };
+
+                // Setup canvas context
+                ctxKeluarga.strokeStyle = '#000000'; // Black
+                ctxKeluarga.lineWidth = 3;
+                ctxKeluarga.lineCap = 'round';
+                ctxKeluarga.lineJoin = 'round';
+
+                function getPositionKeluarga(e) {
+                    const rect = canvasKeluarga.getBoundingClientRect();
+                    
+                    let clientX, clientY;
+                    
+                    // Priority: pointer events > touches > changedTouches > mouse
+                    if (e.pointerType !== undefined) {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    } else if (e.touches && e.touches.length > 0) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else if (e.changedTouches && e.changedTouches.length > 0) {
+                        clientX = e.changedTouches[0].clientX;
+                        clientY = e.changedTouches[0].clientY;
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    
                     return {
-                        x: (e.touches[0].clientX - rect.left) * scaleX,
-                        y: (e.touches[0].clientY - rect.top) * scaleY
+                        x: clientX - rect.left,
+                        y: clientY - rect.top
                     };
                 }
+
+                function startDrawingKeluarga(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    isDrawingKeluarga = true;
+                    lastPosKeluarga = getPositionKeluarga(e);
+                    ctxKeluarga.beginPath();
+                    ctxKeluarga.moveTo(lastPosKeluarga.x, lastPosKeluarga.y);
+                }
+
+                function drawKeluarga(e) {
+                    if (!isDrawingKeluarga) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const pos = getPositionKeluarga(e);
+                    
+                    // Draw smooth line
+                    ctxKeluarga.beginPath();
+                    ctxKeluarga.moveTo(lastPosKeluarga.x, lastPosKeluarga.y);
+                    ctxKeluarga.lineTo(pos.x, pos.y);
+                    ctxKeluarga.stroke();
+                    
+                    lastPosKeluarga = pos;
+                }
+
+                function stopDrawingKeluarga(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    isDrawingKeluarga = false;
+                    ctxKeluarga.beginPath();
+                }
+
+                // Pointer Events API - Modern approach, works better on iPhone/Safari
+                if (canvasKeluarga.setPointerCapture) {
+                    canvasKeluarga.addEventListener('pointerdown', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvasKeluarga.setPointerCapture(e.pointerId);
+                        startDrawingKeluarga(e);
+                    });
+                    
+                    canvasKeluarga.addEventListener('pointermove', function(e) {
+                        if (isDrawingKeluarga) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            drawKeluarga(e);
+                        }
+                    });
+                    
+                    canvasKeluarga.addEventListener('pointerup', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvasKeluarga.releasePointerCapture(e.pointerId);
+                        stopDrawingKeluarga(e);
+                    });
+                    
+                    canvasKeluarga.addEventListener('pointercancel', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvasKeluarga.releasePointerCapture(e.pointerId);
+                        stopDrawingKeluarga(e);
+                    });
+                }
+
+                // Mouse events (fallback for desktop)
+                canvasKeluarga.addEventListener('mousedown', startDrawingKeluarga);
+                canvasKeluarga.addEventListener('mousemove', drawKeluarga);
+                canvasKeluarga.addEventListener('mouseup', stopDrawingKeluarga);
+                canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
+                canvasKeluarga.addEventListener('mouseleave', stopDrawingKeluarga);
+
+                // Touch events - Enhanced for iPhone/iOS/Safari (fallback)
+                canvasKeluarga.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startDrawingKeluarga(e);
+                }, { passive: false });
                 
-                return {
-                    x: (e.clientX - rect.left) * scaleX,
-                    y: (e.clientY - rect.top) * scaleY
-                };
-            }
-
-            function startDrawingKeluarga(e) {
-                isDrawingKeluarga = true;
-                const pos = getPositionKeluarga(e);
-                ctxKeluarga.beginPath();
-                ctxKeluarga.moveTo(pos.x, pos.y);
-            }
-
-            function drawKeluarga(e) {
-                if (!isDrawingKeluarga) return;
-                e.preventDefault();
-                const pos = getPositionKeluarga(e);
-                ctxKeluarga.lineTo(pos.x, pos.y);
-                ctxKeluarga.stroke();
-            }
-
-            function stopDrawingKeluarga() {
-                isDrawingKeluarga = false;
-                ctxKeluarga.beginPath();
-            }
-
-            // Mouse events
-            canvasKeluarga.addEventListener('mousedown', startDrawingKeluarga);
-            canvasKeluarga.addEventListener('mousemove', drawKeluarga);
-            canvasKeluarga.addEventListener('mouseup', stopDrawingKeluarga);
-            canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
-
-            // Touch events
-            // Touch events - Fixed for iPhone/iOS
-            canvasKeluarga.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                startDrawingKeluarga(e);
-            }, { passive: false });
+                canvasKeluarga.addEventListener('touchmove', function(e) {
+                    if (isDrawingKeluarga) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        drawKeluarga(e);
+                    }
+                }, { passive: false });
+                
+                canvasKeluarga.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stopDrawingKeluarga(e);
+                }, { passive: false });
+                
+                canvasKeluarga.addEventListener('touchcancel', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stopDrawingKeluarga(e);
+                }, { passive: false });
             
-            canvasKeluarga.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                drawKeluarga(e);
-            }, { passive: false });
-            
-            canvasKeluarga.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                stopDrawingKeluarga();
-            }, { passive: false });
-            
-            canvasKeluarga.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                stopDrawingKeluarga();
-            }, { passive: false });
-
-            // Clear signature
-            window.clearSignatureKeluarga = function() {
-                ctxKeluarga.clearRect(0, 0, canvasKeluarga.width, canvasKeluarga.height);
-                document.getElementById('tandaTanganKeluargaInput').value = '';
-            }
+                // Clear signature
+                window.clearSignatureKeluarga = function() {
+                    ctxKeluarga.clearRect(0, 0, canvasKeluarga.width, canvasKeluarga.height);
+                    document.getElementById('tandaTanganKeluargaInput').value = '';
+                }
+            }, 100); // Small delay to ensure layout is complete
         }
 
 
@@ -600,6 +781,7 @@
                 }, 1000);
             });
         }
+        }); // End DOMContentLoaded
     </script>
 </body>
 </html>
