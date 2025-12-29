@@ -276,7 +276,8 @@
                     <!-- Submit Button -->
                     <div class="flex justify-end gap-4 pt-6 border-t mt-8">
                         <button type="submit" 
-                            class="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-blue-700 transition duration-200 shadow-lg">
+                            id="submitButton"
+                            class="px-8 py-3 bg-gradient-to-r from-green-600 to-blue-600 text-white font-bold rounded-lg hover:from-green-700 hover:to-blue-700 focus:ring-4 focus:ring-green-300 transition duration-200 shadow-lg hover:shadow-xl cursor-pointer active:scale-95">
                             Kirim Jawaban
                         </button>
                     </div>
@@ -306,6 +307,231 @@
     </div>
 
     <script>
+        // ========== GLOBAL FUNCTIONS - Must be defined before DOMContentLoaded ==========
+        
+        // Declare global variables for signature pad keluarga
+        let canvasKeluarga = null;
+        let ctxKeluarga = null;
+        let isDrawingKeluarga = false;
+        let lastPosKeluarga = { x: 0, y: 0 };
+        let signaturePadKeluargaInitialized = false;
+
+        // Function to setup canvas keluarga - made global
+        function setupSignaturePadKeluarga() {
+            canvasKeluarga = document.getElementById('signaturePadKeluarga');
+            if (!canvasKeluarga) return;
+            
+            // Only initialize once to avoid duplicate event listeners
+            if (signaturePadKeluargaInitialized) {
+                // Just re-setup canvas size if already initialized
+                const rect = canvasKeluarga.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                canvasKeluarga.width = rect.width * dpr;
+                canvasKeluarga.height = rect.height * dpr;
+                if (ctxKeluarga) {
+                    ctxKeluarga.scale(dpr, dpr);
+                    canvasKeluarga.style.width = rect.width + 'px';
+                    canvasKeluarga.style.height = rect.height + 'px';
+                }
+                return;
+            }
+
+            // Fix canvas size for high DPI displays (iPhone/Safari)
+            function setupCanvasKeluarga(canvasElement) {
+                const rect = canvasElement.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                
+                // Set actual size in memory (scaled for DPI)
+                canvasElement.width = rect.width * dpr;
+                canvasElement.height = rect.height * dpr;
+                
+                // Scale the drawing context so everything draws at the correct size
+                const ctx = canvasElement.getContext('2d');
+                ctx.scale(dpr, dpr);
+                
+                // Set CSS size to maintain visual size
+                canvasElement.style.width = rect.width + 'px';
+                canvasElement.style.height = rect.height + 'px';
+                
+                return ctx;
+            }
+            
+            // Setup canvas after a small delay to ensure layout is complete
+            setTimeout(function() {
+                ctxKeluarga = setupCanvasKeluarga(canvasKeluarga);
+                isDrawingKeluarga = false;
+                lastPosKeluarga = { x: 0, y: 0 };
+
+                // Setup canvas context
+                ctxKeluarga.strokeStyle = '#000000'; // Black
+                ctxKeluarga.lineWidth = 3;
+                ctxKeluarga.lineCap = 'round';
+                ctxKeluarga.lineJoin = 'round';
+
+                function getPositionKeluarga(e) {
+                    const rect = canvasKeluarga.getBoundingClientRect();
+                    
+                    let clientX, clientY;
+                    
+                    // Priority: pointer events > touches > changedTouches > mouse
+                    if (e.pointerType !== undefined) {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    } else if (e.touches && e.touches.length > 0) {
+                        clientX = e.touches[0].clientX;
+                        clientY = e.touches[0].clientY;
+                    } else if (e.changedTouches && e.changedTouches.length > 0) {
+                        clientX = e.changedTouches[0].clientX;
+                        clientY = e.changedTouches[0].clientY;
+                    } else {
+                        clientX = e.clientX;
+                        clientY = e.clientY;
+                    }
+                    
+                    return {
+                        x: clientX - rect.left,
+                        y: clientY - rect.top
+                    };
+                }
+
+                function startDrawingKeluarga(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    isDrawingKeluarga = true;
+                    lastPosKeluarga = getPositionKeluarga(e);
+                    ctxKeluarga.beginPath();
+                    ctxKeluarga.moveTo(lastPosKeluarga.x, lastPosKeluarga.y);
+                }
+
+                function drawKeluarga(e) {
+                    if (!isDrawingKeluarga) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const pos = getPositionKeluarga(e);
+                    
+                    // Draw smooth line
+                    ctxKeluarga.beginPath();
+                    ctxKeluarga.moveTo(lastPosKeluarga.x, lastPosKeluarga.y);
+                    ctxKeluarga.lineTo(pos.x, pos.y);
+                    ctxKeluarga.stroke();
+                    
+                    lastPosKeluarga = pos;
+                }
+
+                function stopDrawingKeluarga(e) {
+                    if (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                    isDrawingKeluarga = false;
+                    ctxKeluarga.beginPath();
+                }
+
+                // Pointer Events API - Modern approach, works better on iPhone/Safari
+                if (canvasKeluarga.setPointerCapture) {
+                    canvasKeluarga.addEventListener('pointerdown', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvasKeluarga.setPointerCapture(e.pointerId);
+                        startDrawingKeluarga(e);
+                    });
+                    
+                    canvasKeluarga.addEventListener('pointermove', function(e) {
+                        if (isDrawingKeluarga) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            drawKeluarga(e);
+                        }
+                    });
+                    
+                    canvasKeluarga.addEventListener('pointerup', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvasKeluarga.releasePointerCapture(e.pointerId);
+                        stopDrawingKeluarga(e);
+                    });
+                    
+                    canvasKeluarga.addEventListener('pointercancel', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        canvasKeluarga.releasePointerCapture(e.pointerId);
+                        stopDrawingKeluarga(e);
+                    });
+                }
+
+                // Mouse events (fallback for desktop)
+                canvasKeluarga.addEventListener('mousedown', startDrawingKeluarga);
+                canvasKeluarga.addEventListener('mousemove', drawKeluarga);
+                canvasKeluarga.addEventListener('mouseup', stopDrawingKeluarga);
+                canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
+                canvasKeluarga.addEventListener('mouseleave', stopDrawingKeluarga);
+
+                // Touch events - Enhanced for iPhone/iOS/Safari (fallback)
+                canvasKeluarga.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    startDrawingKeluarga(e);
+                }, { passive: false });
+                
+                canvasKeluarga.addEventListener('touchmove', function(e) {
+                    if (isDrawingKeluarga) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        drawKeluarga(e);
+                    }
+                }, { passive: false });
+                
+                canvasKeluarga.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stopDrawingKeluarga(e);
+                }, { passive: false });
+                
+                canvasKeluarga.addEventListener('touchcancel', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    stopDrawingKeluarga(e);
+                }, { passive: false });
+            
+                // Clear signature
+                window.clearSignatureKeluarga = function() {
+                    if (ctxKeluarga && canvasKeluarga) {
+                        ctxKeluarga.clearRect(0, 0, canvasKeluarga.width, canvasKeluarga.height);
+                        document.getElementById('tandaTanganKeluargaInput').value = '';
+                    }
+                }
+                
+                signaturePadKeluargaInitialized = true;
+            }, 100); // Small delay to ensure layout is complete
+        }
+
+        // Toggle tanda tangan keluarga - MUST BE GLOBAL for inline onchange to work
+        function toggleTandaTanganKeluarga() {
+            const checkbox = document.getElementById('perluTandaTanganKeluarga');
+            const section = document.getElementById('tandaTanganKeluargaSection');
+            const namaInput = document.getElementById('namaKeluargaInput');
+            
+            if (checkbox && section && namaInput) {
+                if (checkbox.checked) {
+                    section.classList.remove('hidden');
+                    namaInput.required = true;
+                    // Reinitialize canvas when section is shown (important for iPhone!)
+                    setTimeout(function() {
+                        setupSignaturePadKeluarga();
+                    }, 200);
+                } else {
+                    section.classList.add('hidden');
+                    namaInput.required = false;
+                    // Clear values
+                    namaInput.value = '';
+                    if (window.clearSignatureKeluarga) {
+                        window.clearSignatureKeluarga();
+                    }
+                }
+            }
+        }
+
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', function() {
         // ========== SIGNATURE PAD - Fixed for iPhone/Safari ==========
@@ -490,238 +716,75 @@
                     form.addEventListener('submit', function(e) {
                         e.preventDefault();
 
-                        // Validate signature
-                        if (window.isCanvasBlank && window.isCanvasBlank(canvas)) {
-                    alert('❌ Tanda tangan belum dibuat!\n\nSilakan tanda tangan terlebih dahulu di kotak yang tersedia sebagai tanda persetujuan Anda.');
-                    canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    return false;
-                }
+                        // Get fresh canvas reference
+                        const canvasPasien = document.getElementById('signaturePad');
+                        const submitButton = document.getElementById('submitButton');
+                        
+                        // 1. Validate patient signature
+                        if (canvasPasien && window.isCanvasBlank && window.isCanvasBlank(canvasPasien)) {
+                            alert('❌ Tanda Tangan Belum Dibuat!\n\nSilakan buat tanda tangan terlebih dahulu di kotak yang tersedia sebagai tanda persetujuan Anda.');
+                            canvasPasien.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return false;
+                        }
 
-                // Save signature as base64
-                const signatureData = canvas.toDataURL('image/png');
-                document.getElementById('tandaTanganInput').value = signatureData;
+                        // Save patient signature
+                        if (canvasPasien) {
+                            const signatureData = canvasPasien.toDataURL('image/png');
+                            document.getElementById('tandaTanganInput').value = signatureData;
+                        }
 
-                        // Save family signature if checkbox is checked and signature exists
-                        const perluTandaTanganKeluarga = document.getElementById('perluTandaTanganKeluarga').checked;
-                        if (perluTandaTanganKeluarga && canvasKeluarga && window.isCanvasBlank && !window.isCanvasBlank(canvasKeluarga)) {
-                    const signatureDataKeluarga = canvasKeluarga.toDataURL('image/png');
-                    document.getElementById('tandaTanganKeluargaInput').value = signatureDataKeluarga;
-                    
-                    // Validate nama keluarga
-                    const namaKeluarga = document.getElementById('namaKeluargaInput').value.trim();
-                    if (!namaKeluarga) {
-                        alert('❌ Nama keluarga/pendamping wajib diisi jika memilih tanda tangan keluarga!');
-                        document.getElementById('namaKeluargaInput').focus();
-                        return false;
-                    }
-                        } else if (perluTandaTanganKeluarga && (!canvasKeluarga || (window.isCanvasBlank && window.isCanvasBlank(canvasKeluarga)))) {
-                    alert('❌ Tanda tangan keluarga wajib dibuat jika memilih opsi ini!');
-                    if (canvasKeluarga) {
-                        canvasKeluarga.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                    return false;
-                }
+                        // 2. Validate family signature if needed
+                        const perluTandaTanganKeluarga = document.getElementById('perluTandaTanganKeluarga');
+                        const canvasKeluargaElement = document.getElementById('signaturePadKeluarga');
+                        
+                        if (perluTandaTanganKeluarga && perluTandaTanganKeluarga.checked) {
+                            // Validate nama keluarga
+                            const namaKeluargaInput = document.getElementById('namaKeluargaInput');
+                            const namaKeluarga = namaKeluargaInput ? namaKeluargaInput.value.trim() : '';
+                            
+                            if (!namaKeluarga) {
+                                alert('❌ Nama Keluarga/Pendamping Wajib Diisi!');
+                                if (namaKeluargaInput) {
+                                    namaKeluargaInput.focus();
+                                    namaKeluargaInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                                return false;
+                            }
+                            
+                            // Validate family signature canvas
+                            if (!canvasKeluargaElement || (window.isCanvasBlank && window.isCanvasBlank(canvasKeluargaElement))) {
+                                alert('❌ Tanda Tangan Keluarga/Pendamping Belum Dibuat!');
+                                if (canvasKeluargaElement) {
+                                    canvasKeluargaElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                                return false;
+                            }
+                            
+                            // Save family signature
+                            const signatureDataKeluarga = canvasKeluargaElement.toDataURL('image/png');
+                            document.getElementById('tandaTanganKeluargaInput').value = signatureDataKeluarga;
+                        }
 
-                        // Confirm before submit
-                        if (confirm('Apakah Anda yakin data yang Anda isi sudah benar?\n\n✓ Semua pertanyaan sudah dijawab\n✓ Tanda tangan sudah dibuat\n\nData tidak dapat diubah setelah dikirim.')) {
-                            // Clear localStorage
+                        // 3. Confirm and Submit
+                        const confirmMessage = 'Apakah Anda yakin data yang Anda isi sudah benar?\n\n✅ Semua pertanyaan sudah dijawab\n✅ Tanda tangan sudah dibuat\n\nData tidak dapat diubah setelah dikirim.';
+                        
+                        if (confirm(confirmMessage)) {
+                            // Show loading state ONLY after confirmation
+                            if (submitButton) {
+                                submitButton.disabled = true;
+                                submitButton.innerHTML = '⏳ Memberkas Data...';
+                                submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+                            }
+                            
                             localStorage.clear();
-                            this.submit();
+                            
+                            // Submit directly
+                            HTMLFormElement.prototype.submit.call(form);
                         }
                     });
                 }
             }, 100); // Small delay to ensure layout is complete
         }
-
-        // Toggle tanda tangan keluarga
-        function toggleTandaTanganKeluarga() {
-            const checkbox = document.getElementById('perluTandaTanganKeluarga');
-            const section = document.getElementById('tandaTanganKeluargaSection');
-            const namaInput = document.getElementById('namaKeluargaInput');
-            
-            if (checkbox.checked) {
-                section.classList.remove('hidden');
-                namaInput.required = true;
-            } else {
-                section.classList.add('hidden');
-                namaInput.required = false;
-                // Clear values
-                namaInput.value = '';
-                if (window.clearSignatureKeluarga) {
-                    clearSignatureKeluarga();
-                }
-            }
-        }
-
-        // ========== SIGNATURE PAD KELUARGA - Fixed for iPhone/Safari ==========
-        const canvasKeluarga = document.getElementById('signaturePadKeluarga');
-        if (canvasKeluarga) {
-            // Fix canvas size for high DPI displays (iPhone/Safari)
-            function setupCanvasKeluarga(canvasElement) {
-                const rect = canvasElement.getBoundingClientRect();
-                const dpr = window.devicePixelRatio || 1;
-                
-                // Set actual size in memory (scaled for DPI)
-                canvasElement.width = rect.width * dpr;
-                canvasElement.height = rect.height * dpr;
-                
-                // Scale the drawing context so everything draws at the correct size
-                const ctx = canvasElement.getContext('2d');
-                ctx.scale(dpr, dpr);
-                
-                // Set CSS size to maintain visual size
-                canvasElement.style.width = rect.width + 'px';
-                canvasElement.style.height = rect.height + 'px';
-                
-                return ctx;
-            }
-            
-            // Setup canvas after a small delay to ensure layout is complete
-            setTimeout(function() {
-                const ctxKeluarga = setupCanvasKeluarga(canvasKeluarga);
-                let isDrawingKeluarga = false;
-                let lastPosKeluarga = { x: 0, y: 0 };
-
-                // Setup canvas context
-                ctxKeluarga.strokeStyle = '#000000'; // Black
-                ctxKeluarga.lineWidth = 3;
-                ctxKeluarga.lineCap = 'round';
-                ctxKeluarga.lineJoin = 'round';
-
-                function getPositionKeluarga(e) {
-                    const rect = canvasKeluarga.getBoundingClientRect();
-                    
-                    let clientX, clientY;
-                    
-                    // Priority: pointer events > touches > changedTouches > mouse
-                    if (e.pointerType !== undefined) {
-                        clientX = e.clientX;
-                        clientY = e.clientY;
-                    } else if (e.touches && e.touches.length > 0) {
-                        clientX = e.touches[0].clientX;
-                        clientY = e.touches[0].clientY;
-                    } else if (e.changedTouches && e.changedTouches.length > 0) {
-                        clientX = e.changedTouches[0].clientX;
-                        clientY = e.changedTouches[0].clientY;
-                    } else {
-                        clientX = e.clientX;
-                        clientY = e.clientY;
-                    }
-                    
-                    return {
-                        x: clientX - rect.left,
-                        y: clientY - rect.top
-                    };
-                }
-
-                function startDrawingKeluarga(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    isDrawingKeluarga = true;
-                    lastPosKeluarga = getPositionKeluarga(e);
-                    ctxKeluarga.beginPath();
-                    ctxKeluarga.moveTo(lastPosKeluarga.x, lastPosKeluarga.y);
-                }
-
-                function drawKeluarga(e) {
-                    if (!isDrawingKeluarga) return;
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    const pos = getPositionKeluarga(e);
-                    
-                    // Draw smooth line
-                    ctxKeluarga.beginPath();
-                    ctxKeluarga.moveTo(lastPosKeluarga.x, lastPosKeluarga.y);
-                    ctxKeluarga.lineTo(pos.x, pos.y);
-                    ctxKeluarga.stroke();
-                    
-                    lastPosKeluarga = pos;
-                }
-
-                function stopDrawingKeluarga(e) {
-                    if (e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                    }
-                    isDrawingKeluarga = false;
-                    ctxKeluarga.beginPath();
-                }
-
-                // Pointer Events API - Modern approach, works better on iPhone/Safari
-                if (canvasKeluarga.setPointerCapture) {
-                    canvasKeluarga.addEventListener('pointerdown', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        canvasKeluarga.setPointerCapture(e.pointerId);
-                        startDrawingKeluarga(e);
-                    });
-                    
-                    canvasKeluarga.addEventListener('pointermove', function(e) {
-                        if (isDrawingKeluarga) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            drawKeluarga(e);
-                        }
-                    });
-                    
-                    canvasKeluarga.addEventListener('pointerup', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        canvasKeluarga.releasePointerCapture(e.pointerId);
-                        stopDrawingKeluarga(e);
-                    });
-                    
-                    canvasKeluarga.addEventListener('pointercancel', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        canvasKeluarga.releasePointerCapture(e.pointerId);
-                        stopDrawingKeluarga(e);
-                    });
-                }
-
-                // Mouse events (fallback for desktop)
-                canvasKeluarga.addEventListener('mousedown', startDrawingKeluarga);
-                canvasKeluarga.addEventListener('mousemove', drawKeluarga);
-                canvasKeluarga.addEventListener('mouseup', stopDrawingKeluarga);
-                canvasKeluarga.addEventListener('mouseout', stopDrawingKeluarga);
-                canvasKeluarga.addEventListener('mouseleave', stopDrawingKeluarga);
-
-                // Touch events - Enhanced for iPhone/iOS/Safari (fallback)
-                canvasKeluarga.addEventListener('touchstart', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    startDrawingKeluarga(e);
-                }, { passive: false });
-                
-                canvasKeluarga.addEventListener('touchmove', function(e) {
-                    if (isDrawingKeluarga) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        drawKeluarga(e);
-                    }
-                }, { passive: false });
-                
-                canvasKeluarga.addEventListener('touchend', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    stopDrawingKeluarga(e);
-                }, { passive: false });
-                
-                canvasKeluarga.addEventListener('touchcancel', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    stopDrawingKeluarga(e);
-                }, { passive: false });
-            
-                // Clear signature
-                window.clearSignatureKeluarga = function() {
-                    ctxKeluarga.clearRect(0, 0, canvasKeluarga.width, canvasKeluarga.height);
-                    document.getElementById('tandaTanganKeluargaInput').value = '';
-                }
-            }, 100); // Small delay to ensure layout is complete
-        }
-
 
         // Auto-refresh CSRF token setiap 10 menit untuk mencegah 419 Page Expired
         setInterval(function() {
