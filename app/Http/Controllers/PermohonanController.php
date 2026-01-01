@@ -34,9 +34,9 @@ class PermohonanController extends Controller
         // Log untuk debugging
         Log::info('Permohonan store attempt', ['data' => $request->all()]);
 
-        // Convert checkbox to boolean
+        // Convert is_perjalanan to integer (radio button sends "0" or "1" as string)
         $request->merge([
-            'is_perjalanan' => $request->has('is_perjalanan') ? 1 : 0,
+            'is_perjalanan' => (int) $request->input('is_perjalanan', 0),
         ]);
 
         // Validasi reCAPTCHA (hanya di production, skip di local)

@@ -75,6 +75,28 @@
                             <p class="text-sm text-gray-500 mt-1">Pilih "Pasien Baru" jika ini kunjungan pertama Anda</p>
                         </div>
 
+                        <!-- Perjalanan Luar Negeri -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Apakah Vaksin untuk Perjalanan Luar Negeri? *</label>
+                            <div class="flex gap-6">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="is_perjalanan" value="1" 
+                                        {{ old('is_perjalanan') == '1' ? 'checked' : '' }}
+                                        class="w-4 h-4 text-blue-600 focus:ring-blue-500" 
+                                        onchange="togglePerjalananRadio()" required>
+                                    <span class="ml-2 text-gray-700">YA</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="is_perjalanan" value="0" 
+                                        {{ old('is_perjalanan', '0') == '0' ? 'checked' : '' }}
+                                        class="w-4 h-4 text-blue-600 focus:ring-blue-500"
+                                        onchange="togglePerjalananRadio()">
+                                    <span class="ml-2 text-gray-700">TIDAK</span>
+                                </label>
+                            </div>
+                            <p class="text-sm text-gray-500 mt-1">Pilih "YA" jika vaksin diperlukan untuk keperluan perjalanan internasional</p>
+                        </div>
+
                         <!-- Nomor RM (Hidden by default, shown for Pasien Lama) -->
                         <div class="md:col-span-2 hidden" id="nomorRMContainer">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Rekam Medis (RM) RSI</label>
@@ -172,6 +194,167 @@
                             <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
                             <p class="text-sm text-red-600 mt-1 hidden" id="error_foto_ktp"></p>
                             <p class="text-sm text-green-600 mt-1 hidden" id="info_foto_ktp"></p>
+                            
+                            <!-- Contoh KTP -->
+                            <div class="mt-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold text-blue-900 mb-2">Contoh Format KTP yang Benar:</h4>
+                                        <div class="bg-white p-2 rounded-lg border border-blue-300 shadow-sm">
+                                            <img src="{{ asset('storage/asset/KTP.png') }}" 
+                                                 alt="Contoh KTP" 
+                                                 class="w-full max-w-md mx-auto rounded-md shadow-md border border-gray-300"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                            <div style="display:none;" class="text-center text-gray-500 text-sm py-4">
+                                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                                                </svg>
+                                                <p>Contoh gambar KTP</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-blue-700 mt-2">
+                                            ✓ Pastikan foto KTP jelas dan tidak buram<br>
+                                            ✓ Semua informasi di KTP dapat terbaca dengan baik<br>
+                                            ✓ Tidak ada pantulan cahaya yang menutupi data
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Data Perjalanan (Hidden by default) -->
+                <div id="perjalananContainer" class="mb-8 hidden">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-yellow-500">Data Perjalanan</h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Nomor Paspor -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Paspor *</label>
+                            <input type="text" name="nomor_paspor" id="nomor_paspor" value="{{ old('nomor_paspor') }}" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
+                                placeholder="Contoh: A1234567">
+                        </div>
+
+                        <!-- Negara Tujuan -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Negara Tujuan *</label>
+                            <input type="text" name="negara_tujuan" id="negara_tujuan" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
+                                placeholder="Contoh: Arab Saudi">
+                        </div>
+
+                        <!-- Tanggal Berangkat -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Keberangkatan *</label>
+                            <input type="date" name="tanggal_berangkat" id="tanggal_berangkat" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
+                        </div>
+
+                        <!-- Nama Travel -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Biro Perjalanan</label>
+                            <input type="text" name="nama_travel" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
+                                placeholder="Contoh: PT. Travel Sejahtera">
+                        </div>
+
+                        <!-- Alamat Travel -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Biro Perjalanan</label>
+                            <input type="text" name="alamat_travel" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
+                                placeholder="Alamat lengkap travel">
+                        </div>
+
+                        <!-- Upload Foto Paspor Halaman Pertama -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Pertama *</label>
+                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                onchange="validateFileSize(this, 5, 'passport_halaman_pertama')">
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
+                            <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_pertama"></p>
+                            <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_pertama"></p>
+                            
+                            <!-- Contoh Passport Halaman 1 -->
+                            <div class="mt-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold text-yellow-900 mb-2">Contoh Passport Halaman Pertama:</h4>
+                                        <div class="bg-white p-2 rounded-lg border border-yellow-300 shadow-sm">
+                                            <img src="{{ asset('storage/asset/pasport.png') }}" 
+                                                 alt="Contoh Passport Halaman 1" 
+                                                 class="w-full max-w-md mx-auto rounded-md shadow-md border border-gray-300"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                            <div style="display:none;" class="text-center text-gray-500 text-sm py-4">
+                                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                <p>Contoh gambar Passport Halaman 1</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-yellow-700 mt-2">
+                                            ✓ Halaman dengan foto dan data diri<br>
+                                            ✓ Pastikan nomor passport terlihat jelas<br>
+                                            ✓ Foto tidak buram dan semua teks terbaca
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Upload Foto Paspor Halaman Kedua -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Kedua *</label>
+                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
+                                onchange="validateFileSize(this, 5, 'passport_halaman_kedua')">
+                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
+                            <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_kedua"></p>
+                            <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_kedua"></p>
+                            
+                            <!-- Contoh Passport Halaman 2 -->
+                            <div class="mt-4 p-4 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-shrink-0">
+                                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-semibold text-yellow-900 mb-2">Contoh Passport Halaman Kedua:</h4>
+                                        <div class="bg-white p-2 rounded-lg border border-yellow-300 shadow-sm">
+                                            <img src="{{ asset('storage/asset/pasport2.png') }}" 
+                                                 alt="Contoh Passport Halaman 2" 
+                                                 class="w-full max-w-md mx-auto rounded-md shadow-md border border-gray-300"
+                                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                            <div style="display:none;" class="text-center text-gray-500 text-sm py-4">
+                                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                <p>Contoh gambar Passport Halaman 2</p>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-yellow-700 mt-2">
+                                            ✓ Halaman dengan informasi tambahan<br>
+                                            ✓ Pastikan semua teks dapat terbaca<br>
+                                            ✓ Tidak ada bagian yang terpotong
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,85 +459,8 @@
                         </p>
                     </div>
 
-                    <!-- Checkbox Perjalanan -->
-                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" name="is_perjalanan" id="isPerjalanan" value="1"
-                                class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500" 
-                                onchange="togglePerjalananFields()">
-                            <span class="ml-2 text-gray-700 font-medium">Vaksin untuk Perjalanan Luar Negeri</span>
-                        </label>
-                        <p class="text-sm text-gray-600 ml-7 mt-1">Centang jika vaksin diperlukan untuk keperluan perjalanan internasional</p>
-                    </div>
                 </div>
 
-                <!-- Section: Data Perjalanan (Hidden by default) -->
-                <div id="perjalananContainer" class="mb-8 hidden">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4 pb-2 border-b-2 border-yellow-500">Data Perjalanan</h3>
-                    
-                    <div class="grid md:grid-cols-2 gap-6">
-                        <!-- Nomor Paspor -->
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Paspor *</label>
-                            <input type="text" name="nomor_paspor" id="nomor_paspor" value="{{ old('nomor_paspor') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
-                                placeholder="Contoh: A1234567">
-                        </div>
-
-                        <!-- Negara Tujuan -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Negara Tujuan *</label>
-                            <input type="text" name="negara_tujuan" id="negara_tujuan" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
-                                placeholder="Contoh: Arab Saudi">
-                        </div>
-
-                        <!-- Tanggal Berangkat -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Keberangkatan *</label>
-                            <input type="date" name="tanggal_berangkat" id="tanggal_berangkat" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent">
-                        </div>
-
-                        <!-- Nama Travel -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Biro Perjalanan</label>
-                            <input type="text" name="nama_travel" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
-                                placeholder="Contoh: PT. Travel Sejahtera">
-                        </div>
-
-                        <!-- Alamat Travel -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Alamat Biro Perjalanan</label>
-                            <input type="text" name="alamat_travel" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent" 
-                                placeholder="Alamat lengkap travel">
-                        </div>
-
-                        <!-- Upload Foto Paspor Halaman Pertama -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Pertama *</label>
-                            <input type="file" name="passport_halaman_pertama" id="passport_halaman_pertama" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                                onchange="validateFileSize(this, 5, 'passport_halaman_pertama')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
-                            <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_pertama"></p>
-                            <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_pertama"></p>
-                        </div>
-
-                        <!-- Upload Foto Paspor Halaman Kedua -->
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Passport Halaman Kedua *</label>
-                            <input type="file" name="passport_halaman_kedua" id="passport_halaman_kedua" accept="image/jpeg,image/jpg,image/png,image/heic,image/heif,application/pdf,.jpg,.jpeg,.png,.heic,.heif,.pdf" capture="environment"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100"
-                                onchange="validateFileSize(this, 5, 'passport_halaman_kedua')">
-                            <p class="text-sm text-gray-500 mt-1">Format: JPG, PNG, PDF, atau HEIC/HEIF (iPhone). Maksimal 5MB. Bisa ambil foto langsung dari kamera.</p>
-                            <p class="text-sm text-red-600 mt-1 hidden" id="error_passport_halaman_kedua"></p>
-                            <p class="text-sm text-green-600 mt-1 hidden" id="info_passport_halaman_kedua"></p>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- reCAPTCHA Verification (hanya di production) -->
                 @php
@@ -398,6 +504,51 @@
         <!-- Info Footer -->
         <div class="max-w-4xl mx-auto mt-6 text-center text-gray-600 text-sm">
             <p>Data Anda akan dijaga kerahasiaannya dan hanya digunakan untuk keperluan vaksinasi</p>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <!-- Spinner Animation -->
+            <div class="flex justify-center mb-6">
+                <div class="relative">
+                    <div class="w-20 h-20 border-8 border-blue-200 rounded-full"></div>
+                    <div class="w-20 h-20 border-8 border-blue-600 rounded-full animate-spin border-t-transparent absolute top-0 left-0"></div>
+                </div>
+            </div>
+            
+            <!-- Loading Text -->
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Mengirim Permohonan...</h3>
+            <p class="text-gray-600 mb-4">Mohon tunggu, data Anda sedang diproses</p>
+            
+            <!-- Progress Steps -->
+            <div class="space-y-2 text-left">
+                <div class="flex items-center text-sm text-gray-700">
+                    <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Memvalidasi data formulir</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-700">
+                    <div class="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <span>Mengunggah dokumen</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-400">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Menyimpan ke database</span>
+                </div>
+            </div>
+            
+            <!-- Warning -->
+            <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-xs text-yellow-800">
+                    <strong>⚠️ Jangan tutup halaman ini</strong><br>
+                    Proses upload sedang berlangsung
+                </p>
+            </div>
         </div>
     </div>
 
@@ -565,13 +716,13 @@
             }
         }
 
-        // Toggle perjalanan fields
-        function togglePerjalananFields() {
-            const checkbox = document.getElementById('isPerjalanan');
+        // Toggle perjalanan fields (menggunakan radio button)
+        function togglePerjalananRadio() {
+            const radioYa = document.querySelector('input[name="is_perjalanan"][value="1"]');
             const container = document.getElementById('perjalananContainer');
             const requiredFields = ['negara_tujuan', 'tanggal_berangkat'];
             
-            if (checkbox.checked) {
+            if (radioYa && radioYa.checked) {
                 container.classList.remove('hidden');
                 // Set required untuk field perjalanan, paspor, dan foto paspor
                 requiredFields.forEach(id => {
@@ -594,6 +745,11 @@
             }
         }
 
+        // Fungsi lama untuk backward compatibility (jika masih ada yang memanggil)
+        function togglePerjalananFields() {
+            togglePerjalananRadio();
+        }
+
         // Toggle input field untuk vaksin lainnya
         function toggleVaksinLainnyaInput() {
             const checkbox = document.getElementById('vaksinLainnya');
@@ -614,6 +770,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             toggleNomorRM();
             toggleVaksinLainnyaInput(); // Initialize vaksin lainnya state
+            togglePerjalananRadio(); // Initialize perjalanan luar negeri state
             
             // Validate vaccine selection and file sizes on form submit
             const form = document.getElementById('formPermohonan');
@@ -744,9 +901,9 @@
                     if (errorMsg) errorMsg.style.display = 'none';
                 }
                 
-                // Validasi Perjalanan Luar Negeri
-                const isPerjalanan = document.getElementById('isPerjalanan');
-                if (isPerjalanan && isPerjalanan.checked) {
+                // Validasi Perjalanan Luar Negeri (menggunakan radio button)
+                const isPerjalananYa = document.querySelector('input[name="is_perjalanan"][value="1"]');
+                if (isPerjalananYa && isPerjalananYa.checked) {
                     const nomorPaspor = document.getElementById('nomor_paspor');
                     const negaraTujuan = document.getElementById('negara_tujuan');
                     const tanggalBerangkat = document.getElementById('tanggal_berangkat');
@@ -884,7 +1041,13 @@
                 const submitBtn = document.getElementById('submitBtn');
                 if (submitBtn) {
                     submitBtn.disabled = true;
-                    submitBtn.textContent = 'Mengirim...';
+                    submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mengirim...';
+                }
+                
+                // Show loading overlay
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.classList.remove('hidden');
                 }
             });
             

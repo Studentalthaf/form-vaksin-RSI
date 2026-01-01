@@ -200,6 +200,19 @@
                             <p class="text-sm text-green-700 mt-1">
                                 Dengan menandatangani, saya menyatakan bahwa semua informasi yang saya berikan adalah benar dan saya bersedia untuk divaksinasi.
                             </p>
+                            
+                            <!-- Warning Box -->
+                            <div class="mt-3 p-3 bg-red-50 border-l-4 border-red-500 rounded">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-semibold text-red-800">WAJIB DIISI!</p>
+                                        <p class="text-xs text-red-700 mt-1">Tanda tangan Anda diperlukan sebagai bukti persetujuan. Form tidak dapat dikirim tanpa tanda tangan.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="bg-white border-2 border-green-300 rounded-lg overflow-hidden" style="touch-action: none; -webkit-touch-callout: none;">
@@ -303,6 +316,51 @@
         <!-- Info Footer -->
         <div class="max-w-4xl mx-auto mt-6 text-center text-gray-600 text-sm">
             <p>Data Anda akan dijaga kerahasiaannya dan hanya digunakan untuk keperluan medis</p>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
+            <!-- Spinner Animation -->
+            <div class="flex justify-center mb-6">
+                <div class="relative">
+                    <div class="w-20 h-20 border-8 border-green-200 rounded-full"></div>
+                    <div class="w-20 h-20 border-8 border-green-600 rounded-full animate-spin border-t-transparent absolute top-0 left-0"></div>
+                </div>
+            </div>
+            
+            <!-- Loading Text -->
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Memproses Screening...</h3>
+            <p class="text-gray-600 mb-4">Mohon tunggu, data screening Anda sedang diproses</p>
+            
+            <!-- Progress Steps -->
+            <div class="space-y-2 text-left">
+                <div class="flex items-center text-sm text-gray-700">
+                    <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Memvalidasi jawaban screening</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-700">
+                    <div class="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    <span>Menyimpan tanda tangan</span>
+                </div>
+                <div class="flex items-center text-sm text-gray-400">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v3.586L7.707 9.293a1 1 0 00-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 10.586V7z" clip-rule="evenodd"/>
+                    </svg>
+                    <span>Menyelesaikan permohonan</span>
+                </div>
+            </div>
+            
+            <!-- Warning -->
+            <div class="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-xs text-yellow-800">
+                    <strong>⏳ Mohon Tunggu</strong><br>
+                    Proses sedang berlangsung, jangan tutup halaman ini
+                </p>
+            </div>
         </div>
     </div>
 
@@ -772,8 +830,14 @@
                             // Show loading state ONLY after confirmation
                             if (submitButton) {
                                 submitButton.disabled = true;
-                                submitButton.innerHTML = '⏳ Memberkas Data...';
+                                submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Memproses...';
                                 submitButton.classList.add('opacity-75', 'cursor-not-allowed');
+                            }
+                            
+                            // Show loading overlay
+                            const loadingOverlay = document.getElementById('loadingOverlay');
+                            if (loadingOverlay) {
+                                loadingOverlay.classList.remove('hidden');
                             }
                             
                             localStorage.clear();
