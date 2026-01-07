@@ -64,7 +64,10 @@ class ScreeningPasienController extends Controller
             ->orderBy('urutan')
             ->get();
 
-        return view('admin.screening.show', compact('permohonan', 'screening', 'vaksins', 'questions'));
+        // Ambil daftar dokter untuk form penyerahan
+        $dokterList = User::where('role', 'dokter')->get();
+
+        return view('admin.screening.show', compact('permohonan', 'screening', 'vaksins', 'questions', 'dokterList'));
     }
 
     /**
@@ -95,60 +98,37 @@ class ScreeningPasienController extends Controller
                 ->where('vaccine_request_id', $permohonan->id)
                 ->firstOrFail();
 
-            // Simpan nilai screening
+            // Simpan nilai screening dengan data pemeriksaan fisik
             NilaiScreening::create([
                 'screening_id' => $screening->id,
                 'admin_id' => Auth::id(),
-                'jenis_vaksin' => is_array($permohonan->jenis_vaksin) 
-                    ? implode(', ', $permohonan->jenis_vaksin) 
-                    : $permohonan->jenis_vaksin,
-                'negara_tujuan' => $permohonan->negara_tujuan,
                 'alergi_obat' => $request->alergi_obat,
                 'alergi_vaksin' => $request->alergi_vaksin,
                 'sudah_vaksin_covid' => $request->sudah_vaksin_covid,
                 'nama_vaksin_covid' => $request->nama_vaksin_covid,
-                'dimana' => $request->dimana,
-                'kapan' => $request->kapan,
-                // Ambil tanggal keberangkatan dari permohonan, bukan dari input
-                'tanggal_berangkat_umroh' => $permohonan->tanggal_berangkat,
-                'td' => $request->td,
-                'nadi' => $request->nadi,
-                'suhu' => $request->suhu,
-                'tb' => $request->tb,
-                'bb' => $request->bb,
+                'tempat_vaksin_pasien' => $request->dimana,
+                'tanggal_vaksin_pasien' => $request->kapan,
+            // Data pemeriksaan fisik disimpan di tabel nilai_screening
+            'tekanan_darah' => $request->td,
+            'nadi' => $request->nadi,
+            'suhu_badan' => $request->suhu,
+            'tinggi_badan' => $request->tb,
+            'berat_badan' => $request->bb,
                 'hasil_screening' => $request->hasil_screening,
                 'catatan' => $request->catatan,
             ]);
 
-            // Parse tekanan darah dari format "120/80" menjadi sistol dan diastol
-            $tekananDarahSistol = null;
-            $tekananDarahDiastol = null;
-            if ($request->td) {
-                $tdParts = explode('/', $request->td);
-                if (count($tdParts) == 2) {
-                    $tekananDarahSistol = trim($tdParts[0]);
-                    $tekananDarahDiastol = trim($tdParts[1]);
-                }
-            }
-
-            // Update screening dengan data pemeriksaan fisik
+            // Update screening hanya dengan status
             $screening->update([
                 'admin_id' => Auth::id(),
                 'hasil_screening' => $request->hasil_screening,
                 'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
-                'tekanan_darah_sistol' => $tekananDarahSistol,
-                'tekanan_darah_diastol' => $tekananDarahDiastol,
-                'nadi' => $request->nadi,
-                'suhu' => $request->suhu ? (float) $request->suhu : null,
-                'berat_badan' => $request->bb ? (float) $request->bb : null,
-                'tinggi_badan' => $request->tb ? (float) $request->tb : null,
-                'catatan_pemeriksaan' => $request->catatan,
             ]);
 
             DB::commit();
 
-            return redirect()->route('admin.permohonan.show', $permohonan)
-                ->with('success', 'Nilai screening berhasil disimpan!');
+        return redirect()->route('admin.screening.show', $permohonan)
+            ->with('success', 'Nilai screening berhasil disimpan! Anda dapat menyerahkan pasien ke dokter.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -210,61 +190,42 @@ class ScreeningPasienController extends Controller
                 return back()->withErrors(['error' => 'Nilai screening tidak ditemukan']);
             }
 
-            // Update nilai screening
-            $screening->nilaiScreening->update([
-                'admin_id' => Auth::id(),
-                'alergi_obat' => $request->alergi_obat,
-                'alergi_vaksin' => $request->alergi_vaksin,
-                'sudah_vaksin_covid' => $request->sudah_vaksin_covid,
-                'nama_vaksin_covid' => $request->nama_vaksin_covid,
-                'dimana' => $request->dimana,
-                'kapan' => $request->kapan,
-                // Tetap gunakan tanggal dari permohonan
-                'tanggal_berangkat_umroh' => $permohonan->tanggal_berangkat,
-                'td' => $request->td,
-                'nadi' => $request->nadi,
-                'suhu' => $request->suhu,
-                'tb' => $request->tb,
-                'bb' => $request->bb,
-                'hasil_screening' => $request->hasil_screening,
-                'catatan' => $request->catatan,
-            ]);
+            // Update nilai screening dengan data pemeriksaan fisik
+        $screening->nilaiScreening->update([
+            'admin_id' => Auth::id(),
+            'alergi_obat' => $request->alergi_obat,
+            'alergi_vaksin' => $request->alergi_vaksin,
+            'sudah_vaksin_covid' => $request->sudah_vaksin_covid,
+            'nama_vaksin_covid' => $request->nama_vaksin_covid,
+            'tempat_vaksin_pasien' => $request->dimana,
+            'tanggal_vaksin_pasien' => $request->kapan,
+            // Data pemeriksaan fisik disimpan di tabel nilai_screening
+            'tekanan_darah' => $request->td,
+            'nadi' => $request->nadi,
+            'suhu_badan' => $request->suhu,
+            'tinggi_badan' => $request->tb,
+            'berat_badan' => $request->bb,
+            'hasil_screening' => $request->hasil_screening,
+            'catatan' => $request->catatan,
+        ]);
 
-            // Parse tekanan darah dari format "120/80" menjadi sistol dan diastol
-            $tekananDarahSistol = null;
-            $tekananDarahDiastol = null;
-            if ($request->td) {
-                $tdParts = explode('/', $request->td);
-                if (count($tdParts) == 2) {
-                    $tekananDarahSistol = trim($tdParts[0]);
-                    $tekananDarahDiastol = trim($tdParts[1]);
-                }
-            }
+        // Update screening hanya dengan status
+        $screening->update([
+            'admin_id' => Auth::id(),
+            'hasil_screening' => $request->hasil_screening,
+            'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
+        ]);
 
-            // Update screening dengan data pemeriksaan fisik
-            $screening->update([
-                'admin_id' => Auth::id(),
-                'hasil_screening' => $request->hasil_screening,
-                'status_vaksinasi' => $request->hasil_screening === 'aman' ? 'proses_vaksinasi' : 'belum_divaksin',
-                'tekanan_darah_sistol' => $tekananDarahSistol,
-                'tekanan_darah_diastol' => $tekananDarahDiastol,
-                'nadi' => $request->nadi,
-                'suhu' => $request->suhu ? (float) $request->suhu : null,
-                'berat_badan' => $request->bb ? (float) $request->bb : null,
-                'tinggi_badan' => $request->tb ? (float) $request->tb : null,
-                'catatan_pemeriksaan' => $request->catatan,
-            ]);
+        DB::commit();
 
-            DB::commit();
+        return redirect()->route('admin.screening.show', $permohonan)
+            ->with('success', 'Nilai screening berhasil diupdate! Anda dapat menyerahkan pasien ke dokter.');
 
-            return redirect()->route('admin.permohonan.show', $permohonan)
-                ->with('success', 'Nilai screening berhasil diupdate!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withInput()
-                ->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
-        }
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return back()->withInput()
+            ->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+    }
     }
 
     /**
@@ -409,11 +370,7 @@ class ScreeningPasienController extends Controller
 
             if ($screening && $screening->nilaiScreening) {
                 $screening->nilaiScreening->update([
-                    'jenis_vaksin' => is_array($jenisVaksin) 
-                        ? implode(', ', $jenisVaksin) 
-                        : ($jenisVaksin ?: ''),
-                    // negara_tujuan tetap dari permohonan (tidak diubah)
-                    'negara_tujuan' => $permohonan->negara_tujuan,
+                    'admin_id' => Auth::id(), // Ensure admin_id is updated if needed
                 ]);
             }
 

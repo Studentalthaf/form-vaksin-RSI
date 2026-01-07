@@ -208,6 +208,29 @@ class PermohonanController extends Controller
             'alamat_travel.string' => 'Alamat biro perjalanan harus berupa teks',
         ]);
 
+        // Check for duplicate NIK with pending requests
+        $existingPasien = Pasien::where('nik', $request->nik)->first();
+        if ($existingPasien) {
+            // Check if this patient has any pending vaccine requests
+            $pendingRequests = VaccineRequest::where('pasien_id', $existingPasien->id)
+                ->whereHas('screening', function($query) {
+                    $query->where(function($q) {
+                        // Belum dikonfirmasi dokter
+                        $q->where('status_konfirmasi', '!=', 'sudah_dikonfirmasi')
+                          ->orWhereNull('dokter_id')
+                          ->orWhere('hasil_screening', 'pending');
+                    });
+                })
+                ->count();
+
+            if ($pendingRequests > 0) {
+                return back()->withInput()
+                    ->withErrors([
+                        'nik' => 'NIK ini memiliki ' . $pendingRequests . ' permohonan yang masih dalam proses verifikasi oleh dokter. Mohon tunggu hingga permohonan sebelumnya selesai diproses sebelum mendaftar kembali.'
+                    ]);
+            }
+        }
+
         DB::beginTransaction();
         try {
             // Process jenis_vaksin: if patient selected "Lainnya", remove it from the list

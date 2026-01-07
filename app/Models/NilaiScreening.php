@@ -17,23 +17,20 @@ class NilaiScreening extends Model
         'alergi_obat',
         'alergi_vaksin',
         'sudah_vaksin_covid',
-        'jenis_vaksin',
-        'negara_tujuan',
         'nama_vaksin_covid',
-        'dimana',
-        'kapan',
-        'tanggal_berangkat_umroh',
-        'td',
+        'tempat_vaksin_pasien',
+        'tanggal_vaksin_pasien',
+        'tekanan_darah',
         'nadi',
-        'suhu',
-        'tb',
-        'bb',
+        'suhu_badan',
+        'tinggi_badan',
+        'berat_badan',
         'hasil_screening',
         'catatan',
     ];
 
     protected $casts = [
-        'tanggal_berangkat_umroh' => 'date',
+        'tanggal_berangkat' => 'date',
     ];
 
     /**

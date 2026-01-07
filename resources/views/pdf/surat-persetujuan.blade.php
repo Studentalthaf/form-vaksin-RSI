@@ -316,7 +316,7 @@
             <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 2px solid #000; padding-bottom: 4px;">HASIL PEMERIKSAAN FISIK</div>
             <div class="form-row">
                 <span class="form-label">Tekanan Darah</span>
-                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->td ?? '-' }}</strong> mmHg</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->tekanan_darah ?? '-' }}</strong> mmHg</span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Nadi</span>
@@ -324,15 +324,30 @@
             </div>
             <div class="form-row">
                 <span class="form-label">Suhu</span>
-                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->suhu ?? '-' }}</strong> °C</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->suhu_badan ?? '-' }}</strong> °C</span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Berat Badan</span>
-                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->bb ?? '-' }}</strong> Kg</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->berat_badan ?? '-' }}</strong> Kg</span></span>
             </div>
             <div class="form-row">
                 <span class="form-label">Tinggi Badan</span>
-                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->tb ?? '-' }}</strong> cm</span></span>
+                <span>: <span class="form-value"><strong>{{ $screening->nilaiScreening->tinggi_badan ?? '-' }}</strong> cm</span></span>
+            </div>
+            <div class="form-row">
+                <span class="form-label">Vaksin COVID</span>
+                <span>: <span class="form-value">
+                    <strong>{{ $screening->nilaiScreening->sudah_vaksin_covid ?? '-' }}</strong>
+                    @if($screening->nilaiScreening->nama_vaksin_covid)
+                        ({{ $screening->nilaiScreening->nama_vaksin_covid }})
+                    @endif
+                    @if($screening->nilaiScreening->tempat_vaksin_pasien)
+                        | Loc: {{ $screening->nilaiScreening->tempat_vaksin_pasien }}
+                    @endif
+                    @if($screening->nilaiScreening->tanggal_vaksin_pasien)
+                        | Tanggal: {{ $screening->nilaiScreening->tanggal_vaksin_pasien }}
+                    @endif
+                </span></span>
             </div>
             @if($screening->tanggal_vaksinasi)
             <div class="form-row">
@@ -480,21 +495,33 @@
             <table style="width: 100%; font-size: 9pt; border-collapse: collapse;">
                 <tr>
                     <td style="padding: 3px 0; width: 35%;"><strong>Tekanan Darah</strong></td>
-                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->td ?? '-' }} mmHg</td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->tekanan_darah ?? '-' }} mmHg</td>
                     <td style="padding: 3px 0; width: 35%;"><strong>Nadi</strong></td>
                     <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->nadi ?? '-' }} x/menit</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px 0;"><strong>Suhu</strong></td>
-                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->suhu ?? '-' }} °C</td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->suhu_badan ?? '-' }} °C</td>
                     <td style="padding: 3px 0;"><strong>Berat Badan</strong></td>
-                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->bb ?? '-' }} Kg</td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->berat_badan ?? '-' }} Kg</td>
                 </tr>
                 <tr>
                     <td style="padding: 3px 0;"><strong>Tinggi Badan</strong></td>
-                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->tb ?? '-' }} cm</td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->tinggi_badan ?? '-' }} cm</td>
+                    <td style="padding: 3px 0;"><strong>Vaksin COVID</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->sudah_vaksin_covid ?? '-' }} 
+                        @if($screening->nilaiScreening->nama_vaksin_covid) ({{ $screening->nilaiScreening->nama_vaksin_covid }}) @endif
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px 0;"><strong>Tempat Vaksin</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->tempat_vaksin_pasien ?? '-' }}</td>
+                    <td style="padding: 3px 0;"><strong>Tanggal Vaksin</strong></td>
+                    <td style="padding: 3px 0;">: {{ $screening->nilaiScreening->tanggal_vaksin_pasien ?? '-' }}</td>
+                </tr>
+                <tr>
                     <td style="padding: 3px 0;"><strong>Hasil</strong></td>
-                    <td style="padding: 3px 0;">: 
+                    <td style="padding: 3px 0;" colspan="3">: 
                         @if($screening->nilaiScreening->hasil_screening === 'aman')
                             <strong>AMAN</strong>
                         @elseif($screening->nilaiScreening->hasil_screening === 'perlu_perhatian')

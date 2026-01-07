@@ -75,6 +75,15 @@
                             <p class="text-sm text-gray-500 mt-1">Pilih "Pasien Baru" jika ini kunjungan pertama Anda</p>
                         </div>
 
+                        <!-- Nomor RM (Hidden by default, shown for Pasien Lama) -->
+                        <div class="md:col-span-2 hidden" id="nomorRMContainer">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Rekam Medis (RM) RSI</label>
+                            <input type="text" name="nomor_rm" id="nomor_rm" value="{{ old('nomor_rm') }}" 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                placeholder="Masukkan nomor RM atau ketik (-) jika lupa">
+                            <p class="text-sm text-gray-500 mt-1">Jika pernah vaksin atau berobat di RSI, masukkan nomor RM. Boleh diisi (-) jika lupa</p>
+                        </div>
+
                         <!-- Perjalanan Luar Negeri -->
                         <div class="md:col-span-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Apakah Vaksin untuk Perjalanan Luar Negeri? *</label>
@@ -95,15 +104,6 @@
                                 </label>
                             </div>
                             <p class="text-sm text-gray-500 mt-1">Pilih "YA" jika vaksin diperlukan untuk keperluan perjalanan internasional</p>
-                        </div>
-
-                        <!-- Nomor RM (Hidden by default, shown for Pasien Lama) -->
-                        <div class="md:col-span-2 hidden" id="nomorRMContainer">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Nomor Rekam Medis (RM) RSI</label>
-                            <input type="text" name="nomor_rm" id="nomor_rm" value="{{ old('nomor_rm') }}" 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                placeholder="Masukkan nomor RM atau ketik (-) jika lupa">
-                            <p class="text-sm text-gray-500 mt-1">Jika pernah vaksin atau berobat di RSI, masukkan nomor RM. Boleh diisi (-) jika lupa</p>
                         </div>
 
                         <!-- NIK -->
@@ -507,6 +507,62 @@
         </div>
     </div>
 
+    <!-- NIK Warning Modal -->
+    <div id="nikWarningModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg mx-4">
+            <!-- Warning Icon -->
+            <div class="flex justify-center mb-4">
+                <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <svg class="w-12 h-12 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Warning Title -->
+            <h3 class="text-2xl font-bold text-gray-800 mb-3 text-center">Permohonan Sedang Diproses</h3>
+            
+            <!-- Warning Message -->
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4 rounded">
+                <p class="text-gray-700 mb-2">
+                    <strong>NIK:</strong> <span id="warningNik" class="font-mono"></span>
+                </p>
+                <p class="text-gray-700 mb-2">
+                    <strong>Nama:</strong> <span id="warningNama"></span>
+                </p>
+                <p class="text-gray-700 mb-2">
+                    <strong>Tanggal Daftar:</strong> <span id="warningTanggal"></span>
+                </p>
+                <p class="text-gray-700 mb-2">
+                    <strong>Status:</strong> <span id="warningStatus" class="px-2 py-1 bg-yellow-200 text-yellow-800 rounded text-sm"></span>
+                </p>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p class="text-red-800 text-sm leading-relaxed">
+                    <strong>⚠️ Perhatian!</strong><br>
+                    Anda memiliki <strong><span id="warningPendingCount">1</span> permohonan</strong> yang masih dalam proses verifikasi oleh dokter. 
+                    Mohon tunggu hingga permohonan sebelumnya selesai diproses sebelum mendaftar kembali.
+                </p>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-blue-800 text-sm">
+                    <strong>ℹ️ Informasi:</strong><br>
+                    Untuk kejelasan status permohonan Anda, silakan menghubungi admin Rumah Sakit.
+                </p>
+            </div>
+            
+            <!-- Close Button -->
+            <div class="flex justify-center">
+                <button type="button" onclick="closeNikWarningModal()" 
+                    class="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition duration-200 shadow-lg">
+                    Saya Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center">
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md mx-4 text-center">
@@ -766,11 +822,135 @@
             }
         }
 
+        // NIK Warning Modal Functions
+        let nikCheckPassed = false;
+        let currentNikValue = '';
+
+        function showNikWarningModal(data) {
+            const modal = document.getElementById('nikWarningModal');
+            document.getElementById('warningNik').textContent = data.nik || '';
+            document.getElementById('warningNama').textContent = data.nama || '';
+            document.getElementById('warningTanggal').textContent = data.tanggal_daftar || '';
+            document.getElementById('warningPendingCount').textContent = data.total_pending || '1';
+            
+            // Set status text
+            let statusText = 'Menunggu Verifikasi';
+            if (data.status_screening === 'pending') {
+                statusText = 'Menunggu Verifikasi Dokter';
+            } else if (data.status_konfirmasi === 'belum_dikonfirmasi') {
+                statusText = 'Belum Dikonfirmasi';
+            }
+            document.getElementById('warningStatus').textContent = statusText;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeNikWarningModal() {
+            const modal = document.getElementById('nikWarningModal');
+            modal.classList.add('hidden');
+            
+            // Reset NIK field to allow user to change it
+            const nikInput = document.getElementById('nik');
+            if (nikInput) {
+                nikInput.focus();
+                nikInput.select();
+            }
+        }
+
+        // Check NIK via AJAX
+        function checkNikDuplicate(nik) {
+            // Skip if NIK is empty or too short
+            if (!nik || nik.length < 10) {
+                nikCheckPassed = false;
+                return;
+            }
+
+            // Skip if we already checked this NIK
+            if (nik === currentNikValue && nikCheckPassed) {
+                return;
+            }
+
+            currentNikValue = nik;
+
+            // Show loading indicator on NIK field
+            const nikInput = document.getElementById('nik');
+            const originalBorder = nikInput.className;
+            nikInput.classList.add('border-blue-500', 'animate-pulse');
+
+            fetch('{{ route("api.check-nik") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({ nik: nik })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading indicator
+                nikInput.classList.remove('border-blue-500', 'animate-pulse');
+                
+                if (data.status === 'pending') {
+                    // NIK has pending requests - show warning
+                    nikCheckPassed = false;
+                    nikInput.classList.add('border-yellow-500');
+                    showNikWarningModal(data.data);
+                } else {
+                    // NIK is OK to proceed
+                    nikCheckPassed = true;
+                    nikInput.classList.remove('border-yellow-500', 'border-red-500');
+                    nikInput.classList.add('border-green-500');
+                    
+                    // Show success indicator briefly
+                    setTimeout(() => {
+                        nikInput.classList.remove('border-green-500');
+                    }, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking NIK:', error);
+                // Remove loading indicator
+                nikInput.classList.remove('border-blue-500', 'animate-pulse');
+                // Allow to proceed on error (fail-safe)
+                nikCheckPassed = true;
+            });
+        }
+
+        // Debounce function to avoid too many API calls
+        let nikCheckTimeout;
+        function debounceNikCheck(nik) {
+            clearTimeout(nikCheckTimeout);
+            nikCheckTimeout = setTimeout(() => {
+                checkNikDuplicate(nik);
+            }, 800); // Wait 800ms after user stops typing
+        }
+
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             toggleNomorRM();
             toggleVaksinLainnyaInput(); // Initialize vaksin lainnya state
             togglePerjalananRadio(); // Initialize perjalanan luar negeri state
+            
+            // Add event listener to NIK input for real-time checking
+            const nikInput = document.getElementById('nik');
+            if (nikInput) {
+                nikInput.addEventListener('input', function(e) {
+                    const nik = e.target.value.trim();
+                    if (nik.length >= 10) {
+                        debounceNikCheck(nik);
+                    } else {
+                        nikCheckPassed = false;
+                    }
+                });
+
+                // Also check on blur (when user leaves the field)
+                nikInput.addEventListener('blur', function(e) {
+                    const nik = e.target.value.trim();
+                    if (nik.length >= 10) {
+                        checkNikDuplicate(nik);
+                    }
+                });
+            }
             
             // Validate vaccine selection and file sizes on form submit
             const form = document.getElementById('formPermohonan');
@@ -778,7 +958,7 @@
                 let hasError = false;
                 let errorMessages = [];
                 
-                // Validasi NIK
+                // Validasi NIK - Check for pending requests
                 const nik = document.getElementById('nik');
                 if (!nik.value.trim()) {
                     hasError = true;
@@ -788,6 +968,18 @@
                     hasError = true;
                     errorMessages.push('❌ NIK tidak boleh lebih dari 20 karakter');
                     nik.classList.add('border-red-500');
+                } else if (!nikCheckPassed && nik.value.length >= 10) {
+                    // Block submission if NIK has pending requests
+                    e.preventDefault();
+                    hasError = true;
+                    errorMessages.push('❌ NIK ini memiliki permohonan yang masih dalam proses verifikasi');
+                    nik.classList.add('border-yellow-500');
+                    
+                    // Re-check NIK to show modal
+                    checkNikDuplicate(nik.value.trim());
+                    
+                    alert('⚠️ Permohonan Tidak Dapat Diproses\n\nNIK yang Anda masukkan memiliki permohonan yang masih dalam proses verifikasi oleh dokter.\n\nMohon tunggu hingga permohonan sebelumnya selesai diproses.');
+                    return false;
                 } else {
                     nik.classList.remove('border-red-500');
                 }

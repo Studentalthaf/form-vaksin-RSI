@@ -21,6 +21,16 @@
 !/public/storage/ttd_admin/ttd_kikik.jpg
 /storage/*.key
 /storage/pail
+
+# Ignore uploaded files (KTP, Passport, etc) but keep example assets
+/storage/app/public/foto-ktp/*
+/storage/app/public/foto-paspor/*
+/storage/app/public/signatures/*
+# Keep example asset images for the form
+!/storage/app/public/asset/
+!/storage/app/public/asset/*.png
+!/storage/app/public/asset/*.jpg
+
 /vendor
 Homestead.json
 Homestead.yaml

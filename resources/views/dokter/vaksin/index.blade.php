@@ -1,32 +1,9 @@
-@extends('layouts.admin')
+@extends('layouts.dokter')
 
-@section('page-title', 'Kelola Vaksin')
+@section('page-title', 'Daftar Vaksin')
 @section('page-subtitle', 'Kelola daftar vaksin yang tersedia untuk pasien')
 
 @section('content')
-    <!-- Alert Messages -->
-    @if (session('success'))
-        <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-lg shadow-sm">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-green-700 font-medium">{{ session('success') }}</p>
-            </div>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg shadow-sm">
-            <div class="flex items-center">
-                <svg class="w-5 h-5 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <p class="text-red-700 font-medium">{{ session('error') }}</p>
-            </div>
-        </div>
-    @endif
-
     <!-- Header Section -->
     <div class="mb-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -34,8 +11,8 @@
                 <h1 class="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">Kelola Vaksin</h1>
                 <p class="text-gray-600 text-sm lg:text-base">Kelola daftar vaksin yang dapat dipilih oleh pasien saat mengajukan permohonan</p>
             </div>
-            <a href="{{ route('admin.vaksin.create') }}"
-                class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
+            <a href="{{ route('dokter.vaksin.create') }}"
+                class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                 </svg>
@@ -47,13 +24,13 @@
     <!-- Statistics Cards -->
     @if($vaksins->count() > 0)
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-blue-100 text-sm font-medium mb-1">Total Vaksin</p>
+                    <p class="text-green-100 text-sm font-medium mb-1">Total Vaksin</p>
                     <p class="text-3xl font-bold">{{ $vaksins->whereNull('deleted_at')->count() }}</p>
                     @if($vaksins->whereNotNull('deleted_at')->count() > 0)
-                        <p class="text-blue-200 text-xs mt-1">{{ $vaksins->whereNotNull('deleted_at')->count() }} dihapus</p>
+                        <p class="text-green-200 text-xs mt-1">{{ $vaksins->whereNotNull('deleted_at')->count() }} dihapus</p>
                     @endif
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-full p-3">
@@ -63,10 +40,10 @@
                 </div>
             </div>
         </div>
-        <div class="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg p-6 text-white">
+        <div class="bg-gradient-to-br from-teal-500 to-cyan-600 rounded-xl shadow-lg p-6 text-white">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-green-100 text-sm font-medium mb-1">Vaksin Aktif</p>
+                    <p class="text-teal-100 text-sm font-medium mb-1">Vaksin Aktif</p>
                     <p class="text-3xl font-bold">{{ $vaksins->whereNull('deleted_at')->where('aktif', true)->count() }}</p>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-full p-3">
@@ -83,7 +60,7 @@
     <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
             <h2 class="text-lg font-bold text-gray-800 flex items-center">
-                <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
                 Daftar Vaksin
@@ -125,13 +102,13 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($vaksins as $index => $vaksin)
-                        <tr class="{{ $vaksin->trashed() ? 'bg-red-50 opacity-75' : 'hover:bg-indigo-50' }} transition-colors duration-150">
+                        <tr class="{{ $vaksin->trashed() ? 'bg-red-50 opacity-75' : 'hover:bg-green-50' }} transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-semibold {{ $vaksin->trashed() ? 'text-gray-500' : 'text-gray-900' }}">{{ $index + 1 }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br {{ $vaksin->trashed() ? 'from-gray-400 to-gray-500' : 'from-indigo-500 to-purple-600' }} rounded-lg flex items-center justify-center mr-3">
+                                    <div class="flex-shrink-0 h-10 w-10 bg-gradient-to-br {{ $vaksin->trashed() ? 'from-gray-400 to-gray-500' : 'from-green-500 to-emerald-600' }} rounded-lg flex items-center justify-center mr-3">
                                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                         </svg>
@@ -237,14 +214,14 @@
                                     </div>
                                 @else
                                     <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('admin.vaksin.edit', $vaksin) }}"
+                                        <a href="{{ route('dokter.vaksin.edit', $vaksin) }}"
                                             class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 rounded-lg transition duration-150"
                                             title="Edit">
                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                             </svg>
                                         </a>
-                                        <form action="{{ route('admin.vaksin.destroy', $vaksin) }}"
+                                        <form action="{{ route('dokter.vaksin.destroy', $vaksin) }}"
                                             method="POST" class="inline"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus vaksin \'{{ $vaksin->nama_vaksin }}\'?')">
                                             @csrf
@@ -270,8 +247,8 @@
                                     </svg>
                                     <p class="text-gray-500 text-lg font-medium mb-2">Belum ada vaksin</p>
                                     <p class="text-gray-400 text-sm mb-4">Mulai dengan menambahkan vaksin pertama Anda</p>
-                                    <a href="{{ route('admin.vaksin.create') }}"
-                                        class="inline-flex items-center px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
+                                    <a href="{{ route('dokter.vaksin.create') }}"
+                                        class="inline-flex items-center px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200">
                                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                                         </svg>
@@ -286,8 +263,3 @@
         </div>
     </div>
 @endsection
-
-
-
-
-

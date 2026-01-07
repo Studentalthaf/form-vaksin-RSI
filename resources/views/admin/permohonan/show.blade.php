@@ -160,15 +160,39 @@
                             @if($permohonan->pasien->foto_ktp)
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">Foto KTP</label>
-                                <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                     onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->foto_ktp) }}', 'Foto KTP - {{ $permohonan->pasien->nama }}')">
-                                    <img src="{{ asset('storage/' . $permohonan->pasien->foto_ktp) }}" 
-                                         alt="Foto KTP" 
-                                         class="w-full h-48 object-cover hover:scale-105 transition">
-                                    <div class="bg-gray-50 px-3 py-2 text-center">
-                                        <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                @php
+                                    $ktpPath = $permohonan->pasien->foto_ktp;
+                                    $ktpExtension = strtolower(pathinfo($ktpPath, PATHINFO_EXTENSION));
+                                    $isPdf = $ktpExtension === 'pdf';
+                                    $ktpUrl = asset('storage/' . $ktpPath);
+                                @endphp
+                                
+                                @if($isPdf)
+                                    <!-- PDF Viewer -->
+                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                                        <embed src="{{ $ktpUrl }}" type="application/pdf" class="w-full h-96">
+                                        <div class="bg-gray-50 px-3 py-2 text-center">
+                                            <a href="{{ $ktpUrl }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 font-semibold text-sm">
+                                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                </svg>
+                                                Buka PDF di Tab Baru
+                                            </a>
+                                        </div>
                                     </div>
-                                </div>
+                                @else
+                                    <!-- Image Viewer -->
+                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                         onclick="openImageModal('{{ $ktpUrl }}', 'Foto KTP - {{ $permohonan->pasien->nama }}')">
+                                        <img src="{{ $ktpUrl }}" 
+                                             alt="Foto KTP" 
+                                             class="w-full h-48 object-cover hover:scale-105 transition"
+                                             onerror="this.parentElement.innerHTML='<div class=\'p-8 text-center text-red-600\'>Gagal memuat gambar</div>'">
+                                        <div class="bg-gray-50 px-3 py-2 text-center">
+                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                             @else
                             <div>
@@ -192,15 +216,33 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Passport Halaman Pertama</label>
                                     @if($permohonan->pasien->passport_halaman_pertama)
-                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                         onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->passport_halaman_pertama) }}', 'Passport Halaman Pertama - {{ $permohonan->pasien->nama }}')">
-                                        <img src="{{ asset('storage/' . $permohonan->pasien->passport_halaman_pertama) }}" 
-                                             alt="Passport Halaman Pertama" 
-                                             class="w-full h-48 object-cover hover:scale-105 transition">
-                                        <div class="bg-gray-50 px-3 py-2 text-center">
-                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    @php
+                                        $passportPath1 = $permohonan->pasien->passport_halaman_pertama;
+                                        $passportExt1 = strtolower(pathinfo($passportPath1, PATHINFO_EXTENSION));
+                                        $isPdf1 = $passportExt1 === 'pdf';
+                                        $passportUrl1 = asset('storage/' . $passportPath1);
+                                    @endphp
+                                    
+                                    @if($isPdf1)
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                                            <embed src="{{ $passportUrl1 }}" type="application/pdf" class="w-full h-48">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <a href="{{ $passportUrl1 }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 text-xs">
+                                                    Buka PDF
+                                                </a>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                             onclick="openImageModal('{{ $passportUrl1 }}', 'Passport Halaman Pertama - {{ $permohonan->pasien->nama }}')">
+                                            <img src="{{ $passportUrl1 }}" 
+                                                 alt="Passport Halaman Pertama" 
+                                                 class="w-full h-48 object-cover hover:scale-105 transition">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                            </div>
+                                        </div>
+                                    @endif
                                     @else
                                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                         <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,15 +255,33 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Passport Halaman Kedua</label>
                                     @if($permohonan->pasien->passport_halaman_kedua)
-                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                         onclick="openImageModal('{{ asset('storage/' . $permohonan->pasien->passport_halaman_kedua) }}', 'Passport Halaman Kedua - {{ $permohonan->pasien->nama }}')">
-                                        <img src="{{ asset('storage/' . $permohonan->pasien->passport_halaman_kedua) }}" 
-                                             alt="Passport Halaman Kedua" 
-                                             class="w-full h-48 object-cover hover:scale-105 transition">
-                                        <div class="bg-gray-50 px-3 py-2 text-center">
-                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    @php
+                                        $passportPath2 = $permohonan->pasien->passport_halaman_kedua;
+                                        $passportExt2 = strtolower(pathinfo($passportPath2, PATHINFO_EXTENSION));
+                                        $isPdf2 = $passportExt2 === 'pdf';
+                                        $passportUrl2 = asset('storage/' . $passportPath2);
+                                    @endphp
+                                    
+                                    @if($isPdf2)
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                                            <embed src="{{ $passportUrl2 }}" type="application/pdf" class="w-full h-48">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <a href="{{ $passportUrl2 }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 text-xs">
+                                                    Buka PDF
+                                                </a>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                             onclick="openImageModal('{{ $passportUrl2 }}', 'Passport Halaman Kedua - {{ $permohonan->pasien->nama }}')">
+                                            <img src="{{ $passportUrl2 }}" 
+                                                 alt="Passport Halaman Kedua" 
+                                                 class="w-full h-48 object-cover hover:scale-105 transition">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                            </div>
+                                        </div>
+                                    @endif
                                     @else
                                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                         <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -443,44 +503,9 @@
                         class="block w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-semibold text-center mb-4">
                         Lihat & Edit Hasil Pemeriksaan
                     </a>
-
-                    <!-- Assign to Dokter Section (semua hasil screening bisa dikirim ke dokter) -->
-                    @if(!$permohonan->screening->dokter_id)
-                    <div class="bg-indigo-50 border-2 border-indigo-500 rounded-lg p-4 mb-4">
-                        <h4 class="font-semibold text-indigo-900 mb-3 flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                            Serahkan ke Dokter
-                        </h4>
-                        <form id="assignDokterForm" method="POST" action="{{ route('admin.screening.assign-dokter', $permohonan) }}" onsubmit="return handleFormSubmit(event)">
-                            @csrf
-                            <div class="mb-3">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Dokter <span class="text-red-500">*</span></label>
-                                <select name="dokter_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
-                                    <option value="">-- Pilih Dokter --</option>
-                                    @foreach($dokterList ?? [] as $dokter)
-                                    <option value="{{ $dokter->id }}">Dr. {{ $dokter->nama }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Vaksinasi <span class="text-red-500">*</span></label>
-                                <input type="date" name="tanggal_vaksinasi" 
-                                    min="{{ date('Y-m-d') }}"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" required>
-                            </div>
-                            
-                            <button type="submit" class="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-lg">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                Serahkan ke Dokter
-                            </button>
-                        </form>
-                    </div>
-                    @elseif($permohonan->screening->dokter_id)
-                    <!-- Already assigned to dokter -->
+                    
+                    <!-- Status Penyerahan ke Dokter -->
+                    @if($permohonan->screening->dokter_id)
                     <div class="bg-green-50 border-2 border-green-500 rounded-lg p-4">
                         <div class="flex items-center mb-2">
                             <svg class="w-8 h-8 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -514,7 +539,9 @@
                         @endif
                     </div>
                     @endif
-                    @else
+                    @endif
+                    
+                    @elseif($permohonan->screening)
                     <!-- Sudah isi screening tapi belum dicek -->
                     <div class="bg-red-50 border-2 border-red-500 rounded-lg p-4 text-center mb-4">
                         <svg class="w-12 h-12 mx-auto text-red-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -527,7 +554,6 @@
                         class="block w-full px-4 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-semibold text-center">
                         Lakukan Pemeriksaan
                     </a>
-                    @endif
                     
                     @else
                     <!-- Pasien belum isi form screening sama sekali - Admin tetap bisa beri nilai -->

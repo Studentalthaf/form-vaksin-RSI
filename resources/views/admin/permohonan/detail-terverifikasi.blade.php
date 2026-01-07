@@ -349,7 +349,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
                         <div class="bg-red-50 border border-red-200 p-3 rounded-lg text-center">
                             <p class="text-xs text-red-600 font-semibold">Tekanan Darah</p>
-                            <p class="text-2xl font-bold text-red-900 mt-1">{{ $permohonan->screening->nilaiScreening->td ?? '-' }}</p>
+                            <p class="text-2xl font-bold text-red-900 mt-1">{{ $permohonan->screening->nilaiScreening->tekanan_darah ?? '-' }}</p>
                             <p class="text-xs text-red-500">mmHg</p>
                         </div>
                         <div class="bg-pink-50 border border-pink-200 p-3 rounded-lg text-center">
@@ -359,17 +359,17 @@
                         </div>
                         <div class="bg-orange-50 border border-orange-200 p-3 rounded-lg text-center">
                             <p class="text-xs text-orange-600 font-semibold">Suhu</p>
-                            <p class="text-2xl font-bold text-orange-900 mt-1">{{ $permohonan->screening->nilaiScreening->suhu ?? '-' }}</p>
+                            <p class="text-2xl font-bold text-orange-900 mt-1">{{ $permohonan->screening->nilaiScreening->suhu_badan ?? '-' }}</p>
                             <p class="text-xs text-orange-500">°C</p>
                         </div>
                         <div class="bg-blue-50 border border-blue-200 p-3 rounded-lg text-center">
                             <p class="text-xs text-blue-600 font-semibold">Berat Badan</p>
-                            <p class="text-2xl font-bold text-blue-900 mt-1">{{ $permohonan->screening->nilaiScreening->bb ?? '-' }}</p>
+                            <p class="text-2xl font-bold text-blue-900 mt-1">{{ $permohonan->screening->nilaiScreening->berat_badan ?? '-' }}</p>
                             <p class="text-xs text-blue-500">Kg</p>
                         </div>
                         <div class="bg-purple-50 border border-purple-200 p-3 rounded-lg text-center">
                             <p class="text-xs text-purple-600 font-semibold">Tinggi</p>
-                            <p class="text-2xl font-bold text-purple-900 mt-1">{{ $permohonan->screening->nilaiScreening->tb ?? '-' }}</p>
+                            <p class="text-2xl font-bold text-purple-900 mt-1">{{ $permohonan->screening->nilaiScreening->tinggi_badan ?? '-' }}</p>
                             <p class="text-xs text-purple-500">cm</p>
                         </div>
                         <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
@@ -380,9 +380,26 @@
                             <p class="text-xs text-red-600 font-semibold mb-1">Alergi Vaksin</p>
                             <p class="text-sm font-bold text-red-900">{{ $permohonan->screening->nilaiScreening->alergi_vaksin ?? 'Tidak ada' }}</p>
                         </div>
-                        <div class="bg-green-50 border border-green-200 p-3 rounded-lg">
+                        <div class="bg-green-50 border border-green-200 p-3 rounded-lg col-span-2">
                             <p class="text-xs text-green-600 font-semibold mb-1">Vaksin COVID</p>
-                            <p class="text-sm font-bold text-green-900">{{ $permohonan->screening->nilaiScreening->vaksin_covid ?? 'Belum' }}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div>
+                                    <p class="text-sm font-bold text-green-900">
+                                        Dosis: {{ $permohonan->screening->nilaiScreening->sudah_vaksin_covid ?? '-' }}
+                                        @if($permohonan->screening->nilaiScreening->nama_vaksin_covid)
+                                            <span class="text-xs font-normal ml-1">({{ $permohonan->screening->nilaiScreening->nama_vaksin_covid }})</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                <div class="text-xs text-green-700">
+                                    @if($permohonan->screening->nilaiScreening->tempat_vaksin_pasien)
+                                        <p>📍 {{ $permohonan->screening->nilaiScreening->tempat_vaksin_pasien }}</p>
+                                    @endif
+                                    @if($permohonan->screening->nilaiScreening->tanggal_vaksin_pasien)
+                                        <p>📅 {{ $permohonan->screening->nilaiScreening->tanggal_vaksin_pasien }}</p>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </div>
 

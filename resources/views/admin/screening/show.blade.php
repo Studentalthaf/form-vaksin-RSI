@@ -33,11 +33,16 @@
     @endif
 
         @if(session('success'))
-        <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div id="successAlert" class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-lg shadow-md flex items-center animate-fade-in">
+            <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <span>{{ session('success') }}</span>
+            <span class="flex-1 font-medium">{{ session('success') }}</span>
+            <button onclick="document.getElementById('successAlert').remove()" class="ml-4 text-green-700 hover:text-green-900">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
         </div>
         @endif
 
@@ -608,7 +613,7 @@
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Dimana Vaksinasi?</label>
                             <input type="text" name="dimana" 
-                                value="{{ old('dimana', $screening->nilaiScreening->dimana ?? '') }}"
+                                value="{{ old('dimana', $screening->nilaiScreening->tempat_vaksin_pasien ?? '') }}"
                                 placeholder="Contoh: RS. XYZ, Puskesmas ABC"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                         </div>
@@ -616,7 +621,7 @@
                         <div class="mb-4">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Kapan Vaksinasi?</label>
                             <input type="text" name="kapan" 
-                                value="{{ old('kapan', $screening->nilaiScreening->kapan ?? '') }}"
+                                value="{{ old('kapan', $screening->nilaiScreening->tanggal_vaksin_pasien ?? '') }}"
                                 placeholder="Contoh: Januari 2024"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                         </div>
@@ -641,7 +646,7 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Tekanan Darah (TD)</label>
                                     <input type="text" name="td" 
-                                        value="{{ old('td', $screening->nilaiScreening->td ?? '') }}"
+                                        value="{{ old('td', $screening->nilaiScreening->tekanan_darah ?? '') }}"
                                         placeholder="Contoh: 120/80"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
@@ -658,21 +663,21 @@
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">Suhu (°C)</label>
                                     <input type="text" name="suhu" 
-                                        value="{{ old('suhu', $screening->nilaiScreening->suhu ?? '') }}"
+                                        value="{{ old('suhu', $screening->nilaiScreening->suhu_badan ?? '') }}"
                                         placeholder="36.5"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">TB (cm)</label>
                                     <input type="text" name="tb" 
-                                        value="{{ old('tb', $screening->nilaiScreening->tb ?? '') }}"
+                                        value="{{ old('tb', $screening->nilaiScreening->tinggi_badan ?? '') }}"
                                         placeholder="170"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">BB (kg)</label>
                                     <input type="text" name="bb" 
-                                        value="{{ old('bb', $screening->nilaiScreening->bb ?? '') }}"
+                                        value="{{ old('bb', $screening->nilaiScreening->berat_badan ?? '') }}"
                                         placeholder="60"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500">
                                 </div>
@@ -723,24 +728,172 @@
 
                         <!-- Submit Button -->
                         <div class="flex space-x-3">
-                            <button type="submit" class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-lg">
-                                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" id="btnSubmitScreening" class="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold shadow-lg transition-all">
+                                <svg id="iconSubmit" class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                {{ $screening->nilaiScreening ? 'Update Hasil Pemeriksaan' : 'Simpan Hasil Pemeriksaan' }}
+                                <svg id="iconLoading" class="w-5 h-5 inline mr-2 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span id="textSubmit">{{ $screening->nilaiScreening ? 'Update Hasil Pemeriksaan' : 'Simpan Hasil Pemeriksaan' }}</span>
                             </button>
                             <a href="{{ route('admin.permohonan.show', $permohonan) }}" 
-                               class="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-bold text-center">
+                               class="px-6 py-3 bg-gray-400 hover:bg-gray-500 text-white rounded-lg font-bold text-center transition-all">
                                 Batal
                             </a>
                         </div>
                     </form>
+
+                    <!-- Form Penyerahan ke Dokter -->
+                    @if(!$screening->dokter_id)
+                    <div class="mt-6 pt-6 border-t-2 border-gray-200">
+                        <div class="bg-indigo-50 border-2 border-indigo-500 rounded-lg p-6">
+                            <h4 class="font-semibold text-indigo-900 mb-4 flex items-center text-lg">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Serahkan ke Dokter
+                            </h4>
+                            
+                            @if(!$screening->nilaiScreening)
+                            <div class="mb-4 p-3 bg-yellow-50 border border-yellow-300 rounded-lg">
+                                <p class="text-sm text-yellow-800">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                    <strong>Perhatian:</strong> Simpan hasil pemeriksaan terlebih dahulu sebelum menyerahkan ke dokter.
+                                </p>
+                            </div>
+                            @else
+                            <p class="text-sm text-gray-600 mb-4">Setelah menyimpan hasil pemeriksaan, Anda dapat langsung menyerahkan pasien ke dokter untuk proses vaksinasi.</p>
+                            @endif
+                            
+                            <form id="assignDokterForm" method="POST" action="{{ route('admin.screening.assign-dokter', $permohonan) }}" onsubmit="return confirm('Yakin ingin menyerahkan ke dokter?')">
+                                @csrf
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Dokter <span class="text-red-500">*</span></label>
+                                    <select name="dokter_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" {{ !$screening->nilaiScreening ? 'disabled' : '' }} required>
+                                        <option value="">-- Pilih Dokter --</option>
+                                        @foreach($dokterList ?? [] as $dokter)
+                                        <option value="{{ $dokter->id }}">Dr. {{ $dokter->nama }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tanggal Vaksinasi <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_vaksinasi" 
+                                        min="{{ date('Y-m-d') }}"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" 
+                                        {{ !$screening->nilaiScreening ? 'disabled' : '' }} required>
+                                </div>
+                                
+                                <button type="submit" 
+                                    class="w-full px-6 py-3 {{ $screening->nilaiScreening ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-400 cursor-not-allowed' }} text-white rounded-lg font-bold shadow-lg"
+                                    {{ !$screening->nilaiScreening ? 'disabled' : '' }}>
+                                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    {{ $screening->nilaiScreening ? 'Serahkan ke Dokter' : 'Simpan Hasil Pemeriksaan Terlebih Dahulu' }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    @else
+                    <div class="mt-6 pt-6 border-t-2 border-gray-200">
+                        <div class="bg-green-50 border-2 border-green-500 rounded-lg p-6">
+                            <div class="flex items-center mb-3">
+                                <svg class="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p class="text-sm text-green-600 font-medium">Sudah Diserahkan ke:</p>
+                                    <p class="text-green-900 font-bold text-lg">Dr. {{ $screening->dokter->nama ?? '-' }}</p>
+                                </div>
+                            </div>
+                            @if($screening->tanggal_vaksinasi)
+                            <p class="text-sm text-green-700 flex items-center">
+                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Jadwal Vaksinasi: {{ $screening->tanggal_vaksinasi->format('d/m/Y') }}
+                            </p>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
         </div>
 
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div class="bg-white rounded-lg p-8 flex flex-col items-center shadow-2xl">
+                <svg class="w-16 h-16 animate-spin text-purple-600 mb-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-lg font-semibold text-gray-700">Menyimpan data...</p>
+                <p class="text-sm text-gray-500 mt-2">Mohon tunggu sebentar</p>
+            </div>
+        </div>
+
+        <style>
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.5s ease-out;
+            }
+        </style>
+
         <script>
+            // Auto-scroll to success alert and auto-hide
+            document.addEventListener('DOMContentLoaded', function() {
+                const successAlert = document.getElementById('successAlert');
+                if (successAlert) {
+                    // Scroll to alert
+                    successAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Auto-hide after 8 seconds
+                    setTimeout(() => {
+                        successAlert.style.transition = 'opacity 0.5s ease-out';
+                        successAlert.style.opacity = '0';
+                        setTimeout(() => successAlert.remove(), 500);
+                    }, 8000);
+                }
+            });
+
+            // Handle form submit dengan loading state
+            const formScreening = document.querySelector('form[action*="nilai"]');
+            const btnSubmit = document.getElementById('btnSubmitScreening');
+            const iconSubmit = document.getElementById('iconSubmit');
+            const iconLoading = document.getElementById('iconLoading');
+            const textSubmit = document.getElementById('textSubmit');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            if (formScreening && btnSubmit) {
+                formScreening.addEventListener('submit', function(e) {
+                    // Show loading state
+                    btnSubmit.disabled = true;
+                    btnSubmit.classList.add('opacity-75', 'cursor-not-allowed');
+                    iconSubmit.classList.add('hidden');
+                    iconLoading.classList.remove('hidden');
+                    textSubmit.textContent = 'Menyimpan...';
+                    
+                    // Show loading overlay
+                    loadingOverlay.classList.remove('hidden');
+                });
+            }
+
             function toggleEditMode(section) {
                 const viewSection = document.getElementById('view-' + section);
                 const editSection = document.getElementById('edit-' + section);

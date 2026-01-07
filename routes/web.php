@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\ScreeningQuestionController;
 use App\Http\Controllers\Admin\ScreeningPasienController;
 use App\Http\Controllers\Admin\VaksinController;
 use App\Http\Controllers\Dokter\DokterDashboardController;
+use App\Http\Controllers\Dokter\VaksinController as DokterVaksinController;
+use App\Http\Controllers\NikCheckController;
 
 // Redirect root ke form permohonan
 Route::get('/', function () {
@@ -22,6 +24,7 @@ Route::get('/', function () {
 // Public Routes - Form Permohonan Vaksinasi (tanpa login)
 Route::get('/permohonan', [PermohonanController::class, 'create'])->name('permohonan.create');
 Route::post('/permohonan', [PermohonanController::class, 'store'])->name('permohonan.store');
+Route::post('/api/check-nik', [NikCheckController::class, 'checkNik'])->name('api.check-nik');
 Route::get('/permohonan/screening/{vaccine_request_id}', [PermohonanController::class, 'showScreening'])->name('permohonan.screening');
 Route::post('/permohonan/screening/{vaccine_request_id}', [PermohonanController::class, 'storeScreening'])->name('permohonan.screening.store');
 Route::get('/permohonan/sukses', [PermohonanController::class, 'success'])->name('permohonan.success');
@@ -102,6 +105,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/dokter/pasien/{id}/konfirmasi', [DokterDashboardController::class, 'konfirmasiPasien'])->name('dokter.pasien.konfirmasi');
         Route::put('/dokter/pasien/{id}/jawaban', [DokterDashboardController::class, 'updateJawaban'])->name('dokter.pasien.jawaban.update');
         Route::put('/dokter/pasien/{id}/vaksin', [DokterDashboardController::class, 'updateVaksin'])->name('dokter.pasien.vaksin.update');
+        
+        // Jenis Vaksin Routes - Dokter juga bisa mengelola vaksin
+        Route::resource('dokter/vaksin', DokterVaksinController::class, [
+            'as' => 'dokter'
+        ]);
     });
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

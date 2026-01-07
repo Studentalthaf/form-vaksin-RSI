@@ -51,10 +51,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-blue-100 text-sm font-medium mb-1">Total Vaksin</p>
-                    <p class="text-3xl font-bold">{{ $vaksins->whereNull('deleted_at')->count() }}</p>
-                    @if($vaksins->whereNotNull('deleted_at')->count() > 0)
-                        <p class="text-blue-200 text-xs mt-1">{{ $vaksins->whereNotNull('deleted_at')->count() }} dihapus</p>
-                    @endif
+                    <p class="text-3xl font-bold">{{ $vaksins->count() }}</p>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -67,7 +64,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-green-100 text-sm font-medium mb-1">Vaksin Aktif</p>
-                    <p class="text-3xl font-bold">{{ $vaksins->whereNull('deleted_at')->where('aktif', true)->count() }}</p>
+                    <p class="text-3xl font-bold">{{ $vaksins->where('aktif', true)->count() }}</p>
                 </div>
                 <div class="bg-white bg-opacity-20 rounded-full p-3">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -178,15 +175,8 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm">
                                     @if($vaksin->creator)
-                                        <div class="font-medium {{ $vaksin->trashed() ? 'text-gray-500' : 'text-gray-900' }}">{{ $vaksin->creator->nama ?? $vaksin->creator->name }}</div>
-                                        <div class="text-gray-500 text-xs">
-                                            @if($vaksin->creator->role == 'admin_rumah_sakit')
-                                                <span class="font-semibold">Admin</span> •
-                                            @elseif($vaksin->creator->role == 'dokter')
-                                                <span class="font-semibold">Dokter</span> •
-                                            @endif
-                                            {{ $vaksin->created_at->format('d/m/Y H:i') }}
-                                        </div>
+                                        <div class="font-medium {{ $vaksin->trashed() ? 'text-gray-500' : 'text-gray-900' }}">{{ $vaksin->creator->name }}</div>
+                                        <div class="text-gray-500 text-xs">{{ $vaksin->created_at->format('d/m/Y H:i') }}</div>
                                     @else
                                         <span class="text-gray-400 text-xs">-</span>
                                     @endif
@@ -195,15 +185,8 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm">
                                     @if($vaksin->updater)
-                                        <div class="font-medium {{ $vaksin->trashed() ? 'text-gray-500' : 'text-gray-900' }}">{{ $vaksin->updater->nama ?? $vaksin->updater->name }}</div>
-                                        <div class="text-gray-500 text-xs">
-                                            @if($vaksin->updater->role == 'admin_rumah_sakit')
-                                                <span class="font-semibold">Admin</span> •
-                                            @elseif($vaksin->updater->role == 'dokter')
-                                                <span class="font-semibold">Dokter</span> •
-                                            @endif
-                                            {{ $vaksin->updated_at->format('d/m/Y H:i') }}
-                                        </div>
+                                        <div class="font-medium {{ $vaksin->trashed() ? 'text-gray-500' : 'text-gray-900' }}">{{ $vaksin->updater->name }}</div>
+                                        <div class="text-gray-500 text-xs">{{ $vaksin->updated_at->format('d/m/Y H:i') }}</div>
                                     @elseif($vaksin->updated_at && $vaksin->updated_at != $vaksin->created_at)
                                         <div class="text-gray-500 text-xs">{{ $vaksin->updated_at->format('d/m/Y H:i') }}</div>
                                     @else
@@ -214,16 +197,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm">
                                     @if($vaksin->trashed() && $vaksin->deleter)
-                                        <div class="font-medium text-red-700">{{ $vaksin->deleter->nama ?? $vaksin->deleter->name }}</div>
-                                        <div class="text-red-600 text-xs">
-                                            @if($vaksin->deleter->role == 'admin_rumah_sakit')
-                                                <span class="font-semibold">Admin</span>
-                                            @elseif($vaksin->deleter->role == 'dokter')
-                                                <span class="font-semibold">Dokter</span>
-                                            @else
-                                                <span class="font-semibold">{{ ucfirst($vaksin->deleter->role) }}</span>
-                                            @endif
-                                        </div>
+                                        <div class="font-medium text-red-700">{{ $vaksin->deleter->name }}</div>
                                         <div class="text-red-600 text-xs">{{ $vaksin->deleted_at->format('d/m/Y H:i') }}</div>
                                     @else
                                         <span class="text-gray-400 text-xs">-</span>

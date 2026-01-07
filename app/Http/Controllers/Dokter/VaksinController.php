@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Dokter;
 
 use App\Http\Controllers\Controller;
 use App\Models\Vaksin;
@@ -19,7 +19,7 @@ class VaksinController extends Controller
             ->orderBy('urutan')
             ->orderBy('nama_vaksin')
             ->get();
-        return view('admin.vaksin.index', compact('vaksins'));
+        return view('dokter.vaksin.index', compact('vaksins'));
     }
 
     /**
@@ -27,7 +27,7 @@ class VaksinController extends Controller
      */
     public function create()
     {
-        return view('admin.vaksin.create');
+        return view('dokter.vaksin.create');
     }
 
     /**
@@ -56,7 +56,7 @@ class VaksinController extends Controller
 
         Vaksin::create($validated);
 
-        return redirect()->route('admin.vaksin.index')
+        return redirect()->route('dokter.vaksin.index')
             ->with('success', 'Vaksin berhasil ditambahkan!');
     }
 
@@ -65,7 +65,7 @@ class VaksinController extends Controller
      */
     public function edit(Vaksin $vaksin)
     {
-        return view('admin.vaksin.edit', compact('vaksin'));
+        return view('dokter.vaksin.edit', compact('vaksin'));
     }
 
     /**
@@ -96,7 +96,7 @@ class VaksinController extends Controller
 
         $vaksin->update($validated);
 
-        return redirect()->route('admin.vaksin.index')
+        return redirect()->route('dokter.vaksin.index')
             ->with('success', 'Vaksin berhasil diupdate!');
     }
 
@@ -107,7 +107,7 @@ class VaksinController extends Controller
     {
         $vaksin->delete();
 
-        return redirect()->route('admin.vaksin.index')
+        return redirect()->route('dokter.vaksin.index')
             ->with('success', 'Vaksin berhasil dihapus!');
     }
 }

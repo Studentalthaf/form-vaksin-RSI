@@ -325,15 +325,38 @@
                         @if($screening->pasien->foto_ktp)
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Foto KTP</label>
-                            <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                 onclick="openImageModal('{{ asset('storage/' . $screening->pasien->foto_ktp) }}', 'Foto KTP - {{ $screening->pasien->nama }}')">
-                                <img src="{{ asset('storage/' . $screening->pasien->foto_ktp) }}" 
-                                     alt="Foto KTP" 
-                                     class="w-full h-48 object-cover hover:scale-105 transition">
-                                <div class="bg-gray-50 px-3 py-2 text-center">
-                                    <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                            @php
+                                $ktpPath = $screening->pasien->foto_ktp;
+                                $ktpExtension = strtolower(pathinfo($ktpPath, PATHINFO_EXTENSION));
+                                $isPdf = $ktpExtension === 'pdf';
+                                $ktpUrl = asset('storage/' . $ktpPath);
+                            @endphp
+                            
+                            @if($isPdf)
+                                <!-- PDF Viewer -->
+                                <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                                    <embed src="{{ $ktpUrl }}" type="application/pdf" class="w-full h-96">
+                                    <div class="bg-gray-50 px-3 py-2 text-center">
+                                        <a href="{{ $ktpUrl }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 font-semibold text-sm">
+                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            Buka PDF di Tab Baru
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
+                            @else
+                                <!-- Image Viewer -->
+                                <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                     onclick="openImageModal('{{ $ktpUrl }}', 'Foto KTP - {{ $screening->pasien->nama }}')">
+                                    <img src="{{ $ktpUrl }}" 
+                                         alt="Foto KTP" 
+                                         class="w-full h-48 object-cover hover:scale-105 transition">
+                                    <div class="bg-gray-50 px-3 py-2 text-center">
+                                        <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                         @else
                         <div>
@@ -358,15 +381,33 @@
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-600 mb-2">Halaman Pertama</label>
                                     @if($screening->pasien->passport_halaman_pertama)
-                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                         onclick="openImageModal('{{ asset('storage/' . $screening->pasien->passport_halaman_pertama) }}', 'Passport Halaman Pertama - {{ $screening->pasien->nama }}')">
-                                        <img src="{{ asset('storage/' . $screening->pasien->passport_halaman_pertama) }}" 
-                                             alt="Passport Halaman Pertama" 
-                                             class="w-full h-48 object-cover hover:scale-105 transition">
-                                        <div class="bg-gray-50 px-3 py-2 text-center">
-                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    @php
+                                        $passportPath1 = $screening->pasien->passport_halaman_pertama;
+                                        $passportExt1 = strtolower(pathinfo($passportPath1, PATHINFO_EXTENSION));
+                                        $isPdf1 = $passportExt1 === 'pdf';
+                                        $passportUrl1 = asset('storage/' . $passportPath1);
+                                    @endphp
+                                    
+                                    @if($isPdf1)
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                                            <embed src="{{ $passportUrl1 }}" type="application/pdf" class="w-full h-48">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <a href="{{ $passportUrl1 }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 text-xs">
+                                                    Buka PDF
+                                                </a>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                             onclick="openImageModal('{{ $passportUrl1 }}', 'Passport Halaman Pertama - {{ $screening->pasien->nama }}')">
+                                            <img src="{{ $passportUrl1 }}" 
+                                                 alt="Passport Halaman Pertama" 
+                                                 class="w-full h-48 object-cover hover:scale-105 transition">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                            </div>
+                                        </div>
+                                    @endif
                                     @else
                                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                         <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -379,15 +420,33 @@
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-600 mb-2">Halaman Kedua</label>
                                     @if($screening->pasien->passport_halaman_kedua)
-                                    <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
-                                         onclick="openImageModal('{{ asset('storage/' . $screening->pasien->passport_halaman_kedua) }}', 'Passport Halaman Kedua - {{ $screening->pasien->nama }}')">
-                                        <img src="{{ asset('storage/' . $screening->pasien->passport_halaman_kedua) }}" 
-                                             alt="Passport Halaman Kedua" 
-                                             class="w-full h-48 object-cover hover:scale-105 transition">
-                                        <div class="bg-gray-50 px-3 py-2 text-center">
-                                            <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                    @php
+                                        $passportPath2 = $screening->pasien->passport_halaman_kedua;
+                                        $passportExt2 = strtolower(pathinfo($passportPath2, PATHINFO_EXTENSION));
+                                        $isPdf2 = $passportExt2 === 'pdf';
+                                        $passportUrl2 = asset('storage/' . $passportPath2);
+                                    @endphp
+                                    
+                                    @if($isPdf2)
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden">
+                                            <embed src="{{ $passportUrl2 }}" type="application/pdf" class="w-full h-48">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <a href="{{ $passportUrl2 }}" target="_blank" class="text-indigo-600 hover:text-indigo-700 text-xs">
+                                                    Buka PDF
+                                                </a>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @else
+                                        <div class="border-2 border-gray-200 rounded-lg overflow-hidden hover:border-indigo-500 transition cursor-pointer" 
+                                             onclick="openImageModal('{{ $passportUrl2 }}', 'Passport Halaman Kedua - {{ $screening->pasien->nama }}')">
+                                            <img src="{{ $passportUrl2 }}" 
+                                                 alt="Passport Halaman Kedua" 
+                                                 class="w-full h-48 object-cover hover:scale-105 transition">
+                                            <div class="bg-gray-50 px-3 py-2 text-center">
+                                                <span class="text-xs text-gray-600">Klik untuk memperbesar</span>
+                                            </div>
+                                        </div>
+                                    @endif
                                     @else
                                     <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                                         <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -643,7 +702,33 @@
                     </h2>
                 </div>
                 <div class="p-6">
-                    @if($screening->nilaiScreening && ($screening->nilaiScreening->td || $screening->nilaiScreening->nadi || $screening->nilaiScreening->suhu || $screening->nilaiScreening->bb))
+                    @if($screening->nilaiScreening)
+                        <!-- Status Badge & Admin Info -->
+                        <div class="mb-6 flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <div>
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Hasil Screening Admin</p>
+                                <div class="mt-1">
+                                    @if($screening->nilaiScreening->hasil_screening === 'aman')
+                                        <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-bold border border-green-200">
+                                            ✓ AMAN
+                                        </span>
+                                    @elseif($screening->nilaiScreening->hasil_screening === 'perlu_perhatian')
+                                        <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm font-bold border border-yellow-200">
+                                            ⚠ PERLU PERHATIAN
+                                        </span>
+                                    @else
+                                        <span class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm font-bold border border-red-200">
+                                            ✗ TIDAK LAYAK
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500 font-medium uppercase tracking-wider">Pemeriksa</p>
+                                <p class="text-sm font-bold text-gray-900">{{ $screening->nilaiScreening->admin->nama ?? '-' }}</p>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <!-- Tekanan Darah -->
                             <div class="bg-red-50 border border-red-200 rounded-lg p-3">
@@ -654,7 +739,7 @@
                                     <p class="text-xs font-medium text-red-700">Tekanan Darah</p>
                                 </div>
                                 <p class="text-lg font-bold text-red-900">
-                                    {{ $screening->nilaiScreening->td ?? '-' }}
+                                    {{ $screening->nilaiScreening->tekanan_darah ?? '-' }}
                                     <span class="text-xs font-normal text-red-600">mmHg</span>
                                 </p>
                             </div>
@@ -682,7 +767,7 @@
                                     <p class="text-xs font-medium text-orange-700">Suhu Tubuh</p>
                                 </div>
                                 <p class="text-lg font-bold text-orange-900">
-                                    {{ $screening->nilaiScreening->suhu ?? '-' }}
+                                    {{ $screening->nilaiScreening->suhu_badan ?? '-' }}
                                     <span class="text-xs font-normal text-orange-600">°C</span>
                                 </p>
                             </div>
@@ -696,7 +781,7 @@
                                     <p class="text-xs font-medium text-green-700">Berat Badan</p>
                                 </div>
                                 <p class="text-lg font-bold text-green-900">
-                                    {{ $screening->nilaiScreening->bb ?? '-' }}
+                                    {{ $screening->nilaiScreening->berat_badan ?? '-' }}
                                     <span class="text-xs font-normal text-green-600">kg</span>
                                 </p>
                             </div>
@@ -710,7 +795,7 @@
                                     <p class="text-xs font-medium text-teal-700">Tinggi Badan</p>
                                 </div>
                                 <p class="text-lg font-bold text-teal-900">
-                                    {{ $screening->nilaiScreening->tb ?? '-' }}
+                                    {{ $screening->nilaiScreening->tinggi_badan ?? '-' }}
                                     <span class="text-xs font-normal text-teal-600">cm</span>
                                 </p>
                             </div>
@@ -749,12 +834,24 @@
                                     </svg>
                                     <p class="text-xs font-medium text-indigo-700">Vaksin COVID-19</p>
                                 </div>
-                                <p class="text-base font-semibold text-indigo-900">
-                                    Dosis: <span class="text-lg">{{ $screening->nilaiScreening->sudah_vaksin_covid ?? '-' }}</span>
-                                    @if($screening->nilaiScreening && $screening->nilaiScreening->nama_vaksin_covid)
-                                        <span class="ml-2 text-sm">| {{ $screening->nilaiScreening->nama_vaksin_covid }}</span>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <p class="text-sm font-semibold text-indigo-900">
+                                        Dosis: <span class="font-bold">{{ $screening->nilaiScreening->sudah_vaksin_covid ?? '-' }}</span>
+                                        @if($screening->nilaiScreening && $screening->nilaiScreening->nama_vaksin_covid)
+                                            <span class="ml-1">| {{ $screening->nilaiScreening->nama_vaksin_covid }}</span>
+                                        @endif
+                                    </p>
+                                    @if($screening->nilaiScreening && ($screening->nilaiScreening->tempat_vaksin_pasien || $screening->nilaiScreening->tanggal_vaksin_pasien))
+                                    <div class="text-xs text-indigo-700">
+                                        @if($screening->nilaiScreening->tempat_vaksin_pasien)
+                                            <p>📍 {{ $screening->nilaiScreening->tempat_vaksin_pasien }}</p>
+                                        @endif
+                                        @if($screening->nilaiScreening->tanggal_vaksin_pasien)
+                                            <p>📅 {{ $screening->nilaiScreening->tanggal_vaksin_pasien }}</p>
+                                        @endif
+                                    </div>
                                     @endif
-                                </p>
+                                </div>
                             </div>
                         </div>
 
@@ -766,9 +863,20 @@
                         @endif
 
                         @if($screening->nilaiScreening && $screening->nilaiScreening->admin)
-                        <div class="mt-4 pt-4 border-t border-gray-200">
-                            <p class="text-xs text-gray-500">Diperiksa oleh: <span class="font-semibold">{{ $screening->nilaiScreening->admin->nama }}</span></p>
-                            <p class="text-xs text-gray-500">Waktu: {{ $screening->nilaiScreening->created_at->format('d M Y, H:i') }} WIB</p>
+                        <div class="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
+                            <div>
+                                <p class="text-xs text-gray-500">Diperiksa oleh: <span class="font-semibold">{{ $screening->nilaiScreening->admin->nama }}</span></p>
+                                <p class="text-xs text-gray-500">Waktu: {{ $screening->nilaiScreening->created_at->format('d M Y, H:i') }} WIB</p>
+                            </div>
+                            @if($screening->tanda_tangan_admin)
+                            <div class="text-right">
+                                <p class="text-xs text-gray-500 mb-1">Tanda Tangan Admin:</p>
+                                <img src="{{ asset('storage/' . $screening->tanda_tangan_admin) }}" 
+                                     alt="TTD Admin" 
+                                     class="h-12 w-auto object-contain bg-gray-50 border border-gray-200 rounded p-1 cursor-pointer"
+                                     onclick="openImageModal('{{ asset('storage/' . $screening->tanda_tangan_admin) }}', 'Tanda Tangan Admin - {{ $screening->nilaiScreening->admin->nama }}')">
+                            </div>
+                            @endif
                         </div>
                         @endif
                     @else
