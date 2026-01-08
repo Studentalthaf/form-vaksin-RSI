@@ -65,7 +65,7 @@ return new class extends Migration
                 'tekanan_darah_sistol',
                 'tekanan_darah_diastol',
                 'nadi',
-                'suhu',
+                'suhu', 
                 'berat_badan',
                 'tinggi_badan',
                 'saturasi_oksigen',
