@@ -59,7 +59,7 @@ return new class extends Migration
         });
 
         // 3. Drop kolom pemeriksaan fisik dari tabel 'screenings'
-        // Kolom-kolom ini duplikat karena data sudah ada di tabel 'nilai_screenings'
+       
         Schema::table('screenings', function (Blueprint $table) {
             $columnsToRemove = [
                 'tekanan_darah_sistol',
@@ -107,11 +107,7 @@ return new class extends Migration
 
     }
 
-    /**
-     * Reverse the migrations.
-     * 
-     * Rollback untuk mengembalikan perubahan jika terjadi masalah
-     */
+
     public function down(): void
     {
         // 1. Kembalikan kolom 'pilihan_jawaban' ke tabel 'screening_questions'
